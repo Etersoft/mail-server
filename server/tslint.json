@@ -1,0 +1,22 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "arrow-parens": [true, "ban-single-arg-parens"],
+    "callable-types": false,
+    "linebreak-style": [true, "LF"],
+    "max-line-length": [true, 100],
+    "member-access": false,
+    "no-consecutive-blank-lines": [true, 2],
+    "no-empty-interface": false,
+    "only-arrow-functions": false,
+    "ordered-imports": false,
+    "quotemark": [true, "single"],
+    "space-before-function-paren": [true, "always"],
+    "trailing-comma": [true, {"multiline": "never", "singleline": "never"}]
+  },
+  "rulesDirectory": []
+}
