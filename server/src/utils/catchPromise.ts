@@ -9,6 +9,7 @@ export function catchPromise (handler: PromiseHandler): RequestHandler {
     try {
       const result = await handler(req, res);
     } catch (err) {
+      // tslint:disable-next-line:no-console
       console.error('Request error: ', err);
       res.status(500).json(error('Internal Server Error'));
     }

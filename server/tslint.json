@@ -7,6 +7,7 @@
   "rules": {
     "arrow-parens": [true, "ban-single-arg-parens"],
     "callable-types": false,
+    "interface-name": [true, "never-prefix"],
     "linebreak-style": [true, "LF"],
     "max-line-length": [true, 100],
     "member-access": false,

@@ -25,42 +25,43 @@ export function addMailing (mailingRepository: MailingRepository) {
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
+// tslint:disable:object-literal-sort-keys
 const requestBodyJsonSchema = {
-  "$id": "http://example.com/example.json",
-  "type": "object",
-  "definitions": {},
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": false,
-  "properties": {
-    "name": {
-      "type": "string",
-      "minLength": 1
+  $id: 'http://example.com/example.json',
+  type: 'object',
+  definitions: {},
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  additionalProperties: false,
+  properties: {
+    name: {
+      type: 'string',
+      minLength: 1
     },
-    "receivers": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "format": "email",
-            "type": "string"
+    receivers: {
+      type: 'array',
+      minItems: 1,
+      uniqueItems: true,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          email: {
+            format: 'email',
+            type: 'string'
           },
-          "name": {
-            "type": "string",
-            "minLength": 1
+          name: {
+            type: 'string',
+            minLength: 1
           }
         },
-        "required": [
-          "email"
+        required: [
+          'email'
         ]
       }
     }
   },
-  "required": [
-    "name",
-    "receivers"
+  required: [
+    'name',
+    'receivers'
   ]
 };

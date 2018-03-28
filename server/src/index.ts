@@ -1,3 +1,4 @@
+// tslint:disable:no-console
 import { Express } from 'express';
 import { readConfig } from './readConfig';
 import { validateConfig } from './validateConfig';

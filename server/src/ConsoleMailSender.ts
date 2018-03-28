@@ -1,3 +1,4 @@
+// tslint:disable:no-console
 import { Email } from './Email';
 import { MailSender } from './MailSender';
 

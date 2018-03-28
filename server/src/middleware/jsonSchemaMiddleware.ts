@@ -13,9 +13,9 @@ export function jsonSchemaMiddleware (schema: any) {
       return;
     }
     res.status(400).json(error(
-      validate.errors.map(error => {
-        const fullPath = 'root' + error.dataPath;
-        return fullPath + ': ' + error.message;
+      validate.errors.map(err => {
+        const fullPath = 'root' + err.dataPath;
+        return fullPath + ': ' + err.message;
       }).join('\n')
     ));
   };
