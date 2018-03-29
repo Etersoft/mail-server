@@ -1,0 +1,82 @@
+@import 'animations/fade';
+@import 'animations/scale';
+
+$transition: 0.3s ease;
+
+.add-form-container {
+  align-items: center;
+  bottom: 0;
+  display: flex;
+  left: 0;
+  justify-content: center;
+  position: fixed;
+  right: 0;
+  top: 0;
+  
+  .add-form {
+    height: 50%;
+    width: 50%;
+    z-index: 9001;
+  }
+
+  .add-form-backdrop {
+    background-color: white;
+    bottom: 0;
+    left: 0;
+    opacity: 0.7;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: opacity $transition;
+    z-index: 9000;
+  }
+
+  @include fade-animation-nested('switch', '.add-form-backdrop', 0, 0.7);
+  @include fade-animation-nested('switch', '.add-form', 0, 1);
+
+  @include scale-animation-nested('switch', '.add-form', 1.25, 1);
+}
+
+.add-form {
+  background-color: white;
+  border: 1px solid #aaa;
+  box-shadow: grey 0 0 6px;
+  display: flex;
+  flex-direction: column;
+  transition: opacity $transition, transform $transition;
+
+  .form {
+    display: flex;
+    flex: 1;
+  }
+}
+
+.form {
+  flex-direction: column;
+  padding: 20px;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    padding: 5px 0;
+
+    .input-name {
+      display: block;
+    }
+
+    .input {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+      height: 26px;
+      margin-top: 5px;
+      padding-left: 5px;
+      width: 100%;
+    }
+
+    &.stretch {
+      flex: 1;
+    }
+  }
+}

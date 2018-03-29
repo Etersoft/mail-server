@@ -49,6 +49,7 @@ export class RedisMailingRepository implements MailingRepository {
   }
 
   async getAll (): Promise<Mailing[]> {
+    const maxId = Number(await this.redisClient.getAsync(this.config.idCounterKey));
     const keys = await this.redisClient.keysAsync(this.config.commonDataKeyPrefix + '*');
     // Иначе mget выбросит ошибку
     if (!keys.length) {
@@ -61,7 +62,9 @@ export class RedisMailingRepository implements MailingRepository {
       if (!jsonString) { return null; }
       const object = JSON.parse(jsonString);
       return new Mailing(ids[index], object, this);
-    }).filter(object => object !== null) as Mailing[];
+    }).filter(object =>
+      object !== null && object.id <= maxId
+    ) as Mailing[];
     // filter нужен, чтобы обработать ситуацию, когда в промежутке между
     // keysAsync() и mgetAsync() что-то удалили из редиса
     // Если данных по ключу нет, то mget вернёт null для него

@@ -1,5 +1,6 @@
 import { stringify } from 'query-string';
 import { Mailing } from 'client/src/reducers/mailings';
+import { MailingCreateData } from 'client/src/components/AddForm';
 
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -39,6 +40,11 @@ export async function apiRequest (
   }
 
   return jsonResponse.data;
+}
+
+export async function createMailing (mailing: MailingCreateData): Promise<number> {
+  const { id } = await apiRequest('/mailings', 'POST', null, mailing);
+  return id;
 }
 
 export function getMailings (): Promise<Mailing[]> {

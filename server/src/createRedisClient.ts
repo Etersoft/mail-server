@@ -7,6 +7,7 @@ export interface PromiseMulti extends Multi {
 }
 
 export interface PromiseRedisClient extends RedisClient {
+  getAsync (key: string): Promise<string>;
   hgetAsync (key: string, field: string): Promise<string>;
   hsetAsync (key: string, field: string, value: string): Promise<void>;
   keysAsync (pattern: string): Promise<string[]>;

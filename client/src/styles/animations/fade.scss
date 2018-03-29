@@ -1,0 +1,13 @@
+@mixin fade-animation-nested($name, $class, $from: 0, $to: 0) {
+  &.#{$name}-enter, &.#{$name}-exit-active {
+    #{$class} {
+      opacity: $from;
+    }
+  }
+
+  &.#{$name}-enter-active, &.#{$name}-leave {
+    #{$class} {
+      opacity: $to;
+    }
+  }
+}

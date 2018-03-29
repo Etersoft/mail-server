@@ -2,14 +2,21 @@ import * as React from 'react';
 import '../../styles/RootView';
 import { MailingListContainer } from './MailingListContainer';
 import { RootState } from 'client/src/reducers';
-import { connect } from 'react-redux';
+import { connect, Dispatch } from 'react-redux';
 import {
   MailingDetailViewContainer
 } from './MailingDetailViewContainer';
+import { Mailing } from 'client/src/reducers/mailings';
+import { createMailing } from '../../actions/createMailing';
+import { hideAddForm } from '../../actions/hideAddForm';
+import { AddFormAnimator, MailingCreateData } from '../AddForm';
 
 
 export interface RootViewProps {
+  onAdd: (mailing: MailingCreateData) => void;
+  onHideAddForm: () => void;
   selectedMailing?: number;
+  showAddForm: boolean;
 }
 
 class RootView extends React.Component<RootViewProps> {
@@ -19,12 +26,19 @@ class RootView extends React.Component<RootViewProps> {
         <MailingDetailViewContainer />
       </div>
     ) : null;
+    const rootStyle = {
+      filter: this.props.showAddForm ? 'blur(4px)' : ''
+    };
     return (
       <div className='root-view'>
-        <div className='left-column'>
-          <MailingListContainer />
+        <div className='content' style={rootStyle}>
+          <div className='left-column'>
+            <MailingListContainer />
+          </div>
+          {rightColumn}
         </div>
-        {rightColumn}
+        <AddFormAnimator show={this.props.showAddForm} onAdd={this.props.onAdd}
+                         onClose={this.props.onHideAddForm} />
       </div>
     );
   }
@@ -32,10 +46,18 @@ class RootView extends React.Component<RootViewProps> {
 
 function mapStateToProps (state: RootState) {
   return {
-    selectedMailing: state.mailings.selected
+    selectedMailing: state.mailings.selected,
+    showAddForm: state.ui.showAddForm
   };
 }
 
-export const RootViewContainer = connect<RootViewProps>(
-  mapStateToProps
-)(RootView);
+function mapDispatchToProps (dispatch: Dispatch<RootState>) {
+  return {
+    onAdd: (data: MailingCreateData) => dispatch(createMailing(data)),
+    onHideAddForm: () => dispatch(hideAddForm())
+  };
+}
+
+export const RootViewContainer = connect(
+  mapStateToProps, mapDispatchToProps
+)(RootView as any);

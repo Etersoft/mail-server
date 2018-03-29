@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Mailing } from '../reducers/mailings';
-import '../styles/MailingList';
+import '../styles/List';
 
 
 export interface MailingListProps {
   mailings: Mailing[];
+  onShowAddForm?: () => void;
   onSelect?: (mailing: Mailing) => void;
   selectedMailing?: number;
 }
@@ -19,9 +20,14 @@ export class MailingList extends React.Component<MailingListProps> {
       );
     });
     return (
-      <div className='mailing-list'>
+      <div className='list-block'>
         <h2 className='block-header'>
           Список рассылок
+          <div className='header-actions'>
+            <button className='action' onClick={this.props.onShowAddForm}>
+              Добавить
+            </button>
+          </div>
         </h2>
         <ul className='list'>
           {items}

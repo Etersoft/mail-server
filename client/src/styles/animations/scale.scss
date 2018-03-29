@@ -1,0 +1,13 @@
+@mixin scale-animation-nested($name, $class, $from: 1.1, $to: 1) {
+  &.#{$name}-enter, &.#{$name}-exit-active {
+    #{$class} {
+      transform: scale($from);
+    }
+  }
+
+  &.#{$name}-enter-active, &.#{$name}-leave {
+    #{$class} {
+      transform: scale($to);
+    }
+  }
+}

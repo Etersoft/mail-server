@@ -1,4 +1,4 @@
-body, html, #root, .root-view {
+body, html, #root, .root-view, .content {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -6,10 +6,13 @@ body, html, #root, .root-view {
 }
 
 .root-view {
-  @import 'global';
-
-  display: flex;
   font-family: Verdana, Arial, Helvetica, sans-serif;
+
+  @import 'global';
+}
+
+.content {
+  display: flex;
 
   .left-column {
     flex: 1;

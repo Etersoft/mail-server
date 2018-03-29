@@ -4,6 +4,7 @@ import { Dispatch } from 'redux';
 import { RootState } from '../../reducers/index';
 import { selectMailing } from '../../actions/selectMailing';
 import { Mailing } from '../../reducers/mailings';
+import { showAddForm } from '../../actions/showAddForm';
 
 
 function mapStateToProps (state: RootState) {
@@ -17,6 +18,9 @@ function mapDispatchToProps (dispatch: Dispatch<RootState>) {
   return {
     onSelect (mailing: Mailing): void {
       dispatch(selectMailing(mailing));
+    },
+    onShowAddForm () {
+      dispatch(showAddForm());
     }
   };
 }

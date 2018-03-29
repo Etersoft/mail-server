@@ -1,6 +1,8 @@
 import { MailingState } from 'server/src/Mailing';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
+import { getMailings } from 'client/src/api';
+import { MailingCreateData } from 'client/src/components/AddForm';
 
 
 export interface MailingListState {
@@ -11,7 +13,7 @@ export interface MailingListState {
 
 export interface Mailing {
   id: number;
-  name: number;
+  name: string;
   receivers?: Receiver[];
   state: MailingState;
 }
@@ -20,6 +22,15 @@ export interface Receiver {
   email: string;
 }
 
+
+function createMailing (data: MailingCreateData, id: number): Mailing {
+  return {
+    id,
+    name: data.name,
+    receivers: data.receivers,
+    state: MailingState.NEW
+  };
+}
 
 function createMailingListState (
   mailingsList: Mailing[], selected?: number
@@ -33,6 +44,10 @@ function createMailingListState (
     ids: mailingsList.map(mailing => mailing.id),
     selected
   };
+}
+
+function getAllMailings (state: MailingListState): Mailing[] {
+  return state.ids.map(id => state.byId[id]);
 }
 
 function updateMailing (
@@ -67,6 +82,10 @@ export function mailings (state: MailingListState = initialState, action: Action
       return Object.assign({}, state, {
         selected: action.data
       });
+    case ActionTypes.ADD_MAILING:
+      const mailingsList = getAllMailings(state);
+      mailingsList.push(createMailing(action.data.mailing, action.data.id));
+      return createMailingListState(mailingsList);
     default:
       return state;
   }

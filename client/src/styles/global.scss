@@ -4,7 +4,36 @@
   display: flex;
   height: 40px;
   margin: 0;
-  padding: 12px;
+  padding-left: 12px;
+
+  .header-actions {
+    flex: 1;
+    height: 100%;
+    text-align: right;
+
+    .action {
+      align-items: center;
+      background-color: white;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      font-size: 16px;
+      height: 100%;
+      padding: 0 25px;
+
+      &:hover:not([disabled]) {
+        background-color: #ddd;
+      }
+    }
+  }
+}
+
+h2.block-header {
+  height: 45px;
+}
+
+h3.block-header {
+  height: 35px;
 }
 
 .header {
