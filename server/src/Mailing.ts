@@ -19,6 +19,8 @@ export interface MailingProperties {
  * Класс рассылки
  */
 export class Mailing implements MailingProperties {
+  public html?: string;
+  public text?: string;
   public name: string;
   public state: MailingState;
   public sentCount: number;

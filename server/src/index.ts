@@ -19,12 +19,12 @@ async function main () {
 
   const redisClient = createRedisClient(config.redis);
   const repository = new RedisMailingRepository(
-    redisClient, config.redis.prefixes
+    redisClient, config.server.redis.prefixes
   );
   const executor = new MailingExecutor(new ConsoleMailSender());
-  const app = createExpressServer(config.http);
+  const app = createExpressServer(config.server);
   setupRoutes(app, repository, executor);
-  const port = config.http.port;
+  const port = config.server.port;
   app.listen(port, () => {
     console.log(`Listening on port ${port}`);
   });

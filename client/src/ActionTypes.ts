@@ -1,0 +1,5 @@
+export enum ActionTypes {
+  SET_MAILINGS,
+  SET_MAILING_RECEIVERS,
+  SELECT_MAILING
+}

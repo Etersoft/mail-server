@@ -4,6 +4,10 @@ import { error } from './response';
 
 type PromiseHandler = (req: Request, res: Response) => any;
 
+/**
+ * Оборачивает express-обработчик, и, в случае возврата им Promise,
+ * ловит ошибку и отвечает 500-ым кодом.
+ */
 export function catchPromise (handler: PromiseHandler): RequestHandler {
   return async function (req: Request, res: Response) {
     try {

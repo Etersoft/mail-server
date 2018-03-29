@@ -1,0 +1,22 @@
+body, html, #root, .root-view {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.root-view {
+  @import 'global';
+
+  display: flex;
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+
+  .left-column {
+    flex: 1;
+  }
+
+  .right-column {
+    border-left: 1px solid black;
+    flex: 1;
+  }
+}

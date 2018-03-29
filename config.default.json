@@ -1,0 +1,11 @@
+{
+  "client": {
+    "apiUrl": "/api",
+    "staticUrl": "/"
+  },
+  "server": {
+    "corsWhitelist": [],
+    "port": 8000,
+    "redis": {}
+  }
+}

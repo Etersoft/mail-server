@@ -1,0 +1,28 @@
+.mailing-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+
+  .list {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+    list-style-type: none;
+    overflow-y: auto;
+    padding: 0;
+
+    li {
+      border-bottom: 1px #ccc dotted;
+      padding: 5px 10px;
+
+      &:hover {
+        background-color: #eee;
+      }
+
+      &.selected {
+        background-color: #e0e0e0;
+      }
+    }
+  }
+}

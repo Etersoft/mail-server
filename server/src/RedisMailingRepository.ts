@@ -12,7 +12,7 @@ export interface RedisMailingRepositoryConfig {
 
 const defaultConfig: RedisMailingRepositoryConfig = {
   commonDataKeyPrefix: 'MAILING_COMMON_DATA_',
-  idCounterKey: 'MAILING_KEY_COUNTER',
+  idCounterKey: 'MAILING_ID_COUNTER',
   receiversListKeyPrefix: 'MAILING_RECEIVER_LIST_'
 };
 
@@ -50,6 +50,7 @@ export class RedisMailingRepository implements MailingRepository {
 
   async getAll (): Promise<Mailing[]> {
     const keys = await this.redisClient.keysAsync(this.config.commonDataKeyPrefix + '*');
+    // Иначе mget выбросит ошибку
     if (!keys.length) {
       return [];
     }
@@ -61,6 +62,9 @@ export class RedisMailingRepository implements MailingRepository {
       const object = JSON.parse(jsonString);
       return new Mailing(ids[index], object, this);
     }).filter(object => object !== null) as Mailing[];
+    // filter нужен, чтобы обработать ситуацию, когда в промежутке между
+    // keysAsync() и mgetAsync() что-то удалили из редиса
+    // Если данных по ключу нет, то mget вернёт null для него
   }
 
   async getReceivers (id: number): Promise<Receiver[]> {
@@ -80,6 +84,7 @@ export class RedisMailingRepository implements MailingRepository {
   async update (mailing: Mailing): Promise<void> {
 
   }
+
 
   private getCommonDataKey (id: number): string {
     return this.config.commonDataKeyPrefix + id;

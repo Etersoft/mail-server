@@ -10,7 +10,8 @@ export function getMailings (mailingRepository: MailingRepository) {
     const list = mailings.map(mailing => ({
       id: mailing.id,
       name: mailing.name,
-      sentCount: mailing.sentCount
+      sentCount: mailing.sentCount,
+      state: mailing.state
     }));
     res.json(success(list));
   });
