@@ -3,6 +3,7 @@ export enum ActionTypes {
   SET_MAILING_RECEIVERS,
   SELECT_MAILING,
   ADD_MAILING,
+  UPDATE_MAILING,
   // UI actions
   SHOW_ADD_FORM,
   HIDE_ADD_FORM,

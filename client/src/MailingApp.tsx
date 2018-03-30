@@ -6,6 +6,7 @@ import { render } from 'react-dom';
 import { RootViewContainer } from './components/containers/RootViewContainer';
 import thunk from 'redux-thunk';
 import { loadMailings } from './actions/loadMailings';
+import { reloadMailingsData } from './actions/reloadMailingsData';
 
 
 export class MailingApp {
@@ -27,5 +28,8 @@ export class MailingApp {
     );
     render(component, this.rootNode);
     this.store.dispatch(loadMailings());
+    setInterval(() => {
+      this.store.dispatch(reloadMailingsData());
+    }, 5000);
   }
 }

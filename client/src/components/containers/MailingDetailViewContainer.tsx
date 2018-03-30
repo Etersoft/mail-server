@@ -2,7 +2,10 @@ import * as React from 'react';
 import { Mailing } from '../../reducers/mailings';
 import { MailingDetailView, MailingDetailViewProps } from '../MailingDetailView';
 import { connect } from 'react-redux';
-import { RootState } from 'client/src/reducers';
+import { RootState } from '../../reducers';
+import { Dispatch } from 'redux';
+import { startMailing } from '../../actions/startMailing';
+import { stopMailing } from '../../actions/stopMailing';
 
 
 function mapStateToProps (state: RootState) {
@@ -14,6 +17,13 @@ function mapStateToProps (state: RootState) {
   };
 }
 
+function mapDispatchToProps (dispatch: Dispatch<RootState>) {
+  return {
+    onStart: (mailing: Mailing) => dispatch(startMailing(mailing.id)),
+    onStop: (mailing: Mailing) => dispatch(stopMailing(mailing.id))
+  };
+}
+
 export const MailingDetailViewContainer = connect<MailingDetailViewProps>(
-  mapStateToProps
+  mapStateToProps, mapDispatchToProps
 )(MailingDetailView);

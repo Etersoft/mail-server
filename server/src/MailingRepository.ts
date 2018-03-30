@@ -12,6 +12,7 @@ export interface MailingRepository {
    * Получение рассылок из хранилища
    */
   getAll (): Promise<Mailing[]>;
+  getById (id: number): Promise<Mailing | null>;
   /**
    * Получение списка получателей
    */

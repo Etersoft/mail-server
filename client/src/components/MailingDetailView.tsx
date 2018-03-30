@@ -2,10 +2,14 @@ import * as React from 'react';
 import { Mailing } from '../reducers/mailings';
 import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
+import { MailingState } from 'server/src/Mailing';
+import { Button } from './elements/Button';
 
 
 export interface MailingDetailViewProps {
   mailing: Mailing;
+  onStart?: (mailing: Mailing) => void;
+  onStop?: (mailing: Mailing) => void;
 }
 
 export class MailingDetailView extends React.Component<MailingDetailViewProps> {
@@ -26,8 +30,45 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
 
           <h5 className='field-name'>Получатели: </h5>
           <span className='field-value'>{receivers}</span><br />
+
+          <h5 className='field-name'>Отправлено: </h5>
+          <span className='field-value'>{mailing.sentCount}</span><br />
+          <br />
+          {this.renderButtons()}
         </div>
       </div>
     );
+  }
+
+  renderButtons () {
+    const { mailing } = this.props;
+    if (mailing.state === MailingState.FINISHED) {
+      return null;
+    } else if (mailing.state === MailingState.RUNNING) {
+      return (
+        <Button disabled={mailing.locked} onClick={this.handleStop}>
+          Приостановить рассылку
+        </Button>
+      );
+    } else {
+      return (
+        <Button disabled={mailing.locked} onClick={this.handleStart}>
+          Запустить рассылку
+        </Button>
+      );
+    }
+  }
+
+
+  private handleStart = () => {
+    if (this.props.onStart) {
+      this.props.onStart(this.props.mailing);
+    }
+  }
+
+  private handleStop = () => {
+    if (this.props.onStop) {
+      this.props.onStop(this.props.mailing);
+    }
   }
 }

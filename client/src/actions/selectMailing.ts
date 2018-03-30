@@ -2,6 +2,7 @@ import { Mailing } from '../reducers/mailings';
 import { Dispatch } from 'react-redux';
 import { RootState } from '../reducers/index';
 import { ActionTypes } from '../ActionTypes';
+import { loadReceivers } from './loadReceivers';
 
 
 export function selectMailing (mailing: Mailing) {
@@ -10,5 +11,6 @@ export function selectMailing (mailing: Mailing) {
       data: mailing.id,
       type: ActionTypes.SELECT_MAILING
     });
+    dispatch(loadReceivers(mailing.id));
   };
 }

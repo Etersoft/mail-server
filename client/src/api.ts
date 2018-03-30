@@ -1,6 +1,6 @@
 import { stringify } from 'query-string';
-import { Mailing } from 'client/src/reducers/mailings';
-import { MailingCreateData } from 'client/src/components/AddForm';
+import { Mailing, Receiver } from './reducers/mailings';
+import { MailingCreateData } from './components/AddForm';
 
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -49,4 +49,12 @@ export async function createMailing (mailing: MailingCreateData): Promise<number
 
 export function getMailings (): Promise<Mailing[]> {
   return apiRequest('/mailings');
+}
+
+export function getReceivers (id: number): Promise<Receiver[]> {
+  return apiRequest(`/mailings/${id}/receivers`);
+}
+
+export async function updateMailing (id: number, data: any): Promise<void> {
+  await apiRequest('/mailings/' + id, 'PUT', null, data);
 }

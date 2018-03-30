@@ -12,7 +12,8 @@ export class MailingStateView extends React.Component<MailingStateViewProps> {
       [MailingState.NEW]: 'Новая',
       [MailingState.RUNNING]: 'Выполняется',
       [MailingState.PAUSED]: 'Приостановлена',
-      [MailingState.FINISHED]: 'Завершена'
+      [MailingState.FINISHED]: 'Завершена',
+      [MailingState.ERROR]: 'Приостановлена из-за ошибки'
     }[this.props.state];
   }
 }

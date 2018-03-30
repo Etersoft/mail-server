@@ -28,7 +28,7 @@ export class RedisMailingRepository implements MailingRepository {
       sentCount: 0,
       state: MailingState.NEW
     };
-    const jsonString = JSON.stringify(data);
+    const jsonString = this.serializeMailing(data);
     const jsonReceiversList = receivers.map(props => JSON.stringify({
       email: props.email,
       name: props.name
@@ -59,15 +59,18 @@ export class RedisMailingRepository implements MailingRepository {
     const data = await this.redisClient.mgetAsync(keys);
 
     return data.map((jsonString, index) => {
-      if (!jsonString) { return null; }
-      const object = JSON.parse(jsonString);
-      return new Mailing(ids[index], object, this);
+      return this.parseMailing(jsonString, ids[index]);
     }).filter(object =>
       object !== null && object.id <= maxId
     ) as Mailing[];
     // filter нужен, чтобы обработать ситуацию, когда в промежутке между
     // keysAsync() и mgetAsync() что-то удалили из редиса
     // Если данных по ключу нет, то mget вернёт null для него
+  }
+
+  async getById (id: number): Promise<Mailing | null> {
+    const jsonString = await this.redisClient.getAsync(this.getCommonDataKey(id));
+    return this.parseMailing(jsonString, id);
   }
 
   async getReceivers (id: number): Promise<Receiver[]> {
@@ -85,7 +88,13 @@ export class RedisMailingRepository implements MailingRepository {
   }
 
   async update (mailing: Mailing): Promise<void> {
+    if (!mailing.id) {
+      throw new Error('Attempt to update mailing without ID');
+    }
 
+    const jsonString = this.serializeMailing(mailing);
+
+    await this.redisClient.setAsync(this.getCommonDataKey(mailing.id), jsonString);
   }
 
 
@@ -99,5 +108,19 @@ export class RedisMailingRepository implements MailingRepository {
 
   private async getNextId (): Promise<number> {
     return this.redisClient.incrAsync(this.config.idCounterKey);
+  }
+
+  private parseMailing (jsonString: string | null, id: number): Mailing | null {
+    if (!jsonString) { return null; }
+    const object = JSON.parse(jsonString);
+    return new Mailing(id, object, this);
+  }
+
+  private serializeMailing (properties: MailingProperties): string {
+    return JSON.stringify({
+      name: properties.name,
+      sentCount: properties.sentCount,
+      state: properties.state
+    });
   }
 }

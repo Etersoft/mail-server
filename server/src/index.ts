@@ -9,7 +9,12 @@ import { MailingRepository } from './MailingRepository';
 import { MailingExecutor } from './MailingExecutor';
 import { getMailings } from './controllers/getMailings';
 import { addMailing } from './controllers/addMailing';
+import { updateMailing } from './controllers/updateMailing';
 import { ConsoleMailSender } from './ConsoleMailSender';
+import { Logger } from './Logger';
+import { MailingStateManager } from './MailingStateManager';
+import { getReceivers } from './controllers/getReceivers';
+import { SmtpMailSender } from './SmtpMailSender';
 
 
 async function main () {
@@ -21,9 +26,23 @@ async function main () {
   const repository = new RedisMailingRepository(
     redisClient, config.server.redis.prefixes
   );
-  const executor = new MailingExecutor(new ConsoleMailSender());
+  const logger = new Logger();
+  const executor = new MailingExecutor(
+    new SmtpMailSender({
+      from: 'theowl@etersoft.ru',
+      port: 5870
+    }),
+    repository,
+    logger
+  );
+  const stateManager = new MailingStateManager(
+    executor,
+    logger,
+    repository
+  );
+  await stateManager.initialize();
   const app = createExpressServer(config.server);
-  setupRoutes(app, repository, executor);
+  setupRoutes(app, repository, stateManager);
   const port = config.server.port;
   app.listen(port, () => {
     console.log(`Listening on port ${port}`);
@@ -34,9 +53,13 @@ async function main () {
   });
 }
 
-function setupRoutes (app: Express, repository: MailingRepository, executor: MailingExecutor) {
+function setupRoutes (
+  app: Express, repository: MailingRepository, stateManager: MailingStateManager
+) {
   app.get('/mailings', getMailings(repository));
   app.post('/mailings', addMailing(repository));
+  app.put('/mailings/:id', updateMailing(repository, stateManager));
+  app.get('/mailings/:id/receivers', getReceivers(repository));
 }
 
 main().catch(error => {

@@ -13,8 +13,10 @@ export interface MailingListState {
 
 export interface Mailing {
   id: number;
+  locked: boolean;
   name: string;
   receivers?: Receiver[];
+  sentCount: number;
   state: MailingState;
 }
 
@@ -26,8 +28,10 @@ export interface Receiver {
 function createMailing (data: MailingCreateData, id: number): Mailing {
   return {
     id,
+    locked: false,
     name: data.name,
     receivers: data.receivers,
+    sentCount: 0,
     state: MailingState.NEW
   };
 }
@@ -51,16 +55,14 @@ function getAllMailings (state: MailingListState): Mailing[] {
 }
 
 function updateMailing (
-  state: MailingListState, mailingId: number, receivers: Receiver[]
+  state: MailingListState, mailingId: number, fields: any
 ): MailingListState {
   if (!state.byId[mailingId]) {
     return state;
   }
 
   const byId = Object.assign({}, state.byId, {
-    [mailingId]: Object.assign({}, state.byId[mailingId], {
-      receivers
-    })
+    [mailingId]: Object.assign({}, state.byId[mailingId], fields)
   });
   return {
     byId,
@@ -75,9 +77,6 @@ export function mailings (state: MailingListState = initialState, action: Action
   switch (action.type) {
     case ActionTypes.SET_MAILINGS:
       return createMailingListState(action.data as Mailing[]);
-    case ActionTypes.SET_MAILING_RECEIVERS:
-      const { mailingId, receivers } = action.data;
-      return updateMailing(state, mailingId, receivers);
     case ActionTypes.SELECT_MAILING:
       return Object.assign({}, state, {
         selected: action.data
@@ -86,6 +85,8 @@ export function mailings (state: MailingListState = initialState, action: Action
       const mailingsList = getAllMailings(state);
       mailingsList.push(createMailing(action.data.mailing, action.data.id));
       return createMailingListState(mailingsList);
+    case ActionTypes.UPDATE_MAILING:
+      return updateMailing(state, action.data.id, action.data.fields);
     default:
       return state;
   }

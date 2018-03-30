@@ -6,7 +6,8 @@ export enum MailingState {
   NEW = 1,
   RUNNING = 2,
   PAUSED = 3,
-  FINISHED = 4
+  FINISHED = 4,
+  ERROR = 5
 }
 
 export interface MailingProperties {
@@ -42,5 +43,15 @@ export class Mailing implements MailingProperties {
     } else {
       return this.repository.getReceivers(this.id);
     }
+  }
+
+  async getUnsentReceivers () {
+    const receivers = await this.getReceivers();
+    const unsentReceivers = receivers.slice(this.sentCount);
+    return unsentReceivers;
+  }
+
+  hasValidExecutionState (): boolean {
+    return this.state === MailingState.NEW || this.state === MailingState.PAUSED;
   }
 }
