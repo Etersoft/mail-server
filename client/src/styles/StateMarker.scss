@@ -1,0 +1,29 @@
+$marker-size: 10px;
+
+.state-marker {
+  border-radius: $marker-size / 2;
+  display: inline-block;
+  height: $marker-size;
+  position: relative;
+  width: $marker-size;
+
+  &.new {
+    background-color: skyblue;
+  }
+
+  &.running {
+    background-color: yellow;
+  }
+
+  &.error {
+    background-color: red;
+  }
+
+  &.paused {
+    background-color: gray;
+  }
+
+  &.finished {
+    background-color: rgb(0, 207, 0);
+  }
+}

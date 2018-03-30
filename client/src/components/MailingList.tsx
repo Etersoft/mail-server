@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Mailing } from '../reducers/mailings';
 import '../styles/List';
+import { StateMarker } from 'client/src/components/StateMarker';
 
 
 export interface MailingListProps {
@@ -16,7 +17,10 @@ export class MailingList extends React.Component<MailingListProps> {
       const className = (mailing.id === this.props.selectedMailing) ? 'selected' : '';
       const onClick = (() => this.props.onSelect && this.props.onSelect(mailing));
       return (
-        <li className={className} key={mailing.id} onClick={onClick}>{mailing.name}</li>
+        <li className={className} key={mailing.id} onClick={onClick}>
+          <StateMarker state={mailing.state} />
+          {mailing.name}
+        </li>
       );
     });
     return (

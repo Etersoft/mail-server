@@ -14,7 +14,7 @@ $transition: 0.3s ease;
   top: 0;
   
   .add-form {
-    height: 50%;
+    height: 90%;
     width: 50%;
     z-index: 9001;
   }
@@ -62,6 +62,7 @@ $transition: 0.3s ease;
 
     .input-name {
       display: block;
+      margin-bottom: 5px;
     }
 
     .input {
@@ -70,13 +71,38 @@ $transition: 0.3s ease;
       box-sizing: border-box;
       font-size: 16px;
       height: 26px;
-      margin-top: 5px;
       padding-left: 5px;
       width: 100%;
     }
 
     &.stretch {
       flex: 1;
+
+      &.double {
+        flex: 2;
+      }
+
+      .editor-wrapper {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+
+        .ck-editor {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+
+          .ck-editor__main {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+          }
+
+          .ck-editor__editable {
+            height: 100%;
+          }
+        }
+      }
     }
   }
 }

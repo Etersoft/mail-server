@@ -26,10 +26,15 @@ export function updateMailing (
       return;
     }
 
+    if (typeof req.body.html === 'string') {
+      mailing.html = req.body.html;
+    }
+
     if (typeof req.body.name === 'string') {
       mailing.name = req.body.name;
-      await mailingRepository.update(mailing);
     }
+
+    await mailingRepository.update(mailing);
 
     if (req.body.state !== mailing.state) {
       const validChange = await stateManager.changeState(mailing, req.body.state);
@@ -56,6 +61,10 @@ const requestBodyJsonSchema = {
       type: 'integer'
     },
     name: {
+      type: 'string',
+      minLength: 1
+    },
+    html: {
       type: 'string',
       minLength: 1
     }

@@ -37,9 +37,9 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
   }
 
   render () {
-    const items = this.props.receivers.slice(0, MAX_RECEIVERS).map(receiver => {
+    const items = this.props.receivers.slice(0, MAX_RECEIVERS).map((receiver, index) => {
       return (
-        <li key={receiver.email}>{receiver.email}</li>
+        <li key={index}>{receiver.email}</li>
       );
     });
     const overflow = (this.props.receivers.length > MAX_RECEIVERS) ? (

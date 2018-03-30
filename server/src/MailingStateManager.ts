@@ -28,6 +28,10 @@ export class MailingStateManager {
 
   async changeState (mailing: Mailing, to: MailingState): Promise<boolean> {
     const from = mailing.state;
+
+    if (from === to) {
+      return true;
+    }
     
     if (!MailingStateManager.allowedExternalTransitions[from]) {
       return false;

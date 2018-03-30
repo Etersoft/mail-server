@@ -8,6 +8,7 @@ import { createExpressServer } from './createExpressServer';
 import { MailingRepository } from './MailingRepository';
 import { MailingExecutor } from './MailingExecutor';
 import { getMailings } from './controllers/getMailings';
+import { getMailing } from './controllers/getMailing';
 import { addMailing } from './controllers/addMailing';
 import { updateMailing } from './controllers/updateMailing';
 import { ConsoleMailSender } from './ConsoleMailSender';
@@ -27,11 +28,12 @@ async function main () {
     redisClient, config.server.redis.prefixes
   );
   const logger = new Logger();
+  const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
+    from: 'theowl@etersoft.ru',
+    port: 5870
+  });
   const executor = new MailingExecutor(
-    new SmtpMailSender({
-      from: 'theowl@etersoft.ru',
-      port: 5870
-    }),
+    sender,
     repository,
     logger
   );
@@ -57,6 +59,7 @@ function setupRoutes (
   app: Express, repository: MailingRepository, stateManager: MailingStateManager
 ) {
   app.get('/mailings', getMailings(repository));
+  app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(repository));
   app.put('/mailings/:id', updateMailing(repository, stateManager));
   app.get('/mailings/:id/receivers', getReceivers(repository));

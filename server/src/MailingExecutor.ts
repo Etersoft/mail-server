@@ -46,7 +46,7 @@ export class MailingExecutor extends EventEmitter {
       this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing);
       return;
     }
-    const emails = this.createEmails(unsentReceivers);
+    const emails = this.createEmails(mailing, unsentReceivers);
 
     this.executionStates.set(mailing.id, { stopping: false });
     this.emit(MailingExecutorEvents.MAILING_STARTED, mailing);
@@ -57,11 +57,12 @@ export class MailingExecutor extends EventEmitter {
   }
 
 
-  private createEmails (receivers: Receiver[]) {
+  private createEmails (mailing: Mailing, receivers: Receiver[]) {
     return receivers.map(receiver => {
       return new Email({
-        html: 'test',
-        receivers: [receiver]
+        html: mailing.html,
+        receivers: [receiver],
+        subject: mailing.subject
       });
     });
   }

@@ -6,13 +6,26 @@ import { MailingState } from 'server/src/Mailing';
 import { Button } from './elements/Button';
 
 
+const REFRESH_INTERVAL = 1000;
+
 export interface MailingDetailViewProps {
   mailing: Mailing;
+  onRefresh?: (mailing: Mailing) => void;
   onStart?: (mailing: Mailing) => void;
   onStop?: (mailing: Mailing) => void;
 }
 
 export class MailingDetailView extends React.Component<MailingDetailViewProps> {
+  private refreshInterval: number;
+
+  componentDidMount () {
+    this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL);
+  }
+
+  componentWillUnmount () {
+    clearInterval(this.refreshInterval);
+  }
+
   render () {
     const { mailing } = this.props;
     const receivers = mailing.receivers ? mailing.receivers.length : '(загрузка)';
@@ -69,6 +82,12 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
   private handleStop = () => {
     if (this.props.onStop) {
       this.props.onStop(this.props.mailing);
+    }
+  }
+
+  private refresh = () => {
+    if (this.props.onRefresh) {
+      this.props.onRefresh(this.props.mailing);
     }
   }
 }

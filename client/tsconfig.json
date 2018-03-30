@@ -1,11 +1,12 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "baseUrl": "../",
     "experimentalDecorators": true,
     "importHelpers": true,
     "lib": ["es2017", "dom"],
     "jsx": "react",
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
     "outDir": "dist",
     "removeComments": true,

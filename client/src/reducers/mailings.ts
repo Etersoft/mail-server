@@ -1,8 +1,8 @@
 import { MailingState } from 'server/src/Mailing';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
-import { getMailings } from 'client/src/api';
-import { MailingCreateData } from 'client/src/components/AddForm';
+import { getMailings } from '../api';
+import { MailingCreateData } from '../components/AddForm';
 
 
 export interface MailingListState {
@@ -12,12 +12,14 @@ export interface MailingListState {
 }
 
 export interface Mailing {
+  html: string;
   id: number;
   locked: boolean;
   name: string;
   receivers?: Receiver[];
   sentCount: number;
   state: MailingState;
+  subject: string;
 }
 
 export interface Receiver {
@@ -27,12 +29,14 @@ export interface Receiver {
 
 function createMailing (data: MailingCreateData, id: number): Mailing {
   return {
+    html: data.html,
     id,
     locked: false,
     name: data.name,
     receivers: data.receivers,
     sentCount: 0,
-    state: MailingState.NEW
+    state: MailingState.NEW,
+    subject: data.subject
   };
 }
 

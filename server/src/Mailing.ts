@@ -11,20 +11,22 @@ export enum MailingState {
 }
 
 export interface MailingProperties {
+  html: string;
   name: string;
   state?: MailingState;
   sentCount?: number;
+  subject: string;
 }
 
 /**
  * Класс рассылки
  */
 export class Mailing implements MailingProperties {
-  public html?: string;
-  public text?: string;
+  public html: string;
   public name: string;
   public state: MailingState;
   public sentCount: number;
+  public subject: string;
 
   constructor (
     public id: number,
@@ -32,9 +34,11 @@ export class Mailing implements MailingProperties {
     public repository: MailingRepository,
     private receivers?: Receiver[]
   ) {
+    this.html = properties.html;
     this.name = properties.name;
     this.state = properties.state || MailingState.NEW;
     this.sentCount = properties.sentCount || 0;
+    this.subject = properties.subject;
   }
 
   async getReceivers (): Promise<ReadonlyArray<Receiver>> {

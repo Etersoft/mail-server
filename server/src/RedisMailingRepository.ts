@@ -24,14 +24,15 @@ export class RedisMailingRepository implements MailingRepository {
 
   async create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing> {
     const data = {
+      html: properties.html,
       name: properties.name,
       sentCount: 0,
-      state: MailingState.NEW
+      state: MailingState.NEW,
+      subject: properties.subject
     };
     const jsonString = this.serializeMailing(data);
     const jsonReceiversList = receivers.map(props => JSON.stringify({
-      email: props.email,
-      name: props.name
+      email: props.email
     }));
 
     const id = await this.getNextId();
@@ -118,9 +119,11 @@ export class RedisMailingRepository implements MailingRepository {
 
   private serializeMailing (properties: MailingProperties): string {
     return JSON.stringify({
+      html: properties.html,
       name: properties.name,
       sentCount: properties.sentCount,
-      state: properties.state
+      state: properties.state,
+      subject: properties.subject
     });
   }
 }

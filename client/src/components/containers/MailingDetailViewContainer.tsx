@@ -6,6 +6,7 @@ import { RootState } from '../../reducers';
 import { Dispatch } from 'redux';
 import { startMailing } from '../../actions/startMailing';
 import { stopMailing } from '../../actions/stopMailing';
+import { reloadSingleMailing } from '../../actions/reloadSingleMailing';
 
 
 function mapStateToProps (state: RootState) {
@@ -19,6 +20,7 @@ function mapStateToProps (state: RootState) {
 
 function mapDispatchToProps (dispatch: Dispatch<RootState>) {
   return {
+    onRefresh: (mailing: Mailing) => dispatch(reloadSingleMailing(mailing.id)),
     onStart: (mailing: Mailing) => dispatch(startMailing(mailing.id)),
     onStop: (mailing: Mailing) => dispatch(stopMailing(mailing.id))
   };

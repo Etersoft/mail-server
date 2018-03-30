@@ -9,13 +9,14 @@ import { catchPromise } from '../utils/catchPromise';
 export function addMailing (mailingRepository: MailingRepository) {
   const handler = async function (req: Request, res: Response) {
     const properties = {
+      html: req.body.html,
       name: req.body.name,
       sentCount: 0,
-      state: MailingState.NEW
+      state: MailingState.NEW,
+      subject: req.body.subject
     };
     const receivers = req.body.receivers.map((receiver: any) => ({
-      email: receiver.email,
-      name: receiver.name
+      email: receiver.email
     }));
     const mailing = await mailingRepository.create(properties, receivers);
     res.json(success({
@@ -33,14 +34,21 @@ const requestBodyJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
+    html: {
+      type: 'string',
+      minLength: 1
+    },
     name: {
+      type: 'string',
+      minLength: 1
+    },
+    subject: {
       type: 'string',
       minLength: 1
     },
     receivers: {
       type: 'array',
       minItems: 1,
-      uniqueItems: true,
       items: {
         type: 'object',
         additionalProperties: false,
@@ -48,10 +56,6 @@ const requestBodyJsonSchema = {
           email: {
             format: 'email',
             type: 'string'
-          },
-          name: {
-            type: 'string',
-            minLength: 1
           }
         },
         required: [
@@ -61,6 +65,7 @@ const requestBodyJsonSchema = {
     }
   },
   required: [
+    'html',
     'name',
     'receivers'
   ]

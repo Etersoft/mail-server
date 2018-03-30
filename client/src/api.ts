@@ -47,6 +47,10 @@ export async function createMailing (mailing: MailingCreateData): Promise<number
   return id;
 }
 
+export function getMailingById (id: number): Promise<Mailing> {
+  return apiRequest(`/mailings/${id}`);
+}
+
 export function getMailings (): Promise<Mailing[]> {
   return apiRequest('/mailings');
 }

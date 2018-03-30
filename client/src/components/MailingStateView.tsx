@@ -1,5 +1,7 @@
 import * as React from 'react';
 import { MailingState } from 'server/src/Mailing';
+import '../styles/MailingStateView';
+import { StateMarker } from './StateMarker';
 
 
 interface MailingStateViewProps {
@@ -8,12 +10,18 @@ interface MailingStateViewProps {
 
 export class MailingStateView extends React.Component<MailingStateViewProps> {
   render () {
-    return {
+    const stateString = {
       [MailingState.NEW]: 'Новая',
       [MailingState.RUNNING]: 'Выполняется',
       [MailingState.PAUSED]: 'Приостановлена',
       [MailingState.FINISHED]: 'Завершена',
       [MailingState.ERROR]: 'Приостановлена из-за ошибки'
     }[this.props.state];
+    return (
+      <span className='mailing-state'>
+        <StateMarker state={this.props.state} />
+        {stateString}
+      </span>
+    );
   }
 }
