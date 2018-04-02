@@ -15,8 +15,8 @@ export class ConsoleMailSender implements MailSender {
     console.log('Subject:', email.subject);
     console.log('HTML:', email.html);
     let headers = '';
-    for (const header of email.headers.entries()) {
-      headers += `\n  ${header[0]}: ${header[1]}`;
+    for (const header in email.headers) {
+      headers += `\n  ${header}: ${email.headers[header]}`;
     }
     console.log('Headers:', headers);
     console.log('---------');

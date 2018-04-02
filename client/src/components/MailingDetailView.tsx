@@ -4,6 +4,7 @@ import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
 import { MailingState } from 'server/src/Mailing';
 import { Button } from './elements/Button';
+import { setInterval } from 'timers';
 
 
 const REFRESH_INTERVAL = 1000;
@@ -16,7 +17,7 @@ export interface MailingDetailViewProps {
 }
 
 export class MailingDetailView extends React.Component<MailingDetailViewProps> {
-  private refreshInterval: number;
+  private refreshInterval: NodeJS.Timer;
 
   componentDidMount () {
     this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL);

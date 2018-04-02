@@ -60,6 +60,7 @@ export class MailingExecutor extends EventEmitter {
   private createEmails (mailing: Mailing, receivers: Receiver[]) {
     return receivers.map(receiver => {
       return new Email({
+        headers: mailing.headers,
         html: mailing.html,
         receivers: [receiver],
         subject: mailing.subject

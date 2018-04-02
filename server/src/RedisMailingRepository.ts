@@ -24,6 +24,7 @@ export class RedisMailingRepository implements MailingRepository {
 
   async create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing> {
     const data = {
+      headers: properties.headers,
       html: properties.html,
       name: properties.name,
       sentCount: 0,
@@ -119,6 +120,7 @@ export class RedisMailingRepository implements MailingRepository {
 
   private serializeMailing (properties: MailingProperties): string {
     return JSON.stringify({
+      headers: properties.headers,
       html: properties.html,
       name: properties.name,
       sentCount: properties.sentCount,

@@ -48,7 +48,7 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       </li>
     ) : null;
     return (
-      <div className='list-block receiver-list'>
+      <div className='list-block with-border'>
         <h4 className='block-header'>
           Список получателей ({this.props.receivers.length})
           <div className='header-actions'>

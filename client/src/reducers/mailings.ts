@@ -1,4 +1,4 @@
-import { MailingState } from 'server/src/Mailing';
+import { MailingState, Headers } from 'server/src/Mailing';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
 import { getMailings } from '../api';
@@ -12,6 +12,7 @@ export interface MailingListState {
 }
 
 export interface Mailing {
+  headers: Headers;
   html: string;
   id: number;
   locked: boolean;
@@ -29,6 +30,7 @@ export interface Receiver {
 
 function createMailing (data: MailingCreateData, id: number): Mailing {
   return {
+    headers: {},
     html: data.html,
     id,
     locked: false,

@@ -1,8 +1,9 @@
 import { Receiver } from './Receiver';
+import { Headers } from './/Mailing';
 
 
 export interface EmailParameters {
-  headers?: Map<string, string>;
+  headers?: Headers;
   html?: string;
   receivers: Receiver[];
   text?: string;
@@ -11,7 +12,7 @@ export interface EmailParameters {
 
 
 export class Email {
-  public headers: Map<string, string>;
+  public headers: Headers;
   public html?: string;
   public receivers: Receiver[];
   public text?: string;
@@ -27,4 +28,4 @@ export class Email {
 }
 
 
-const defaultHeaders = new Map<string, string>();
+const defaultHeaders = {};

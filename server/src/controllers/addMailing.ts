@@ -9,6 +9,7 @@ import { catchPromise } from '../utils/catchPromise';
 export function addMailing (mailingRepository: MailingRepository) {
   const handler = async function (req: Request, res: Response) {
     const properties = {
+      headers: req.body.headers,
       html: req.body.html,
       name: req.body.name,
       sentCount: 0,
@@ -34,6 +35,10 @@ const requestBodyJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
+    headers: {
+      type: 'object',
+      additionalProperties: true
+    },
     html: {
       type: 'string',
       minLength: 1

@@ -1,0 +1,14 @@
+.editable-header {
+  display: flex;
+  padding: 5px;
+
+  .header-name, .header-value {
+    flex: 1;
+  }
+
+  .field-separator {
+    flex-grow: 0;
+    flex-shrink: 1;
+    font-size: 18px;
+  }
+}
