@@ -5,7 +5,10 @@ import { error } from '../utils/response';
 
 export function bodyParser () {
   return [
-    bodyParserLib.text({ type: '*/*' }),
+    bodyParserLib.text({
+      limit: '50mb',
+      type: '*/*'
+    }),
     jsonParser()
   ];
 }
