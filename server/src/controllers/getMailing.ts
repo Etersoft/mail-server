@@ -2,6 +2,7 @@ import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
+import { MailingState } from '../Mailing';
 
 
 export function getMailing (mailingRepository: MailingRepository) {
@@ -25,7 +26,7 @@ export function getMailing (mailingRepository: MailingRepository) {
       id: mailing.id,
       name: mailing.name,
       sentCount: mailing.sentCount,
-      state: mailing.state
+      state: req.query.stringState ? MailingState[mailing.state] : mailing.state
     }));
   });
 }

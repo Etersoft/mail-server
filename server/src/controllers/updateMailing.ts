@@ -37,6 +37,8 @@ export function updateMailing (
     await mailingRepository.update(mailing);
 
     if (req.body.state !== mailing.state) {
+      const toState = (typeof req.body.state === 'string') ?
+                      MailingState[req.body.state.toUpperCase()] : req.body.state;
       const validChange = await stateManager.changeState(mailing, req.body.state);
       if (!validChange) {
         res.status(400).json(error('Invalid state transition'));
@@ -58,7 +60,7 @@ const requestBodyJsonSchema = {
   additionalProperties: false,
   properties: {
     state: {
-      type: 'integer'
+      type: ['integer', 'string']
     },
     name: {
       type: 'string',
