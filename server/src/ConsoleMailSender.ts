@@ -9,7 +9,7 @@ import { sleep } from './utils/sleep';
  */
 export class ConsoleMailSender implements MailSender {
   async sendEmail (email: Email): Promise<void> {
-    await sleep(500);
+    await sleep(100);
     console.log('---------');
     console.log('Email to:', email.receivers.map(r => r.getStringRepresentation()).join(', '));
     console.log('Subject:', email.subject);
