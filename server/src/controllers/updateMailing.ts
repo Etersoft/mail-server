@@ -39,7 +39,7 @@ export function updateMailing (
     if (req.body.state !== mailing.state) {
       const toState = (typeof req.body.state === 'string') ?
                       MailingState[req.body.state.toUpperCase()] : req.body.state;
-      const validChange = await stateManager.changeState(mailing, req.body.state);
+      const validChange = await stateManager.changeState(mailing, toState);
       if (!validChange) {
         res.status(400).json(error('Invalid state transition'));
         return;
