@@ -1,7 +1,11 @@
 {
   "client": {
     "apiUrl": "/api",
-    "staticUrl": "/"
+    "staticUrl": "/",
+    "webpack": {
+      "port": 8080,
+      "publicPath": "http://localhost:8080/"
+    }
   },
   "server": {
     "corsWhitelist": [],

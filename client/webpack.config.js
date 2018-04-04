@@ -26,8 +26,8 @@ module.exports = {
     contentBase: path.join(__dirname, 'public'),
     hot: true,
     host: '0.0.0.0',
-    public: 'builder64:8080',
-    publicPath: '/'
+    port: config.client.webpack.port,
+    publicPath: config.client.webpack.publicPath
   },
   devtool: 'source-map',
   entry: {

@@ -1,7 +1,6 @@
 import { MailingState, Headers } from 'server/src/Mailing';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
-import { getMailings } from '../api';
 import { MailingCreateData } from '../components/AddForm';
 
 
@@ -56,6 +55,12 @@ function createMailingListState (
   };
 }
 
+function deleteMailing (state: MailingListState, idToDelete: number) {
+  const selected = (idToDelete === state.selected) ? undefined : state.selected;
+  const objects = state.ids.filter(id => id !== idToDelete).map(id => state.byId[id]);
+  return createMailingListState(objects, selected);
+}
+
 function getAllMailings (state: MailingListState): Mailing[] {
   return state.ids.map(id => state.byId[id]);
 }
@@ -83,6 +88,8 @@ export function mailings (state: MailingListState = initialState, action: Action
   switch (action.type) {
     case ActionTypes.SET_MAILINGS:
       return createMailingListState(action.data as Mailing[]);
+    case ActionTypes.DELETE_MAILING:
+      return deleteMailing(state, action.data);
     case ActionTypes.SELECT_MAILING:
       return Object.assign({}, state, {
         selected: action.data

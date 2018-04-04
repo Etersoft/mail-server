@@ -3,14 +3,16 @@ import { Mailing } from '../reducers/mailings';
 import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
 import { MailingState } from 'server/src/Mailing';
-import { Button } from './elements/Button';
+import { Button, ButtonType } from './elements/Button';
 import { setInterval } from 'timers';
+import { ConfirmationButton } from './elements/ConfirmationButton';
 
 
 const REFRESH_INTERVAL = 1000;
 
 export interface MailingDetailViewProps {
   mailing: Mailing;
+  onDelete: (mailing: Mailing) => void;
   onRefresh?: (mailing: Mailing) => void;
   onStart?: (mailing: Mailing) => void;
   onStop?: (mailing: Mailing) => void;
@@ -48,31 +50,21 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
           <h5 className='field-name'>Отправлено: </h5>
           <span className='field-value'>{mailing.sentCount}</span><br />
           <br />
-          {this.renderButtons()}
+          {this.renderStateButton()}
+          <ConfirmationButton
+            disabled={mailing.state === MailingState.RUNNING} onClick={this.handleDelete}
+            type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
+            Удалить рассылку
+          </ConfirmationButton>
         </div>
       </div>
     );
   }
 
-  renderButtons () {
-    const { mailing } = this.props;
-    if (mailing.state === MailingState.FINISHED) {
-      return null;
-    } else if (mailing.state === MailingState.RUNNING) {
-      return (
-        <Button disabled={mailing.locked} onClick={this.handleStop}>
-          Приостановить рассылку
-        </Button>
-      );
-    } else {
-      return (
-        <Button disabled={mailing.locked} onClick={this.handleStart}>
-          Запустить рассылку
-        </Button>
-      );
-    }
-  }
 
+  private handleDelete = () => {
+    this.props.onDelete(this.props.mailing);
+  }
 
   private handleStart = () => {
     if (this.props.onStart) {
@@ -89,6 +81,25 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
   private refresh = () => {
     if (this.props.onRefresh) {
       this.props.onRefresh(this.props.mailing);
+    }
+  }
+
+  private renderStateButton () {
+    const { mailing } = this.props;
+    if (mailing.state === MailingState.FINISHED) {
+      return null;
+    } else if (mailing.state === MailingState.RUNNING) {
+      return (
+        <Button disabled={mailing.locked} onClick={this.handleStop}>
+          Приостановить рассылку
+        </Button>
+      );
+    } else {
+      return (
+        <Button disabled={mailing.locked} onClick={this.handleStart}>
+          Запустить рассылку
+        </Button>
+      );
     }
   }
 }

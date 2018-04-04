@@ -86,7 +86,12 @@ export class RedisMailingRepository implements MailingRepository {
   }
 
   async remove (mailing: Mailing): Promise<void> {
-
+    const key = this.getCommonDataKey(mailing.id);
+    const receiversListKey = this.getReceiversListKey(mailing.id);
+    const multi = this.redisClient.multi();
+    multi.del(key);
+    multi.del(receiversListKey);
+    await multi.execAsync();
   }
 
   async update (mailing: Mailing): Promise<void> {

@@ -47,6 +47,10 @@ export async function createMailing (mailing: MailingCreateData): Promise<number
   return id;
 }
 
+export function deleteMailing (id: number): Promise<void> {
+  return apiRequest('/mailings/' + id, 'DELETE');
+}
+
 export function getMailingById (id: number): Promise<Mailing> {
   return apiRequest(`/mailings/${id}`);
 }

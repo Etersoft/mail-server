@@ -1,0 +1,18 @@
+.confirmation-button {
+  display: inline-block;
+
+  &.active {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding-left: 5px;
+  }
+
+  .comment {
+    display: inline-block;
+    margin-right: 5px;
+  }
+}
+
+.button + .confirmation-button {
+  margin-left: 5px;
+}

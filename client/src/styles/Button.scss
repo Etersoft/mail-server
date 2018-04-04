@@ -1,5 +1,4 @@
 .button {
-  background-color: white;
   border: 1px solid #ccc;
   border-radius: 3px;
   box-shadow: rgba(127, 127, 127, 0.5) 0 0 1px;
@@ -8,6 +7,15 @@
   outline: none !important;
   padding: 5px 12px;
   transition: box-shadow 0.25s ease;
+
+  &.default {
+    background-color: white;
+  }
+
+  &.danger {
+    background-color: #f81100;
+    color: white;
+  }
 
   &:not([disabled]):hover {
     box-shadow: rgba(127, 127, 127, 0.5) 0 1px 5px;
@@ -22,4 +30,8 @@
     box-shadow: none;
     color: grey;
   }
+}
+
+.button + .button {
+  margin-left: 5px;
 }

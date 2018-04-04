@@ -16,6 +16,7 @@ import { Logger } from './Logger';
 import { MailingStateManager } from './MailingStateManager';
 import { getReceivers } from './controllers/getReceivers';
 import { SmtpMailSender } from './SmtpMailSender';
+import { deleteMailing } from './controllers/deleteMailing';
 
 
 async function main () {
@@ -63,6 +64,7 @@ function setupRoutes (
   app.post('/mailings', addMailing(repository));
   app.put('/mailings/:id', updateMailing(repository, stateManager));
   app.get('/mailings/:id/receivers', getReceivers(repository));
+  app.delete('/mailings/:id', deleteMailing(repository));
 }
 
 main().catch(error => {
