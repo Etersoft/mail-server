@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { Mailing, Receiver } from '../reducers/mailings';
+import { Receiver } from '../reducers/mailings';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 import '../styles/AddForm';
-import { KeyboardEvent } from 'react';
 import { ReceiverList } from './ReceiverList';
 import { CKEditor } from './CKEditor';
 import { HeaderEditor } from './HeaderEditor';

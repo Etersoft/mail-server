@@ -3,13 +3,22 @@ import { Email } from './Email';
 import { createTransport, Transporter } from 'nodemailer';
 
 
+export interface SmtpMailSenderConfig {
+  from: string;
+  host: string;
+  port: string;
+}
+
 export class SmtpMailSender implements MailSender {
   private transport: Transporter;
 
-  constructor (private config: any) {
+  constructor (private config: SmtpMailSenderConfig) {
     this.transport = createTransport({
+      host: config.host,
       pool: true,
       port: config.port
+    } as any, {
+      from: this.config.from
     });
   }
 
@@ -17,7 +26,6 @@ export class SmtpMailSender implements MailSender {
     await this.transport.sendMail({
       headers: email.headers,
       html: email.html,
-      from: this.config.from,
       subject: email.subject,
       to: email.receivers.map(receiver => receiver.email).join(', ')
     });

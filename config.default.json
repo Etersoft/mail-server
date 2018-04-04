@@ -9,7 +9,15 @@
   },
   "server": {
     "corsWhitelist": [],
+    "mail": {
+      "from": "no-reply@etersoft.ru",
+      "listIdPrefix": "mailing-"
+    },
     "port": 8000,
-    "redis": {}
+    "redis": {},
+    "smtp": {
+      "host": "localhost",
+      "port": 587
+    }
   }
 }

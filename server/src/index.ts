@@ -30,8 +30,9 @@ async function main () {
   );
   const logger = new Logger();
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
-    from: 'theowl@etersoft.ru',
-    port: 5870
+    from: config.server.mail.from,
+    host: config.server.smtp.host,
+    port: config.server.smtp.port
   });
   const executor = new MailingExecutor(
     sender,
@@ -45,7 +46,7 @@ async function main () {
   );
   await stateManager.initialize();
   const app = createExpressServer(config.server);
-  setupRoutes(app, repository, stateManager);
+  setupRoutes(config, app, repository, stateManager);
   const port = config.server.port;
   app.listen(port, () => {
     console.log(`Listening on port ${port}`);
@@ -57,11 +58,11 @@ async function main () {
 }
 
 function setupRoutes (
-  app: Express, repository: MailingRepository, stateManager: MailingStateManager
+  config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
-  app.post('/mailings', addMailing(repository));
+  app.post('/mailings', addMailing(config, repository));
   app.put('/mailings/:id', updateMailing(repository, stateManager));
   app.get('/mailings/:id/receivers', getReceivers(repository));
   app.delete('/mailings/:id', deleteMailing(repository));

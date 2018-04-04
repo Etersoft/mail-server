@@ -17,6 +17,7 @@ export enum MailingState {
 export interface MailingProperties {
   headers: Headers;
   html: string;
+  listId?: string;
   name: string;
   state?: MailingState;
   sentCount?: number;
@@ -29,6 +30,7 @@ export interface MailingProperties {
 export class Mailing implements MailingProperties {
   public headers: Headers;
   public html: string;
+  public listId?: string;
   public name: string;
   public state: MailingState;
   public sentCount: number;
@@ -42,6 +44,7 @@ export class Mailing implements MailingProperties {
   ) {
     this.headers = properties.headers;
     this.html = properties.html;
+    this.listId = properties.listId;
     this.name = properties.name;
     this.state = properties.state || MailingState.NEW;
     this.sentCount = properties.sentCount || 0;

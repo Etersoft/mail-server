@@ -8,7 +8,7 @@ import { MailingState } from '../Mailing';
 export function getMailing (mailingRepository: MailingRepository) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
-    
+
     if (!(id > 0)) {
       res.status(400).json(error('Invalid ID'));
       return;
@@ -24,6 +24,7 @@ export function getMailing (mailingRepository: MailingRepository) {
     res.json(success({
       html: mailing.html,
       id: mailing.id,
+      listId: mailing.listId,
       name: mailing.name,
       sentCount: mailing.sentCount,
       state: req.query.stringState ? MailingState[mailing.state] : mailing.state

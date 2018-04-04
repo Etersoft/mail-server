@@ -4,7 +4,6 @@ import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
 import { MailingState } from 'server/src/Mailing';
 import { Button, ButtonType } from './elements/Button';
-import { setInterval } from 'timers';
 import { ConfirmationButton } from './elements/ConfirmationButton';
 
 
@@ -19,10 +18,10 @@ export interface MailingDetailViewProps {
 }
 
 export class MailingDetailView extends React.Component<MailingDetailViewProps> {
-  private refreshInterval: NodeJS.Timer;
+  private refreshInterval: number;
 
   componentDidMount () {
-    this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL);
+    this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL) as any;
   }
 
   componentWillUnmount () {
@@ -40,6 +39,9 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
         <div className='details'>
           <h5 className='field-name'>Название: </h5>
           <span className='field-value'>{mailing.name}</span><br />
+
+          <h5 className='field-name'>List-Id: </h5>
+          <span className='field-value'>{mailing.listId}</span><br />
 
           <h5 className='field-name'>Состояние: </h5>
           <span className='field-value'><MailingStateView state={mailing.state} /></span><br />

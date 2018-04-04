@@ -14,6 +14,7 @@ export interface Mailing {
   headers: Headers;
   html: string;
   id: number;
+  listId?: string;
   locked: boolean;
   name: string;
   receivers?: Receiver[];

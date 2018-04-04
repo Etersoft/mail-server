@@ -9,6 +9,7 @@ export function getMailings (mailingRepository: MailingRepository) {
     const mailings = await mailingRepository.getAll();
     const list = mailings.map(mailing => ({
       id: mailing.id,
+      listId: mailing.listId,
       name: mailing.name,
       sentCount: mailing.sentCount,
       state: mailing.state

@@ -1,12 +1,13 @@
 import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { success } from '../utils/response';
-import { Mailing, MailingState } from '../Mailing';
+import { MailingState } from '../Mailing';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
+import { getListId } from '../getListId';
 
 
-export function addMailing (mailingRepository: MailingRepository) {
+export function addMailing (config: any, mailingRepository: MailingRepository) {
   const handler = async function (req: Request, res: Response) {
     const properties = {
       headers: req.body.headers,
@@ -20,6 +21,8 @@ export function addMailing (mailingRepository: MailingRepository) {
       email: receiver.email
     }));
     const mailing = await mailingRepository.create(properties, receivers);
+    mailing.listId = getListId(config, mailing);
+    await mailingRepository.update(mailing);
     res.json(success({
       id: mailing.id
     }));
