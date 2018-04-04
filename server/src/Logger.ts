@@ -1,12 +1,18 @@
 import { Logger as BaseLogger, transports } from 'winston';
 
 
+export type LogLevel = 'debug' | 'verbose' | 'info' | 'warn' | 'error';
+
 export class Logger extends BaseLogger {
-  constructor () {
+  constructor (level: LogLevel) {
     super({
-      level: 'debug',
+      level,
       transports: [
-        new transports.Console()
+        new transports.Console({
+          timestamp () {
+            return new Date().toLocaleString();
+          }
+        })
       ]
     });
   }

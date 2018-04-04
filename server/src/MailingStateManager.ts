@@ -32,7 +32,7 @@ export class MailingStateManager {
     if (from === to) {
       return true;
     }
-    
+
     if (!MailingStateManager.allowedExternalTransitions[from]) {
       return false;
     }
@@ -43,8 +43,10 @@ export class MailingStateManager {
 
     if (to === MailingState.RUNNING) {
       await this.executor.startExecution(mailing);
+      this.logger.info(`#${mailing.id}: started`);
     } else if (to === MailingState.PAUSED) {
       await this.executor.pauseExecution(mailing);
+      this.logger.info(`#${mailing.id}: paused`);
     }
     return true;
   }
@@ -69,7 +71,8 @@ export class MailingStateManager {
   }
 
   private handleMailingFinish = async (mailing: Mailing) => {
-    this.setState(mailing, MailingState.FINISHED);
+    await this.setState(mailing, MailingState.FINISHED);
+    this.logger.info(`#${mailing.id}: finished`);
   }
 
   private handleMailingPause = async (mailing: Mailing) => {
@@ -90,9 +93,9 @@ export class MailingStateManager {
   private async setState (mailing: Mailing, to: MailingState) {
     const fromString = MailingState[mailing.state];
     const toString = MailingState[to];
-    this.logger.verbose(`#${mailing.id}: changing state ${fromString} -> ${toString}`);
     mailing.state = to;
     await this.mailingRepository.update(mailing);
     this.logger.debug(`#${mailing.id}: saved state to repository`);
+    this.logger.verbose(`#${mailing.id}: changed state ${fromString} -> ${toString}`);
   }
 }

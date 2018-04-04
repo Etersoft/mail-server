@@ -5,9 +5,10 @@ import { MailingState } from '../Mailing';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { getListId } from '../getListId';
+import { Logger } from '../Logger';
 
 
-export function addMailing (config: any, mailingRepository: MailingRepository) {
+export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger) {
   const handler = async function (req: Request, res: Response) {
     const properties = {
       headers: req.body.headers,
@@ -20,9 +21,14 @@ export function addMailing (config: any, mailingRepository: MailingRepository) {
     const receivers = req.body.receivers.map((receiver: any) => ({
       email: receiver.email
     }));
+
     const mailing = await mailingRepository.create(properties, receivers);
+    logger.info(`Created mailing ${properties.name} with ID #${mailing.id}`);
+
     mailing.listId = getListId(config, mailing);
     await mailingRepository.update(mailing);
+    logger.verbose(`#${mailing.id}: assigned List-Id = ${mailing.listId}`);
+
     res.json(success({
       id: mailing.id
     }));

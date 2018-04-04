@@ -3,9 +3,10 @@ import { Request, Response } from 'express';
 import { error, success } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { MailingState } from '../Mailing';
+import { Logger } from '../Logger';
 
 
-export function deleteMailing (mailingRepository: MailingRepository) {
+export function deleteMailing (mailingRepository: MailingRepository, logger: Logger) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
 
@@ -27,6 +28,7 @@ export function deleteMailing (mailingRepository: MailingRepository) {
     }
 
     await mailingRepository.remove(mailing);
+    logger.info(`Deleted mailing #${mailing.id}`);
     res.json(success());
   });
 }

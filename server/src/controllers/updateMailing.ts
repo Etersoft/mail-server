@@ -3,14 +3,13 @@ import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
-import { MailSender } from '../MailSender';
-import { MailingState, Mailing } from '../Mailing';
-import { MailingExecutor } from 'src/MailingExecutor';
+import { MailingState } from '../Mailing';
 import { MailingStateManager } from 'src/MailingStateManager';
+import { Logger } from '../Logger';
 
 
 export function updateMailing (
-  mailingRepository: MailingRepository, stateManager: MailingStateManager
+  mailingRepository: MailingRepository, stateManager: MailingStateManager, logger: Logger
 ) {
   const handler = async function (req: Request, res: Response) {
     const id = Number(req.params.id);
@@ -28,10 +27,12 @@ export function updateMailing (
 
     if (typeof req.body.html === 'string') {
       mailing.html = req.body.html;
+      logger.verbose(`#${mailing.id}: updating HTML content`);
     }
 
     if (typeof req.body.name === 'string') {
       mailing.name = req.body.name;
+      logger.verbose(`#${mailing.id}: updating name ${mailing.name} -> ${req.body.name}`);
     }
 
     await mailingRepository.update(mailing);
@@ -45,6 +46,8 @@ export function updateMailing (
         return;
       }
     }
+
+    logger.info(`#${mailing.id}: updated`);
 
     res.json(success());
   };

@@ -7,7 +7,7 @@ import { catchPromise } from '../utils/catchPromise';
 export function getReceivers (mailingRepository: MailingRepository) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
-    
+
     if (!(id > 0)) {
       res.status(400).json(error('Invalid ID'));
       return;

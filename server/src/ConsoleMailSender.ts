@@ -1,4 +1,4 @@
-// tslint:disable:no-console
+// tslint:disable
 import { Email } from './Email';
 import { MailSender } from './MailSender';
 import { sleep } from './utils/sleep';

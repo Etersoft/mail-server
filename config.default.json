@@ -9,6 +9,7 @@
   },
   "server": {
     "corsWhitelist": [],
+    "logLevel": "verbose",
     "mail": {
       "from": "no-reply@etersoft.ru",
       "listIdPrefix": "mailing-"

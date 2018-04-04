@@ -28,7 +28,7 @@ async function main () {
   const repository = new RedisMailingRepository(
     redisClient, config.server.redis.prefixes
   );
-  const logger = new Logger();
+  const logger = new Logger(config.server.logLevel);
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
     from: config.server.mail.from,
     host: config.server.smtp.host,
@@ -46,10 +46,10 @@ async function main () {
   );
   await stateManager.initialize();
   const app = createExpressServer(config.server);
-  setupRoutes(config, app, repository, stateManager);
+  setupRoutes(config, app, repository, stateManager, logger);
   const port = config.server.port;
   app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+    logger.info(`Listening on port ${port}`);
   });
   app.on('error', (error: Error) => {
     console.error(error);
@@ -58,14 +58,15 @@ async function main () {
 }
 
 function setupRoutes (
-  config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager
+  config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
+  logger: Logger
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
-  app.post('/mailings', addMailing(config, repository));
-  app.put('/mailings/:id', updateMailing(repository, stateManager));
+  app.post('/mailings', addMailing(config, repository, logger));
+  app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
   app.get('/mailings/:id/receivers', getReceivers(repository));
-  app.delete('/mailings/:id', deleteMailing(repository));
+  app.delete('/mailings/:id', deleteMailing(repository, logger));
 }
 
 main().catch(error => {

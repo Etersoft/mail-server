@@ -21,7 +21,9 @@ export class MailingExecutor extends EventEmitter {
   async pauseExecution (mailing: Mailing): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (mailing.state !== MailingState.RUNNING || !this.executionStates.has(mailing.id)) {
-        this.logger.warn(`#${mailing.id}: call to MailingExecutor.pauseExecution while not running`);
+        this.logger.warn(
+          `#${mailing.id}: call to MailingExecutor.pauseExecution while not running`
+        );
         resolve();
         return;
       }
@@ -35,10 +37,10 @@ export class MailingExecutor extends EventEmitter {
   }
 
   async startExecution (mailing: Mailing): Promise<void> {
-    if (mailing.state === MailingState.RUNNING) return;
+    if (mailing.state === MailingState.RUNNING) { return; }
 
-    this.logger.verbose(`#${mailing.id}: starting execution`);
-    
+    this.logger.debug(`#${mailing.id}: starting execution`);
+
     const unsentReceivers = await mailing.getUnsentReceivers();
     this.logger.debug(`#${mailing.id}: ${unsentReceivers.length} unsent receivers`);
     if (!unsentReceivers.length) {
@@ -84,14 +86,13 @@ export class MailingExecutor extends EventEmitter {
         this.emit(MailingExecutorEvents.MAILING_PAUSED, mailing);
         return;
       }
-      this.logger.debug(`#${mailing.id}: sending email to ${email.receivers.join(',')}...`);
+      this.logger.verbose(`#${mailing.id}: sending email to ${email.receivers.join(',')}`);
       await this.mailer.sendEmail(email);
       this.logger.debug(`#${mailing.id}: sent, incrementing sentCount`);
       mailing.sentCount++;
       await this.repository.update(mailing);
     }
 
-    this.logger.verbose(`#${mailing.id}: finished`);
     this.executionStates.delete(mailing.id);
     this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing);
   }
