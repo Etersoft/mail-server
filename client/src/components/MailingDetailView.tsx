@@ -51,6 +51,9 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
 
           <h5 className='field-name'>Отправлено: </h5>
           <span className='field-value'>{mailing.sentCount}</span><br />
+
+          <h5 className='field-name'>Количество ошибок доставки (DSN status 4.* или 5.*): </h5>
+          <span className='field-value'>{mailing.undeliveredCount}</span><br />
           <br />
           {this.renderStateButton()}
           <ConfirmationButton

@@ -27,7 +27,8 @@ export function getMailing (mailingRepository: MailingRepository) {
       listId: mailing.listId,
       name: mailing.name,
       sentCount: mailing.sentCount,
-      state: req.query.stringState ? MailingState[mailing.state] : mailing.state
+      state: req.query.stringState ? MailingState[mailing.state] : mailing.state,
+      undeliveredCount: 0
     }));
   });
 }

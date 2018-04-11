@@ -21,6 +21,7 @@ export interface Mailing {
   sentCount: number;
   state: MailingState;
   subject: string;
+  undeliveredCount: number;
 }
 
 export interface Receiver {
@@ -38,7 +39,8 @@ function createMailing (data: MailingCreateData, id: number): Mailing {
     receivers: data.receivers,
     sentCount: 0,
     state: MailingState.NEW,
-    subject: data.subject
+    subject: data.subject,
+    undeliveredCount: 0
   };
 }
 

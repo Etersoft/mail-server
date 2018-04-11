@@ -22,6 +22,7 @@ export interface MailingProperties {
   state?: MailingState;
   sentCount?: number;
   subject: string;
+  undeliveredCount: number;
 }
 
 /**
@@ -35,6 +36,7 @@ export class Mailing implements MailingProperties {
   public state: MailingState;
   public sentCount: number;
   public subject: string;
+  public undeliveredCount: number;
 
   constructor (
     public id: number,
@@ -49,6 +51,7 @@ export class Mailing implements MailingProperties {
     this.state = properties.state || MailingState.NEW;
     this.sentCount = properties.sentCount || 0;
     this.subject = properties.subject;
+    this.undeliveredCount = properties.undeliveredCount || 0;
   }
 
   async getReceivers (): Promise<ReadonlyArray<Receiver>> {

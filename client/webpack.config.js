@@ -24,6 +24,7 @@ module.exports = {
   context: path.resolve(__dirname, 'src'),
   devServer: isProduction ? undefined : {
     contentBase: path.join(__dirname, 'public'),
+    disableHostCheck: true,
     hot: true,
     host: '0.0.0.0',
     port: config.client.webpack.port,

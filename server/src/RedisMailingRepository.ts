@@ -29,7 +29,8 @@ export class RedisMailingRepository implements MailingRepository {
       name: properties.name,
       sentCount: 0,
       state: MailingState.NEW,
-      subject: properties.subject
+      subject: properties.subject,
+      undeliveredCount: 0
     };
     const jsonString = this.serializeMailing(data);
     const jsonReceiversList = receivers.map(props => JSON.stringify({

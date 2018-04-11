@@ -16,7 +16,8 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       name: req.body.name,
       sentCount: 0,
       state: MailingState.NEW,
-      subject: req.body.subject
+      subject: req.body.subject,
+      undeliveredCount: 0
     };
     const receivers = req.body.receivers.map((receiver: any) => ({
       email: receiver.email

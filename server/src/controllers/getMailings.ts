@@ -12,7 +12,8 @@ export function getMailings (mailingRepository: MailingRepository) {
       listId: mailing.listId,
       name: mailing.name,
       sentCount: mailing.sentCount,
-      state: mailing.state
+      state: mailing.state,
+      undeliveredCount: 0
     }));
     res.json(success(list));
   });
