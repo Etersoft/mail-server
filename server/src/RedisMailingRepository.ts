@@ -17,6 +17,8 @@ const defaultConfig: RedisMailingRepositoryConfig = {
 };
 
 export class RedisMailingRepository implements MailingRepository {
+  private listIdMailingCache = new Map<string, Mailing>();
+
   constructor (
     protected readonly redisClient: PromiseRedisClient,
     protected readonly config: RedisMailingRepositoryConfig = defaultConfig
@@ -74,6 +76,21 @@ export class RedisMailingRepository implements MailingRepository {
   async getById (id: number): Promise<Mailing | null> {
     const jsonString = await this.redisClient.getAsync(this.getCommonDataKey(id));
     return this.parseMailing(jsonString, id);
+  }
+
+  async getByListId (listId: string): Promise<Mailing | null> {
+    if (this.listIdMailingCache.has(listId)) {
+      return this.listIdMailingCache.get(listId)!;
+    }
+
+    const mailings = await this.getAll();
+    for (const mailing of mailings) {
+      if (mailing.listId !== undefined) {
+        this.listIdMailingCache.set(mailing.listId, mailing);
+      }
+    }
+
+    return this.listIdMailingCache.get(listId) || null;
   }
 
   async getReceivers (id: number): Promise<Receiver[]> {
