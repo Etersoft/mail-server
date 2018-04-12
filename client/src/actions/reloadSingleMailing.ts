@@ -10,7 +10,8 @@ export function reloadSingleMailing (id: number) {
     dispatch(updateMailing(id, {
       listId: mailing.listId,
       sentCount: mailing.sentCount,
-      state: mailing.state
+      state: mailing.state,
+      undeliveredCount: mailing.undeliveredCount
     }));
   };
 }

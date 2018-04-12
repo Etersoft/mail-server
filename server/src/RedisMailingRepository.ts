@@ -149,7 +149,8 @@ export class RedisMailingRepository implements MailingRepository {
       name: properties.name,
       sentCount: properties.sentCount,
       state: properties.state,
-      subject: properties.subject
+      subject: properties.subject,
+      undeliveredCount: properties.undeliveredCount
     });
   }
 }

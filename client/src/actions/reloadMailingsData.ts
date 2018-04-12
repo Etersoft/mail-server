@@ -13,7 +13,8 @@ export function reloadMailingsData () {
       if (state.mailings.byId[mailing.id]) {
         dispatch(updateMailing(mailing.id, {
           sentCount: mailing.sentCount,
-          state: mailing.state
+          state: mailing.state,
+          undeliveredCount: mailing.undeliveredCount
         }));
       } else {
         dispatch(addMailing(mailing as any, mailing.id));

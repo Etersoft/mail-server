@@ -13,7 +13,7 @@ export function getMailings (mailingRepository: MailingRepository) {
       name: mailing.name,
       sentCount: mailing.sentCount,
       state: mailing.state,
-      undeliveredCount: 0
+      undeliveredCount: mailing.undeliveredCount
     }));
     res.json(success(list));
   });
