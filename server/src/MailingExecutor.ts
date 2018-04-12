@@ -5,6 +5,7 @@ import { Email } from './Email';
 import { EventEmitter } from 'events';
 import { MailingRepository } from 'src/MailingRepository';
 import { Logger } from './Logger';
+import { AddressStatsRepository } from './AddressStatsRepository';
 
 
 export class MailingExecutor extends EventEmitter {
@@ -12,7 +13,8 @@ export class MailingExecutor extends EventEmitter {
 
   constructor (
     private mailer: MailSender,
-    private repository: MailingRepository,
+    private mailingRepository: MailingRepository,
+    private addressStatsRepository: AddressStatsRepository,
     private logger: Logger
   ) {
     super();
@@ -90,11 +92,33 @@ export class MailingExecutor extends EventEmitter {
       await this.mailer.sendEmail(email);
       this.logger.debug(`#${mailing.id}: sent, incrementing sentCount`);
       mailing.sentCount++;
-      await this.repository.update(mailing);
+      await this.mailingRepository.update(mailing);
+      // TODO: думаю, что это стоит вынести в отдельный класс-наблюдатель,
+      // чтобы подсчёт статистики работал по событию отправки письма
+      for (const address of email.receivers) {
+        await this.updateAddressStats(address.email);
+      }
     }
 
     this.executionStates.delete(mailing.id);
     this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing);
+  }
+
+  private async updateAddressStats (email: string) {
+    const stats = await this.addressStatsRepository.getByEmail(email);
+    if (stats) {
+      stats.lastSendDate = new Date();
+      stats.sentCount++;
+      await this.addressStatsRepository.update(stats);
+    } else {
+      await this.addressStatsRepository.create({
+        email,
+        lastSendDate: new Date(),
+        lastStatus: undefined,
+        lastStatusDate: undefined,
+        sentCount: 1
+      });
+    }
   }
 }
 

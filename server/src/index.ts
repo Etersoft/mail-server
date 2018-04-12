@@ -17,6 +17,7 @@ import { MailingStateManager } from './MailingStateManager';
 import { getReceivers } from './controllers/getReceivers';
 import { SmtpMailSender } from './SmtpMailSender';
 import { deleteMailing } from './controllers/deleteMailing';
+import { RedisAddressStatsRepository } from './RedisAddressStatsRepository';
 
 
 async function main () {
@@ -25,7 +26,10 @@ async function main () {
   validateConfig(config);
 
   const redisClient = createRedisClient(config.redis);
-  const repository = new RedisMailingRepository(
+  const mailingRepository = new RedisMailingRepository(
+    redisClient, config.server.redis.prefixes
+  );
+  const addressStatsRepository = new RedisAddressStatsRepository(
     redisClient, config.server.redis.prefixes
   );
   const logger = new Logger(config.server.logLevel);
@@ -36,17 +40,18 @@ async function main () {
   });
   const executor = new MailingExecutor(
     sender,
-    repository,
+    mailingRepository,
+    addressStatsRepository,
     logger
   );
   const stateManager = new MailingStateManager(
     executor,
     logger,
-    repository
+    mailingRepository
   );
   await stateManager.initialize();
   const app = createExpressServer(config.server);
-  setupRoutes(config, app, repository, stateManager, logger);
+  setupRoutes(config, app, mailingRepository, stateManager, logger);
   const port = config.server.port;
   app.listen(port, () => {
     logger.info(`Listening on port ${port}`);
