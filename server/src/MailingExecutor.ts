@@ -88,9 +88,9 @@ export class MailingExecutor extends EventEmitter {
         this.emit(MailingExecutorEvents.MAILING_PAUSED, mailing);
         return;
       }
-      this.logger.verbose(`#${mailing.id}: sending email to ${email.receivers.join(',')}`);
+      this.logger.debug(`#${mailing.id}: sending email to ${email.receivers.join(',')}`);
       await this.mailer.sendEmail(email);
-      this.logger.debug(`#${mailing.id}: sent, incrementing sentCount`);
+      this.logger.verbose(`#${mailing.id}: sent to ${email.receivers.join(',')}`);
       mailing.sentCount++;
       await this.mailingRepository.update(mailing);
       // TODO: думаю, что это стоит вынести в отдельный класс-наблюдатель,
@@ -105,17 +105,17 @@ export class MailingExecutor extends EventEmitter {
   }
 
   private async updateAddressStats (email: string) {
-    const stats = await this.addressStatsRepository.getByEmail(email);
-    if (stats) {
-      stats.lastSendDate = new Date();
-      stats.sentCount++;
-      await this.addressStatsRepository.update(stats);
-    } else {
+    const existingStats = await this.addressStatsRepository.updateInTransaction(
+      email,
+      async stats => {
+        stats.lastSendDate = new Date();
+        stats.sentCount++;
+      }
+    );
+    if (!existingStats) {
       await this.addressStatsRepository.create({
         email,
         lastSendDate: new Date(),
-        lastStatus: undefined,
-        lastStatusDate: undefined,
         sentCount: 1
       });
     }

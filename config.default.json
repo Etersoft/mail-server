@@ -15,7 +15,10 @@
       "listIdPrefix": "mailing-"
     },
     "port": 8000,
-    "redis": {},
+    "redis": {
+      "db": 0,
+      "testingDb": 1
+    },
     "smtp": {
       "host": "localhost",
       "port": 587

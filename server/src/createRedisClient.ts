@@ -8,6 +8,7 @@ export interface PromiseMulti extends Multi {
 
 export interface PromiseRedisClient extends RedisClient {
   delAsync (key: string): Promise<void>;
+  flushdbAsync (): Promise<void>;
   getAsync (key: string): Promise<string>;
   hgetAsync (key: string, field: string): Promise<string>;
   hsetAsync (key: string, field: string, value: string): Promise<void>;
@@ -17,6 +18,8 @@ export interface PromiseRedisClient extends RedisClient {
   multi (): PromiseMulti;
   mgetAsync (keys: string[]): Promise<string[]>;
   setAsync (key: string, value: string): Promise<void>;
+  unwatchAsync (): Promise<void>;
+  watchAsync (keys: string[]): Promise<void>;
 }
 
 export function createRedisClient (config: any): PromiseRedisClient {
