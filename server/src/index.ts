@@ -2,7 +2,6 @@
 import { Express } from 'express';
 import { readConfig } from './readConfig';
 import { validateConfig } from './validateConfig';
-import { createRedisClient } from './createRedisClient';
 import { RedisMailingRepository } from './RedisMailingRepository';
 import { createExpressServer } from './createExpressServer';
 import { MailingRepository } from './MailingRepository';
@@ -18,6 +17,7 @@ import { getReceivers } from './controllers/getReceivers';
 import { SmtpMailSender } from './SmtpMailSender';
 import { deleteMailing } from './controllers/deleteMailing';
 import { RedisAddressStatsRepository } from './RedisAddressStatsRepository';
+import { RedisConnectionPoolImpl } from './RedisConnectionPool';
 
 
 async function main () {
@@ -25,12 +25,14 @@ async function main () {
   // Будет исключение, если конфиг некорректный
   validateConfig(config);
 
-  const redisClient = createRedisClient(config.redis);
+  const redisConnectionPool = new RedisConnectionPoolImpl(
+    config.server.redis, config.server.redis.pool
+  );
   const mailingRepository = new RedisMailingRepository(
-    redisClient, config.server.redis.prefixes
+    redisConnectionPool, config.server.redis.prefixes
   );
   const addressStatsRepository = new RedisAddressStatsRepository(
-    redisClient, config.server.redis.prefixes
+    redisConnectionPool, config.server.redis.prefixes
   );
   const logger = new Logger(config.server.logLevel);
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({

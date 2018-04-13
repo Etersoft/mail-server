@@ -19,23 +19,22 @@ export function updateMailing (
       return;
     }
 
-    const mailing = await mailingRepository.getById(id);
+    const mailing = await mailingRepository.updateInTransaction(id, mailing => {
+      if (typeof req.body.html === 'string') {
+        mailing.html = req.body.html;
+        logger.verbose(`#${mailing.id}: updating HTML content`);
+      }
+  
+      if (typeof req.body.name === 'string') {
+        mailing.name = req.body.name;
+        logger.verbose(`#${mailing.id}: updating name ${mailing.name} -> ${req.body.name}`);
+      }
+    });
+
     if (!mailing) {
       res.status(404).json(error('Mailing not found'));
       return;
     }
-
-    if (typeof req.body.html === 'string') {
-      mailing.html = req.body.html;
-      logger.verbose(`#${mailing.id}: updating HTML content`);
-    }
-
-    if (typeof req.body.name === 'string') {
-      mailing.name = req.body.name;
-      logger.verbose(`#${mailing.id}: updating name ${mailing.name} -> ${req.body.name}`);
-    }
-
-    await mailingRepository.update(mailing);
 
     if (req.body.state !== mailing.state) {
       const toState = (typeof req.body.state === 'string') ?

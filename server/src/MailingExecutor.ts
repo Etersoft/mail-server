@@ -47,16 +47,16 @@ export class MailingExecutor extends EventEmitter {
     this.logger.debug(`#${mailing.id}: ${unsentReceivers.length} unsent receivers`);
     if (!unsentReceivers.length) {
       this.logger.warn(`#${mailing.id}: has no unsent receivers, but is not finished`);
-      this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing);
+      this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing.id);
       return;
     }
     const emails = this.createEmails(mailing, unsentReceivers);
 
     this.executionStates.set(mailing.id, { stopping: false });
-    this.emit(MailingExecutorEvents.MAILING_STARTED, mailing);
+    this.emit(MailingExecutorEvents.MAILING_STARTED, mailing.id);
     // Это не ошибка - не ждём через await намеренно, пусть выполняется в фоне
-    this.runMailing(mailing, emails).catch(error => {
-      this.emit(MailingExecutorEvents.MAILING_ERROR, mailing, error);
+    this.runMailing(mailing.id, emails).catch(error => {
+      this.emit(MailingExecutorEvents.MAILING_ERROR, mailing.id, error);
     });
   }
 
@@ -75,24 +75,25 @@ export class MailingExecutor extends EventEmitter {
     });
   }
 
-  private isStopping (mailing: Mailing): boolean {
-    const state = this.executionStates.get(mailing.id);
+  private isStopping (mailingId: number): boolean {
+    const state = this.executionStates.get(mailingId);
     return Boolean(state && state.stopping);
   }
 
-  private async runMailing (mailing: Mailing, emails: Email[]): Promise<void> {
+  private async runMailing (mailingId: number, emails: Email[]): Promise<void> {
     for (const email of emails) {
-      if (this.isStopping(mailing)) {
-        this.logger.debug(`#${mailing.id}: execution was stopped, exiting`);
-        this.executionStates.delete(mailing.id);
-        this.emit(MailingExecutorEvents.MAILING_PAUSED, mailing);
+      if (this.isStopping(mailingId)) {
+        this.logger.debug(`#${mailingId}: execution was stopped, exiting`);
+        this.executionStates.delete(mailingId);
+        this.emit(MailingExecutorEvents.MAILING_PAUSED, mailingId);
         return;
       }
-      this.logger.debug(`#${mailing.id}: sending email to ${email.receivers.join(',')}`);
+      this.logger.debug(`#${mailingId}: sending email to ${email.receivers.join(',')}`);
       await this.mailer.sendEmail(email);
-      this.logger.verbose(`#${mailing.id}: sent to ${email.receivers.join(',')}`);
-      mailing.sentCount++;
-      await this.mailingRepository.update(mailing);
+      this.logger.verbose(`#${mailingId}: sent to ${email.receivers.join(',')}`);
+      await this.mailingRepository.updateInTransaction(mailingId, mailing => {
+        mailing.sentCount++;
+      });
       // TODO: думаю, что это стоит вынести в отдельный класс-наблюдатель,
       // чтобы подсчёт статистики работал по событию отправки письма
       for (const address of email.receivers) {
@@ -100,8 +101,8 @@ export class MailingExecutor extends EventEmitter {
       }
     }
 
-    this.executionStates.delete(mailing.id);
-    this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing);
+    this.executionStates.delete(mailingId);
+    this.emit(MailingExecutorEvents.MAILING_FINISHED, mailingId);
   }
 
   private async updateAddressStats (email: string) {

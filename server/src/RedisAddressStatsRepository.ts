@@ -1,6 +1,8 @@
 import { PromiseRedisClient } from './createRedisClient';
 import { AddressStatsRepository } from './AddressStatsRepository';
 import { AddressStatsProperties, AddressStats } from './AddressStats';
+import { BaseRedisRepository } from './BaseRedisRepository';
+import { RedisConnectionPool } from './RedisConnectionPool';
 
 
 export interface RedisAddressStatsRepositoryConfig {
@@ -11,60 +13,55 @@ const defaultConfig: RedisAddressStatsRepositoryConfig = {
   addressStatsKeyPrefix: 'ADDRESS_STATS_'
 };
 
-export class RedisAddressStatsRepository implements AddressStatsRepository {
+export class RedisAddressStatsRepository
+extends BaseRedisRepository<AddressStats, string>
+implements AddressStatsRepository {
   constructor (
-    protected readonly redisClient: PromiseRedisClient,
+    redisConnectionPool: RedisConnectionPool,
     protected readonly config: RedisAddressStatsRepositoryConfig = defaultConfig
-  ) {}
-
-  async create (properties: AddressStatsProperties): Promise<AddressStats> {
-    const jsonString = this.serializeAddressStats(properties);
-    await this.redisClient.set(this.getCommonDataKey(properties.email), jsonString);
-    return new AddressStats(properties);
+  ) {
+    super(redisConnectionPool);
   }
 
-  async getByEmail (email: string): Promise<AddressStats | null> {
-    const jsonString = await this.redisClient.getAsync(this.getCommonDataKey(email));
+  create (properties: AddressStatsProperties): Promise<AddressStats> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const jsonString = this.serializeEntity(properties);
+      await redisClient.set(this.getCommonDataKey(properties.email), jsonString);
+      return new AddressStats(properties);
+    });
+  }
+
+  getByEmail (email: string): Promise<AddressStats | null> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      return this.getByKey(email, redisClient);
+    });
+  }
+
+  update (stats: AddressStats): Promise<void> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const jsonString = this.serializeEntity(stats);
+      await redisClient.setAsync(this.getCommonDataKey(stats.email), jsonString);
+    });
+  }
+
+
+  protected async getByKey (email: string, redisClient: PromiseRedisClient) {
+    const jsonString = await redisClient.getAsync(this.getCommonDataKey(email));
     return this.parseAddressStats(jsonString);
   }
 
-  async update (stats: AddressStats): Promise<void> {
-    const jsonString = this.serializeAddressStats(stats);
-    await this.redisClient.setAsync(this.getCommonDataKey(stats.email), jsonString);
-  }
-
-  async updateInTransaction (
-    email: string, scenario: (stats: AddressStats) => Promise<void>
-  ): Promise<AddressStats | null> {
-    // Реализуем optimistic locking, чтобы бороться с параллельными обновлениями
-    // одного и того же объекта
-    while (true) {
-      // Отслеживаем изменения ключа. Если он изменится с момента вызова
-      // watch, всё выполнится заново.
-      const key = this.getCommonDataKey(email);
-      // TODO: здесь необходим connection pool для 100% корректной работы
-      await this.redisClient.watchAsync([ key ]);
-      const stats = await this.getByEmail(email);
-      if (!stats) {
-        await this.redisClient.unwatchAsync();
-        return null;
-      }
-      await scenario(stats);
-      // Пробуем обновить...
-      const multi = this.redisClient.multi();
-      const jsonString = this.serializeAddressStats(stats);
-      multi.set(key, jsonString);
-      // Если exec завершился успешно, то выходим.
-      // Если нет, то начинаем заново...
-      if (await multi.execAsync()) {
-        return stats;
-      }
-    }
-  }
-
-
-  private getCommonDataKey (email: string): string {
+  protected getCommonDataKey (email: string): string {
     return this.config.addressStatsKeyPrefix + email;
+  }
+
+  protected serializeEntity (properties: AddressStatsProperties): string {
+    return JSON.stringify({
+      email: properties.email,
+      lastSendDate: properties.lastSendDate.toISOString(),
+      lastStatus: properties.lastStatus,
+      lastStatusDate: properties.lastStatusDate && properties.lastStatusDate.toISOString(),
+      sentCount: properties.sentCount
+    });
   }
 
   private parseAddressStats (jsonString: string | null): AddressStats | null {
@@ -76,16 +73,6 @@ export class RedisAddressStatsRepository implements AddressStatsRepository {
       lastStatus: object.lastStatus,
       lastStatusDate: object.lastStatusDate && new Date(object.lastStatusDate),
       sentCount: object.sentCount
-    });
-  }
-
-  private serializeAddressStats (properties: AddressStatsProperties): string {
-    return JSON.stringify({
-      email: properties.email,
-      lastSendDate: properties.lastSendDate.toISOString(),
-      lastStatus: properties.lastStatus,
-      lastStatusDate: properties.lastStatusDate && properties.lastStatusDate.toISOString(),
-      sentCount: properties.sentCount
     });
   }
 }

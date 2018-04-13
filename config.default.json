@@ -17,6 +17,10 @@
     "port": 8000,
     "redis": {
       "db": 0,
+      "pool": {
+        "min": 1,
+        "max": 5
+      },
       "testingDb": 1
     },
     "smtp": {

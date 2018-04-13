@@ -60,27 +60,28 @@ export class MailingStateManager {
     const allMailings = await this.mailingRepository.getAll();
     const running = allMailings.filter(mailing => mailing.state === MailingState.RUNNING);
     await Promise.all(running.map(async mailing => {
-      mailing.state = MailingState.PAUSED;
-      await this.mailingRepository.update(mailing);
+      await this.mailingRepository.updateInTransaction(mailing.id, mailing => {
+        mailing.state = MailingState.PAUSED;
+      });
     }));
   }
 
-  private handleMailingError = async (mailing: Mailing, error: Error) => {
+  private handleMailingError = async (mailingId: number, error: Error) => {
     this.logger.error(error);
-    this.setState(mailing, MailingState.ERROR);
+    this.setState(mailingId, MailingState.ERROR);
   }
 
-  private handleMailingFinish = async (mailing: Mailing) => {
-    await this.setState(mailing, MailingState.FINISHED);
-    this.logger.info(`#${mailing.id}: finished`);
+  private handleMailingFinish = async (mailingId: number) => {
+    await this.setState(mailingId, MailingState.FINISHED);
+    this.logger.info(`#${mailingId}: finished`);
   }
 
-  private handleMailingPause = async (mailing: Mailing) => {
-    this.setState(mailing, MailingState.PAUSED);
+  private handleMailingPause = async (mailingId: number) => {
+    this.setState(mailingId, MailingState.PAUSED);
   }
 
-  private handleMailingStart = async (mailing: Mailing) => {
-    this.setState(mailing, MailingState.RUNNING);
+  private handleMailingStart = async (mailingId: number) => {
+    this.setState(mailingId, MailingState.RUNNING);
   }
 
   private initExecutorEvents () {
@@ -90,12 +91,20 @@ export class MailingStateManager {
     this.executor.on(MailingExecutorEvents.MAILING_STARTED, this.handleMailingStart);
   }
 
-  private async setState (mailing: Mailing, to: MailingState) {
-    const fromString = MailingState[mailing.state];
+  private async setState (mailingId: number, to: MailingState) {
+    let fromString;
     const toString = MailingState[to];
-    mailing.state = to;
-    await this.mailingRepository.update(mailing);
-    this.logger.debug(`#${mailing.id}: saved state to repository`);
-    this.logger.verbose(`#${mailing.id}: changed state ${fromString} -> ${toString}`);
+    const mailing = await this.mailingRepository.updateInTransaction(
+      mailingId, mailing => {
+        fromString = MailingState[mailing.state];
+        mailing.state = to;
+      }
+    );
+    if (mailing) {
+      this.logger.debug(`#${mailing.id}: saved state to repository`);
+      this.logger.verbose(`#${mailing.id}: changed state ${fromString} -> ${toString}`);
+    } else {
+      this.logger.warn(`#${mailingId}: attempt to change state of mailing that not exists`);
+    }
   }
 }

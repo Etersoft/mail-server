@@ -1,6 +1,6 @@
 export interface ReceiverProperties {
   email: string;
-  name: string;
+  name?: string;
 }
 
 

@@ -22,9 +22,13 @@ export interface PromiseRedisClient extends RedisClient {
   watchAsync (keys: string[]): Promise<void>;
 }
 
-export function createRedisClient (config: any): PromiseRedisClient {
-  promisifyAll(RedisClient.prototype);
-  promisifyAll(Multi.prototype);
-  const client = createClient(config);
-  return client as PromiseRedisClient;
+promisifyAll(RedisClient.prototype);
+promisifyAll(Multi.prototype);
+
+export function createRedisClient (config: any): Promise<PromiseRedisClient> {
+  return new Promise<PromiseRedisClient>((resolve, reject) => {
+    const client = createClient(config);
+    client.once('error', reject);
+    client.once('ready', () => resolve(client as PromiseRedisClient));
+  });
 }

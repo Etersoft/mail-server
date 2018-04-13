@@ -20,4 +20,7 @@ export interface MailingRepository {
   getReceivers (id: number): Promise<Receiver[]>;
   remove (mailing: Mailing): Promise<void>;
   update (mailing: Mailing): Promise<void>;
+  updateInTransaction (
+    mailingId: number, scenario: (mailing: Mailing) => Promise<void> | void
+  ): Promise<Mailing | null>;
 }
