@@ -10,7 +10,8 @@
     "server:build": "node_modules/.bin/tsc -p server",
     "server:start": "node server/dist/index.js",
     "server:watch": "node_modules/.bin/tsc -w -p server",
-    "server:watch-run": "nodemon server/dist/index.js"
+    "server:watch-run": "nodemon server/dist/index.js",
+    "test": "node_modules/.bin/mocha -r ts-node/register 'server/tests/**/*.ts'"
   },
   "author": "",
   "private": true,

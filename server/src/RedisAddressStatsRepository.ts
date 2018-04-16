@@ -60,7 +60,8 @@ implements AddressStatsRepository {
       lastSendDate: properties.lastSendDate.toISOString(),
       lastStatus: properties.lastStatus,
       lastStatusDate: properties.lastStatusDate && properties.lastStatusDate.toISOString(),
-      sentCount: properties.sentCount
+      sentCount: properties.sentCount,
+      temporaryFailureCount: properties.temporaryFailureCount
     });
   }
 
@@ -72,7 +73,8 @@ implements AddressStatsRepository {
       lastSendDate: new Date(object.lastSendDate),
       lastStatus: object.lastStatus,
       lastStatusDate: object.lastStatusDate && new Date(object.lastStatusDate),
-      sentCount: object.sentCount
+      sentCount: object.sentCount,
+      temporaryFailureCount: object.temporaryFailureCount
     });
   }
 }
