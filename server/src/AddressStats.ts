@@ -1,7 +1,7 @@
 export interface AddressStatsProperties {
   readonly email: string;
-  lastSendDate: Date;
-  sentCount: number;
+  lastSendDate?: Date;
+  sentCount?: number;
   lastStatus?: string;
   lastStatusDate?: Date;
   temporaryFailureCount?: number;
@@ -10,8 +10,8 @@ export interface AddressStatsProperties {
 
 export class AddressStats implements AddressStatsProperties {
   public readonly email: string;
-  public lastSendDate: Date;
-  public sentCount: number;
+  public lastSendDate?: Date;
+  public sentCount?: number;
   public lastStatus?: string;
   public lastStatusDate?: Date;
   public temporaryFailureCount: number;
