@@ -110,7 +110,7 @@ export class MailingExecutor extends EventEmitter {
       email,
       async stats => {
         stats.lastSendDate = new Date();
-        stats.sentCount++;
+        stats.sentCount = (stats.sentCount || 0) + 1;
       }
     );
     if (!existingStats) {
