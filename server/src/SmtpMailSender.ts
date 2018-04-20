@@ -24,6 +24,7 @@ export class SmtpMailSender implements MailSender {
 
   async sendEmail (email: Email): Promise<void> {
     await this.transport.sendMail({
+      attachments: email.attachments,
       headers: email.headers,
       html: email.html,
       replyTo: email.replyTo,
