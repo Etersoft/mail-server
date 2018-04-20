@@ -19,6 +19,7 @@ export interface MailingProperties {
   html: string;
   listId?: string;
   name: string;
+  replyTo?: string;
   state?: MailingState;
   sentCount?: number;
   subject: string;
@@ -33,6 +34,7 @@ export class Mailing implements MailingProperties {
   public html: string;
   public listId?: string;
   public name: string;
+  public replyTo?: string;
   public state: MailingState;
   public sentCount: number;
   public subject: string;
@@ -48,6 +50,7 @@ export class Mailing implements MailingProperties {
     this.html = properties.html;
     this.listId = properties.listId;
     this.name = properties.name;
+    this.replyTo = properties.replyTo;
     this.state = properties.state || MailingState.NEW;
     this.sentCount = properties.sentCount || 0;
     this.subject = properties.subject;

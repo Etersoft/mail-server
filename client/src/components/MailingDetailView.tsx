@@ -43,6 +43,9 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
           <h5 className='field-name'>List-Id: </h5>
           <span className='field-value'>{mailing.listId}</span><br />
 
+          <h5 className='field-name'>Обратный адрес (Reply-To): </h5>
+          <span className='field-value'>{mailing.replyTo}</span><br />
+
           <h5 className='field-name'>Состояние: </h5>
           <span className='field-value'><MailingStateView state={mailing.state} /></span><br />
 

@@ -13,6 +13,7 @@ export interface MailingCreateData {
   html: string;
   name: string;
   receivers: Receiver[];
+  replyTo?: string;
   subject: string;
 }
 
@@ -26,6 +27,7 @@ interface AddFormState {
   headers: Headers;
   name: string;
   receivers: Receiver[];
+  replyTo: string;
   subject: string;
 }
 
@@ -59,6 +61,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
       headers: {},
       name: '',
       receivers: [],
+      replyTo: '',
       subject: ''
     };
   }
@@ -87,6 +90,10 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
               <span className='input-name'>Тема письма:</span>
               <input className='input' value={this.state.subject} onChange={this.changeSubject} />
             </div>
+            <div className='form-group'>
+              <span className='input-name'>Обратный адрес (Reply-To):</span>
+              <input className='input' value={this.state.replyTo} onChange={this.changeReplyTo} />
+            </div>
             <div className='form-group stretch double'>
               <span className='input-name'>Текст рассылки:</span>
               <CKEditor ref={editor => this.editor = editor} />
@@ -112,6 +119,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
       html: this.editor.getContent(),
       name: this.state.name,
       receivers: this.state.receivers,
+      replyTo: this.state.replyTo || undefined,
       subject: this.state.subject
     };
     this.props.onAdd(mailing);
@@ -140,6 +148,12 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   private changeReceivers = (receivers: Receiver[]) => {
     this.setState({
       receivers
+    });
+  }
+
+  private changeReplyTo = (event: React.FormEvent<HTMLInputElement>) => {
+    this.setState({
+      replyTo: event.currentTarget.value
     });
   }
 }

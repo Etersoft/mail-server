@@ -63,13 +63,15 @@ export class MailingExecutor extends EventEmitter {
 
   private createEmails (mailing: Mailing, receivers: Receiver[]) {
     return receivers.map(receiver => {
-      const headers = mailing.listId ? Object.assign({
-        'List-Id': mailing.listId
-      }, mailing.headers) : mailing.headers;
+      const headers = Object.assign({}, mailing.headers);
+      if (mailing.listId) {
+        headers['List-Id'] = mailing.listId;
+      }
       return new Email({
         headers: headers as Headers,
         html: mailing.html,
         receivers: [receiver],
+        replyTo: mailing.replyTo,
         subject: mailing.subject
       });
     });

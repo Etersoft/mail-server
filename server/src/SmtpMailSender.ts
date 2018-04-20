@@ -26,6 +26,7 @@ export class SmtpMailSender implements MailSender {
     await this.transport.sendMail({
       headers: email.headers,
       html: email.html,
+      replyTo: email.replyTo,
       subject: email.subject,
       to: email.receivers.map(receiver => receiver.email).join(', ')
     });

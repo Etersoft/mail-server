@@ -14,6 +14,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       headers: req.body.headers,
       html: req.body.html,
       name: req.body.name,
+      replyTo: req.body.replyTo,
       sentCount: 0,
       state: MailingState.NEW,
       subject: req.body.subject,
@@ -79,6 +80,10 @@ const requestBodyJsonSchema = {
           'email'
         ]
       }
+    },
+    replyTo: {
+      type: 'string',
+      minLength: 1
     }
   },
   required: [

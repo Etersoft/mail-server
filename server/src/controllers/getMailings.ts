@@ -11,6 +11,7 @@ export function getMailings (mailingRepository: MailingRepository) {
       id: mailing.id,
       listId: mailing.listId,
       name: mailing.name,
+      replyTo: mailing.replyTo,
       sentCount: mailing.sentCount,
       state: mailing.state,
       undeliveredCount: mailing.undeliveredCount

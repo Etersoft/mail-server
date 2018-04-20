@@ -18,6 +18,7 @@ export interface Mailing {
   locked: boolean;
   name: string;
   receivers?: Receiver[];
+  replyTo?: string;
   sentCount: number;
   state: MailingState;
   subject: string;
@@ -37,6 +38,7 @@ function createMailing (data: MailingCreateData, id: number): Mailing {
     locked: false,
     name: data.name,
     receivers: data.receivers,
+    replyTo: data.replyTo,
     sentCount: 0,
     state: MailingState.NEW,
     subject: data.subject,
