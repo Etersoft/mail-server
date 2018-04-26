@@ -15,7 +15,8 @@ export class MailingExecutor extends EventEmitter {
     private mailer: MailSender,
     private mailingRepository: MailingRepository,
     private addressStatsRepository: AddressStatsRepository,
-    private logger: Logger
+    private logger: Logger,
+    private config: any
   ) {
     super();
   }
@@ -62,13 +63,18 @@ export class MailingExecutor extends EventEmitter {
 
 
   private createEmails (mailing: Mailing, receivers: Receiver[]) {
+    const headers: Headers = Object.assign({}, mailing.headers);
+    if (mailing.listId) {
+      headers['List-Id'] = mailing.listId;
+    }
+    if (this.config.server.mail.listUnsubscribe) {
+      headers['List-Unsubscribe'] = this.config.server.mail.listUnsubscribe;
+    }
+    headers['Precedence'] = 'bulk';
+
     return receivers.map(receiver => {
-      const headers = Object.assign({}, mailing.headers);
-      if (mailing.listId) {
-        headers['List-Id'] = mailing.listId;
-      }
       return new Email({
-        headers: headers as Headers,
+        headers,
         html: mailing.html,
         receivers: [receiver],
         replyTo: mailing.replyTo,
