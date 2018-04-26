@@ -12,7 +12,7 @@
     "logLevel": "verbose",
     "mail": {
       "from": "no-reply@etersoft.ru",
-      "listIdPrefix": "mailing-"
+      "listIdDomain": "some.domain"
     },
     "port": 8000,
     "redis": {

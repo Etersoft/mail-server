@@ -37,6 +37,7 @@
     "express": "^4.16.3",
     "generic-pool": "^3.4.2",
     "lodash": "^4.17.5",
+    "moment": "^2.22.1",
     "nodemailer": "^4.6.3",
     "query-string": "^6.0.0",
     "react": "^16.2.0",
