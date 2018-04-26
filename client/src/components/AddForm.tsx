@@ -6,6 +6,7 @@ import { ReceiverList } from './ReceiverList';
 import { CKEditor } from './CKEditor';
 import { HeaderEditor } from './HeaderEditor';
 import { Headers } from 'server/src/Mailing';
+import * as pretty from 'pretty';
 
 
 export interface MailingCreateData {
@@ -26,8 +27,10 @@ export interface AddFormProps {
 interface AddFormState {
   headers: Headers;
   name: string;
+  rawHtml: string;
   receivers: Receiver[];
   replyTo: string;
+  showHtml: boolean;
   subject: string;
 }
 
@@ -60,8 +63,10 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
     this.state = {
       headers: {},
       name: '',
+      rawHtml: '',
       receivers: [],
       replyTo: '',
+      showHtml: false,
       subject: ''
     };
   }
@@ -74,7 +79,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
             Добавить рассылку
             <div className='header-actions'>
               <button className='action' disabled={!this.canAdd()} onClick={this.add}>
-                Добавить
+                {this.state.showHtml ? 'Добавить' : 'Проверить HTML и добавить'}
               </button>
               <button className='action' onClick={this.props.onClose}>
                 Отмена
@@ -96,7 +101,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
             </div>
             <div className='form-group stretch double'>
               <span className='input-name'>Текст рассылки:</span>
-              <CKEditor ref={editor => this.editor = editor} />
+              {this.renderEditor()}
             </div>
             <div className='form-group stretch horizontal'>
               <HeaderEditor headers={this.state.headers} onChange={this.changeHeader} />
@@ -111,12 +116,19 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   }
 
   private add = () => {
-    if (!this.editor) {
+    if (!this.state.showHtml && !this.editor) {
+      return;
+    }
+    if (!this.state.showHtml && this.editor) {
+      this.setState({
+        rawHtml: pretty(this.editor.getContent()),
+        showHtml: true
+      });
       return;
     }
     const mailing = {
       headers: this.state.headers,
-      html: this.editor.getContent(),
+      html: this.state.rawHtml,
       name: this.state.name,
       receivers: this.state.receivers,
       replyTo: this.state.replyTo || undefined,
@@ -145,6 +157,12 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
     });
   }
 
+  private changeRawHtml = (event: React.FormEvent<HTMLTextAreaElement>) => {
+    this.setState({
+      rawHtml: event.currentTarget.value
+    });
+  }
+
   private changeReceivers = (receivers: Receiver[]) => {
     this.setState({
       receivers
@@ -155,5 +173,18 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
     this.setState({
       replyTo: event.currentTarget.value
     });
+  }
+
+  private renderEditor () {
+    if (this.state.showHtml) {
+      return (
+        <div className='editor-wrapper'>
+          <textarea value={this.state.rawHtml} onChange={this.changeRawHtml}>
+          </textarea>
+        </div>
+      );
+    } else {
+      return <CKEditor ref={(editor: CKEditor) => this.editor = editor} />;
+    }
   }
 }

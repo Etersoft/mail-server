@@ -83,6 +83,10 @@ $transition: 0.3s ease;
         flex: 1;
         flex-direction: column;
 
+        textarea {
+          flex: 1;
+        }
+
         .ck-editor {
           display: flex;
           flex: 1;
