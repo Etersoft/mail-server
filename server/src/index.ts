@@ -44,7 +44,8 @@ async function main () {
     sender,
     mailingRepository,
     addressStatsRepository,
-    logger
+    logger,
+    config
   );
   const stateManager = new MailingStateManager(
     executor,

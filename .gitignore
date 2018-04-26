@@ -1,4 +1,4 @@
 node_modules
 config.json
-client/dist
+client/public
 server/dist

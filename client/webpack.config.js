@@ -70,7 +70,7 @@ module.exports = {
   output: {
     filename: 'js/[name].js',
     path: path.join(__dirname, 'public'),
-    publicPath: '/'
+    publicPath: config.client.webpack.publicPath
   },
   plugins: [
     ...hmrPlugin,
