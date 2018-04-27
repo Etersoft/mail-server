@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Mailing } from '../../reducers/mailings';
-import { MailingDetailView } from '../MailingDetailView';
+import { MailingDetailView, MailingEditData } from '../MailingDetailView';
 import { connect } from 'react-redux';
 import { RootState } from '../../reducers';
 import { Dispatch } from 'redux';
@@ -9,6 +9,8 @@ import { stopMailing } from '../../actions/stopMailing';
 import { reloadSingleMailing } from '../../actions/reloadSingleMailing';
 import { deleteMailing } from '../../actions/deleteMailing';
 import { sendTestEmail } from '../../actions/sendTestEmail';
+import { cloneMailing } from '../../actions/cloneMailing';
+import { updateMailingOnServer } from '../../actions/updateMailingOnServer';
 
 
 function mapStateToProps (state: RootState) {
@@ -22,13 +24,17 @@ function mapStateToProps (state: RootState) {
 
 function mapDispatchToProps (dispatch: Dispatch<RootState>) {
   return {
+    onClone: (mailing: Mailing) => dispatch(cloneMailing(mailing)),
     onDelete: (mailing: Mailing) => dispatch(deleteMailing(mailing.id)),
     onRefresh: (mailing: Mailing) => dispatch(reloadSingleMailing(mailing.id)),
     onSendTestEmail: (mailing: Mailing, email: string) => dispatch(
       sendTestEmail(mailing, email)
     ),
     onStart: (mailing: Mailing) => dispatch(startMailing(mailing.id)),
-    onStop: (mailing: Mailing) => dispatch(stopMailing(mailing.id))
+    onStop: (mailing: Mailing) => dispatch(stopMailing(mailing.id)),
+    onUpdate: (mailing: Mailing, editData: MailingEditData) => dispatch(
+      updateMailingOnServer(mailing, editData)
+    )
   };
 }
 

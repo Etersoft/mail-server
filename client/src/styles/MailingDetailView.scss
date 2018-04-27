@@ -1,6 +1,11 @@
 .mailing-detail-view {
-  .details {
-    padding: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 700px;
+
+  .details, .test-email, .form {
+    padding: 8px 20px;
   }
 
   .field-name, .field-value {
@@ -8,5 +13,10 @@
     font-size: 14px;
     font-weight: normal;
     margin: 0;
+  }
+
+  .form {
+    display: flex;
+    flex: 1;
   }
 }

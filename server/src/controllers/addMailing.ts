@@ -34,7 +34,8 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     logger.verbose(`#${mailing.id}: assigned List-Id = ${listId}`);
 
     res.json(success({
-      id: mailing.id
+      id: mailing.id,
+      listId
     }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
@@ -87,8 +88,10 @@ const requestBodyJsonSchema = {
     }
   },
   required: [
+    'headers',
     'html',
     'name',
-    'receivers'
+    'receivers',
+    'subject'
   ]
 };

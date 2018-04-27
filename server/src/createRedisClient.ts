@@ -17,6 +17,7 @@ export interface PromiseRedisClient extends RedisClient {
   lrangeAsync (key: string, from: number, to: number): Promise<string[]>;
   multi (): PromiseMulti;
   mgetAsync (keys: string[]): Promise<string[]>;
+  rpushAsync (key: string, items: string[]): Promise<void>;
   setAsync (key: string, value: string): Promise<void>;
   unwatchAsync (): Promise<void>;
   watchAsync (keys: string[]): Promise<void>;

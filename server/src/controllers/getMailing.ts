@@ -22,6 +22,7 @@ export function getMailing (mailingRepository: MailingRepository) {
     }
 
     res.json(success({
+      headers: mailing.headers || {},
       html: mailing.html,
       id: mailing.id,
       listId: mailing.listId,
@@ -29,6 +30,7 @@ export function getMailing (mailingRepository: MailingRepository) {
       replyTo: mailing.replyTo,
       sentCount: mailing.sentCount,
       state: req.query.stringState ? MailingState[mailing.state] : mailing.state,
+      subject: mailing.subject,
       undeliveredCount: mailing.undeliveredCount
     }));
   });

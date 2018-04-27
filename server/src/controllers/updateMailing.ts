@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
-import { MailingState } from '../Mailing';
+import { MailingState, Mailing } from '../Mailing';
 import { MailingStateManager } from 'src/MailingStateManager';
 import { Logger } from '../Logger';
 
@@ -24,10 +24,20 @@ export function updateMailing (
         mailing.html = req.body.html;
         logger.verbose(`#${mailing.id}: updating HTML content`);
       }
-  
-      if (typeof req.body.name === 'string') {
-        mailing.name = req.body.name;
-        logger.verbose(`#${mailing.id}: updating name ${mailing.name} -> ${req.body.name}`);
+
+      const fields = ['headers', 'name', 'replyTo', 'subject'] as (keyof Mailing)[];
+
+      for (const field of fields) {
+        if (req.body[field] !== undefined) {
+          mailing[field] = req.body[field];
+          logger.verbose(
+            `#${mailing.id}: updating ${field} ${JSON.stringify(
+              mailing[field], null, 2
+            )} -> ${JSON.stringify(
+              req.body[field], null, 2
+            )}`
+          );
+        }
       }
     });
 
@@ -36,7 +46,12 @@ export function updateMailing (
       return;
     }
 
-    if (req.body.state !== mailing.state) {
+    if (req.body.receivers) {
+      mailingRepository.setReceivers(mailing.id, req.body.receivers);
+      logger.verbose(`#${mailing.id}: updating receivers list`);
+    }
+
+    if (req.body.state !== undefined && req.body.state !== mailing.state) {
       const toState = (typeof req.body.state === 'string') ?
                       MailingState[req.body.state.toUpperCase()] : req.body.state;
       const validChange = await stateManager.changeState(mailing, toState);
@@ -61,16 +76,41 @@ const requestBodyJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
-    state: {
-      type: ['integer', 'string']
+    headers: {
+      type: 'object',
+      additionalProperties: true
+    },
+    html: {
+      type: 'string',
+      minLength: 1
     },
     name: {
       type: 'string',
       minLength: 1
     },
-    html: {
+    receivers: {
+      type: 'array',
+      minLength: 1,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          email: {
+            type: 'string'
+          }
+        },
+        required: ['email']
+      }
+    },
+    replyTo: {
+      type: 'string'
+    },
+    state: {
+      type: ['integer', 'string']
+    },
+    subject: {
       type: 'string',
-      minLength: 1
+      minLength: 1,
     }
   }
 };

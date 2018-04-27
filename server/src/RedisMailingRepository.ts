@@ -121,6 +121,20 @@ implements MailingRepository {
     });
   }
 
+  async setReceivers (id: number, receivers: Receiver[]): Promise<void> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const jsonReceiversList = receivers.map(props => JSON.stringify({
+        email: props.email
+      }));
+      const key = this.getReceiversListKey(id);
+ 
+      const multi = redisClient.multi();
+      multi.del(key);
+      multi.rpush(key, jsonReceiversList);
+      await multi.execAsync();
+    });
+  }
+
   async update (mailing: Mailing): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       if (!mailing.id) {

@@ -13,7 +13,41 @@ export interface ReceiverListProps {
 export class ReceiverList extends React.Component<ReceiverListProps> {
   private fileInput: HTMLInputElement | null;
 
-  changeFile = async (event: React.FormEvent<HTMLInputElement>) => {
+  render () {
+    const items = this.props.receivers.slice(0, MAX_RECEIVERS).map((receiver, index) => {
+      return (
+        <li key={index}>{receiver.email}</li>
+      );
+    });
+    const overflow = (this.props.receivers.length > MAX_RECEIVERS) ? (
+      <li className='overflow-item'>
+        ...и ещё {this.props.receivers.length - MAX_RECEIVERS} получателей
+      </li>
+    ) : null;
+    return (
+      <div className='list-block with-border'>
+        <h4 className='block-header'>
+          Получатели ({this.props.receivers.length})
+          <div className='header-actions'>
+            <button className='action' onClick={this.loadFromFile}>
+              Из файла
+            </button>
+            <button className='action' onClick={this.reset}>
+              Очистить
+            </button>
+          </div>
+        </h4>
+        <ul className='list'>
+          {items}
+          {overflow}
+        </ul>
+        <input type='file' onChange={this.changeFile}
+               ref={el => this.fileInput = el} style={{ display: 'none' }}/>
+      </div>
+    );
+  }
+
+  private changeFile = async (event: React.FormEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files && event.currentTarget.files[0];
     if (file) {
       const fileString = await this.readFile(file);
@@ -30,41 +64,10 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
     }
   }
 
-  loadFromFile = () => {
+  private loadFromFile = () => {
     if (this.fileInput) {
       this.fileInput.click();
     }
-  }
-
-  render () {
-    const items = this.props.receivers.slice(0, MAX_RECEIVERS).map((receiver, index) => {
-      return (
-        <li key={index}>{receiver.email}</li>
-      );
-    });
-    const overflow = (this.props.receivers.length > MAX_RECEIVERS) ? (
-      <li className='overflow-item'>
-        ...и ещё {this.props.receivers.length - MAX_RECEIVERS} получателей
-      </li>
-    ) : null;
-    return (
-      <div className='list-block with-border'>
-        <h4 className='block-header'>
-          Список получателей ({this.props.receivers.length})
-          <div className='header-actions'>
-            <button className='action' onClick={this.loadFromFile}>
-              Загрузить из файла
-            </button>
-          </div>
-        </h4>
-        <ul className='list'>
-          {items}
-          {overflow}
-        </ul>
-        <input type='file' onChange={this.changeFile}
-               ref={el => this.fileInput = el} style={{ display: 'none' }}/>
-      </div>
-    );
   }
 
   private readFile (file: File): Promise<string> {
@@ -74,5 +77,11 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       reader.onerror = reject;
       reader.readAsText(file);
     });
+  }
+
+  private reset = () => {
+    if (this.props.onChange) {
+      this.props.onChange([]);
+    }
   }
 }

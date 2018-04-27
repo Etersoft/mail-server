@@ -14,7 +14,7 @@ export interface Mailing {
   headers: Headers;
   html: string;
   id: number;
-  listId?: string;
+  listId: string;
   locked: boolean;
   name: string;
   receivers?: Receiver[];
@@ -30,11 +30,12 @@ export interface Receiver {
 }
 
 
-function createMailing (data: MailingCreateData, id: number): Mailing {
+function createMailing (data: MailingCreateData, id: number, listId: string): Mailing {
   return {
     headers: {},
     html: data.html,
     id,
+    listId,
     locked: false,
     name: data.name,
     receivers: data.receivers,
@@ -101,7 +102,9 @@ export function mailings (state: MailingListState = initialState, action: Action
       });
     case ActionTypes.ADD_MAILING:
       const mailingsList = getAllMailings(state);
-      mailingsList.push(createMailing(action.data.mailing, action.data.id));
+      mailingsList.push(createMailing(
+        action.data.mailing, action.data.id, action.data.listId
+      ));
       return createMailingListState(mailingsList);
     case ActionTypes.UPDATE_MAILING:
       return updateMailing(state, action.data.id, action.data.fields);

@@ -8,7 +8,6 @@ export function reloadSingleMailing (id: number) {
   return async function (dispatch: Dispatch<RootState>) {
     const mailing = await getMailingById(id);
     dispatch(updateMailing(id, {
-      listId: mailing.listId,
       sentCount: mailing.sentCount,
       state: mailing.state,
       undeliveredCount: mailing.undeliveredCount

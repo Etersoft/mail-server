@@ -17,7 +17,7 @@ export function reloadMailingsData () {
           undeliveredCount: mailing.undeliveredCount
         }));
       } else {
-        dispatch(addMailing(mailing as any, mailing.id));
+        dispatch(addMailing(mailing as any, mailing.id, mailing.listId));
       }
     });
   };

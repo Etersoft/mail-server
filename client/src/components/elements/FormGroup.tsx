@@ -3,16 +3,25 @@ import '../../styles/FormGroup';
 
 
 export interface FormGroupProps {
+  fraction?: number;
   horizontal?: boolean;
+  inline?: boolean;
   stretch?: boolean;
-  title: string;
+  title?: string;
 }
 
 export class FormGroup extends React.Component<FormGroupProps> {
   render () {
+    const style: any = {};
+    if (this.props.fraction) {
+      style.flex = this.props.fraction;
+    }
+    const title = this.props.title ? (
+      <span className='input-name'>{this.props.title}</span>
+    ) : null;
     return (
-      <div className={this.constructClassName()}>
-        <span className='input-name'>{this.props.title}</span>
+      <div className={this.constructClassName()} style={style}>
+        {title}
         {this.props.children}
       </div>
     );
@@ -25,6 +34,9 @@ export class FormGroup extends React.Component<FormGroupProps> {
     }
     if (this.props.horizontal) {
       classes.push('horizontal');
+    }
+    if (this.props.inline) {
+      classes.push('inline');
     }
     return classes.join(' ');
   }

@@ -42,9 +42,10 @@ export async function apiRequest (
   return jsonResponse.data;
 }
 
-export async function createMailing (mailing: MailingCreateData): Promise<number> {
-  const { id } = await apiRequest('/mailings', 'POST', null, mailing);
-  return id;
+export async function createMailing (mailing: MailingCreateData): Promise<{
+  id: number; listId: string;
+}> {
+  return apiRequest('/mailings', 'POST', null, mailing);
 }
 
 export function deleteMailing (id: number): Promise<void> {

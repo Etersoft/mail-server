@@ -34,6 +34,10 @@ export class CKEditor extends React.Component<CKEditorProps, CKEditorState> {
     ) : <Loading>Загрузка редактора...</Loading>;
   }
 
+  reset (html: string) {
+    this.editor.setData(html);
+  }
+
   private async loadEditor () {
     const { default: ClassicEditor } = await import('@ckeditor/ckeditor5-build-classic');
     this.setState({

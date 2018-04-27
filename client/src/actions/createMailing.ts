@@ -11,8 +11,8 @@ import { ActionTypes } from 'client/src/ActionTypes';
 export function createMailing (mailing: MailingCreateData) {
   return async function (dispatch: Dispatch<RootState>) {
     try {
-      const id = await createMailingOnServer(mailing);
-      dispatch(addMailing(mailing, id));
+      const { id, listId } = await createMailingOnServer(mailing);
+      dispatch(addMailing(mailing, id, listId));
       dispatch(hideAddForm());
       dispatch({
         data: id,

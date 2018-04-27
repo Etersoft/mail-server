@@ -12,6 +12,17 @@
     flex-direction: row;
   }
 
+  &.inline {
+    flex-direction: row;
+
+    .input-name {
+      margin-right: 7px;
+      position: relative;
+      top: 3px;
+      white-space: nowrap;
+    }
+  }
+
   &.stretch {
     flex: 1;
 

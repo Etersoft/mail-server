@@ -73,7 +73,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
             </div>
             <div className='form-group stretch double'>
               <span className='input-name'>Текст рассылки:</span>
-              <Editor ref={(editor: Editor) => this.editor = editor} initialHtml='' />
+              <Editor ref={(editor: Editor) => this.editor = editor} html='' />
             </div>
             <div className='form-group stretch horizontal'>
               <HeaderEditor headers={this.state.headers} onChange={this.changeHeader} />

@@ -6,7 +6,7 @@ import * as pretty from 'pretty';
 
 
 export interface EditorProps {
-  initialHtml: string;
+  html: string;
 }
 
 interface EditorState {
@@ -20,7 +20,7 @@ export class Editor extends React.Component<EditorProps, EditorState> {
   constructor (props: EditorProps) {
     super(props);
     this.state = {
-      rawHtml: props.initialHtml,
+      rawHtml: props.html,
       showRawHtml: false
     };
   }
@@ -53,6 +53,15 @@ export class Editor extends React.Component<EditorProps, EditorState> {
         </TabPanel>
       </Tabs>
     );
+  }
+
+  reset (html: string) {
+    this.setState({
+      rawHtml: html
+    });
+    if (this.editor) {
+      this.editor.reset(html);
+    }
   }
 
   private handleRawHtmlChange = (event: React.FormEvent<HTMLTextAreaElement>) => {
