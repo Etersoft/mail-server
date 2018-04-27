@@ -1,6 +1,10 @@
 @import 'animations/fade';
 @import 'animations/scale';
+@import 'Editor';
+@import 'Form';
+@import 'FormGroup';
 @import 'inputs';
+
 
 $transition: 0.3s ease;
 
@@ -48,61 +52,6 @@ $transition: 0.3s ease;
   transition: opacity $transition, transform $transition;
 
   .form {
-    display: flex;
     flex: 1;
-  }
-}
-
-.form {
-  flex-direction: column;
-  padding: 20px;
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    padding: 5px 0;
-
-    .input-name {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    &.horizontal {
-      flex-direction: row;
-    }
-
-    &.stretch {
-      flex: 1;
-
-      &.double {
-        flex: 2;
-      }
-
-      .editor-wrapper {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-
-        textarea {
-          flex: 1;
-        }
-
-        .ck-editor {
-          display: flex;
-          flex: 1;
-          flex-direction: column;
-
-          .ck-editor__main {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-          }
-
-          .ck-editor__editable {
-            height: 100%;
-          }
-        }
-      }
-    }
   }
 }

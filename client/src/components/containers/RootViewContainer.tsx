@@ -9,7 +9,8 @@ import {
 import { Mailing } from 'client/src/reducers/mailings';
 import { createMailing } from '../../actions/createMailing';
 import { hideAddForm } from '../../actions/hideAddForm';
-import { AddFormAnimator, MailingCreateData } from '../AddForm';
+import { AddForm, MailingCreateData } from '../AddForm';
+import { Animator } from '../Animator';
 
 
 export interface RootViewProps {
@@ -37,8 +38,9 @@ class RootView extends React.Component<RootViewProps> {
           </div>
           {rightColumn}
         </div>
-        <AddFormAnimator show={this.props.showAddForm} onAdd={this.props.onAdd}
-                         onClose={this.props.onHideAddForm} />
+        <Animator show={this.props.showAddForm}>
+          <AddForm onAdd={this.props.onAdd} onClose={this.props.onHideAddForm} />
+        </Animator>
       </div>
     );
   }

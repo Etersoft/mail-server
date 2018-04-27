@@ -1,0 +1,41 @@
+.form-group.stretch {
+  .react-tabs {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    .react-tabs__tab-panel--selected {
+      display: flex;
+      flex: 1;
+    }
+  }
+
+  .editor-wrapper {
+    flex: 1;
+  }
+}
+
+.editor-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  textarea {
+    flex: 1;
+  }
+
+  .ck-editor {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    .ck-editor__main {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    .ck-editor__editable {
+      height: 100%;
+    }
+  }
+}

@@ -1,0 +1,22 @@
+.form-group {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 0;
+
+  .input-name {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  &.horizontal {
+    flex-direction: row;
+  }
+
+  &.stretch {
+    flex: 1;
+
+    &.double {
+      flex: 2;
+    }
+  }
+}

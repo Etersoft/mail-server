@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Loading } from './elements/Loading';
-import '../styles/CKEditor';
 
 
 export interface CKEditorProps {
+  html: string;
 }
 
 interface CKEditorState {
@@ -29,14 +29,9 @@ export class CKEditor extends React.Component<CKEditorProps, CKEditorState> {
   }
 
   render () {
-    const content = this.state.editorModule ? (
-      <textarea ref={this.mountEditor}></textarea>
+    return this.state.editorModule ? (
+      <textarea ref={this.mountEditor} value={this.props.html}></textarea>
     ) : <Loading>Загрузка редактора...</Loading>;
-    return (
-      <div className='editor-wrapper'>
-        {content}
-      </div>
-    );
   }
 
   private async loadEditor () {
