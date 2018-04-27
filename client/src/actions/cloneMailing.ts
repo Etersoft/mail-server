@@ -18,7 +18,6 @@ export function cloneMailing (mailing: Mailing) {
         return;
       }
       const createData: MailingCreateData = {
-        headers: mailing.headers,
         html: mailing.html,
         name: mailing.name + ' (копия)',
         receivers: mailing.receivers,

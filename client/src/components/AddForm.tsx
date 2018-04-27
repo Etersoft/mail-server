@@ -3,12 +3,9 @@ import { Receiver } from '../reducers/mailings';
 import '../styles/AddForm';
 import { ReceiverList } from './ReceiverList';
 import { Editor } from './Editor';
-import { HeaderEditor } from './HeaderEditor';
-import { Headers } from 'server/src/Mailing';
 
 
 export interface MailingCreateData {
-  headers: Headers;
   html: string;
   name: string;
   receivers: Receiver[];
@@ -22,7 +19,6 @@ export interface AddFormProps {
 }
 
 interface AddFormState {
-  headers: Headers;
   name: string;
   receivers: Receiver[];
   replyTo: string;
@@ -35,7 +31,6 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   constructor (props: AddFormProps) {
     super(props);
     this.state = {
-      headers: {},
       name: '',
       receivers: [],
       replyTo: '',
@@ -76,7 +71,6 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
               <Editor ref={(editor: Editor) => this.editor = editor} html='' />
             </div>
             <div className='form-group stretch horizontal'>
-              <HeaderEditor headers={this.state.headers} onChange={this.changeHeader} />
               <ReceiverList onChange={this.changeReceivers} receivers={this.state.receivers} />
             </div>
           </div>
@@ -92,7 +86,6 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
       return;
     }
     const mailing = {
-      headers: this.state.headers,
       html: this.editor.getContent(),
       name: this.state.name,
       receivers: this.state.receivers,
@@ -104,10 +97,6 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
 
   private canAdd () {
     return this.state.name.trim().length && this.state.receivers.length;
-  }
-
-  private changeHeader = (headers: { [name: string]: string }) => {
-    this.setState({ headers });
   }
 
   private changeName = (event: React.FormEvent<HTMLInputElement>) => {

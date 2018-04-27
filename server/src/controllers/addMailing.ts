@@ -11,7 +11,6 @@ import { Logger } from '../Logger';
 export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger) {
   const handler = async function (req: Request, res: Response) {
     const properties = {
-      headers: req.body.headers,
       html: req.body.html,
       name: req.body.name,
       replyTo: req.body.replyTo,
@@ -49,10 +48,6 @@ const requestBodyJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
-    headers: {
-      type: 'object',
-      additionalProperties: true
-    },
     html: {
       type: 'string',
       minLength: 1
@@ -88,7 +83,6 @@ const requestBodyJsonSchema = {
     }
   },
   required: [
-    'headers',
     'html',
     'name',
     'receivers',

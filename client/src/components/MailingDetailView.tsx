@@ -2,13 +2,12 @@ import * as React from 'react';
 import { Mailing, Receiver } from '../reducers/mailings';
 import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
-import { MailingState, Headers } from 'server/src/Mailing';
+import { MailingState } from 'server/src/Mailing';
 import { Button, ButtonType } from './elements/Button';
 import { ConfirmationButton } from './elements/ConfirmationButton';
 import { FormGroup } from './elements/FormGroup';
 import { TextInput } from './elements/TextInput';
 import pick from 'lodash-es/pick';
-import { HeaderEditor } from './HeaderEditor';
 import { Editor } from './Editor';
 import { ReceiverList } from './ReceiverList';
 
@@ -16,7 +15,6 @@ import { ReceiverList } from './ReceiverList';
 const REFRESH_INTERVAL = 1000;
 
 const editableFields = {
-  headers: 'Заголовки',
   html: 'Текст рассылки',
   name: 'Название',
   receivers: 'Получатели',
@@ -26,7 +24,6 @@ const editableFields = {
 const keys = Object.keys(editableFields);
 
 export interface MailingEditData {
-  headers: Headers;
   html: string;
   name: string;
   receivers: Receiver[];

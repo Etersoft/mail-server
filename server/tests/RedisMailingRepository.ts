@@ -36,7 +36,6 @@ describe('RedisMailingRepository', () => {
 
     beforeEach(async () => {
       const mailing = await repositoryOne.create({
-        headers: {},
         html: testHtml,
         name: testName,
         sentCount: 0,

@@ -2,10 +2,6 @@ import { Receiver } from './Receiver';
 import { MailingRepository } from './MailingRepository';
 
 
-export interface Headers {
-  [name: string]: string;
-}
-
 export enum MailingState {
   NEW = 1,
   RUNNING = 2,
@@ -15,7 +11,6 @@ export enum MailingState {
 }
 
 export interface MailingProperties {
-  headers: Headers;
   html: string;
   listId?: string;
   name: string;
@@ -30,7 +25,6 @@ export interface MailingProperties {
  * Класс рассылки
  */
 export class Mailing implements MailingProperties {
-  public headers: Headers;
   public html: string;
   public listId?: string;
   public name: string;
@@ -46,7 +40,6 @@ export class Mailing implements MailingProperties {
     public repository: MailingRepository,
     private receivers?: Receiver[]
   ) {
-    this.headers = properties.headers;
     this.html = properties.html;
     this.listId = properties.listId;
     this.name = properties.name;

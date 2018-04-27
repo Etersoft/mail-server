@@ -1,6 +1,9 @@
 import { Receiver } from './Receiver';
-import { Headers } from './Mailing';
 
+
+export interface Headers {
+  [name: string]: string;
+}
 
 export interface EmailParameters {
   attachments?: Attachment[];
@@ -29,7 +32,7 @@ export class Email {
 
   constructor (parameters: EmailParameters) {
     this.attachments = parameters.attachments;
-    this.headers = parameters.headers || defaultHeaders;
+    this.headers = defaultHeaders;
     this.html = parameters.html;
     this.receivers = parameters.receivers;
     this.replyTo = parameters.replyTo;

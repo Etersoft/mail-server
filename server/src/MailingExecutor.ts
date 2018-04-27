@@ -1,7 +1,7 @@
-import { Headers, Mailing, MailingState } from './Mailing';
+import { Mailing, MailingState } from './Mailing';
 import { MailSender } from './MailSender';
 import { Receiver } from './/Receiver';
-import { Email } from './Email';
+import { Email, Headers } from './Email';
 import { EventEmitter } from 'events';
 import { MailingRepository } from 'src/MailingRepository';
 import { Logger } from './Logger';
@@ -69,7 +69,7 @@ export class MailingExecutor extends EventEmitter {
 
 
   private createEmails (mailing: Mailing, receivers: Receiver[]) {
-    const headers: Headers = Object.assign({}, mailing.headers);
+    const headers: Headers = {};
     if (mailing.listId) {
       headers['List-Id'] = mailing.listId;
     }

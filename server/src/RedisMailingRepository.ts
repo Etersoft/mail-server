@@ -32,7 +32,6 @@ implements MailingRepository {
 
   async create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing> {
     const data = {
-      headers: properties.headers,
       html: properties.html,
       name: properties.name,
       replyTo: properties.replyTo,
@@ -159,7 +158,6 @@ implements MailingRepository {
 
   protected serializeEntity (properties: MailingProperties): string {
     return JSON.stringify({
-      headers: properties.headers,
       html: properties.html,
       listId: properties.listId,
       name: properties.name,

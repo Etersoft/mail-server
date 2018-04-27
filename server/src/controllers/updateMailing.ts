@@ -25,17 +25,13 @@ export function updateMailing (
         logger.verbose(`#${mailing.id}: updating HTML content`);
       }
 
-      const fields = ['headers', 'name', 'replyTo', 'subject'] as (keyof Mailing)[];
+      const fields = ['name', 'replyTo', 'subject'] as (keyof Mailing)[];
 
       for (const field of fields) {
         if (req.body[field] !== undefined) {
           mailing[field] = req.body[field];
           logger.verbose(
-            `#${mailing.id}: updating ${field} ${JSON.stringify(
-              mailing[field], null, 2
-            )} -> ${JSON.stringify(
-              req.body[field], null, 2
-            )}`
+            `#${mailing.id}: updating ${field} ${mailing[field]} -> ${req.body[field]}`
           );
         }
       }
@@ -76,10 +72,6 @@ const requestBodyJsonSchema = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
-    headers: {
-      type: 'object',
-      additionalProperties: true
-    },
     html: {
       type: 'string',
       minLength: 1
