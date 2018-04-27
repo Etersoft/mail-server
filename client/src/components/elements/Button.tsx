@@ -3,7 +3,7 @@ import '../../styles/Button';
 
 
 export enum ButtonType {
-  DEFAULT, DANGER
+  DEFAULT, DANGER, PRIMARY
 }
 
 export interface ButtonProps {
@@ -31,7 +31,8 @@ export class Button extends React.Component<ButtonProps> {
   private getClassName () {
     let className = {
       [ButtonType.DEFAULT]: 'default',
-      [ButtonType.DANGER]: 'danger'
+      [ButtonType.DANGER]: 'danger',
+      [ButtonType.PRIMARY]: 'primary'
     }[this.props.type!] || '';
     if (this.props.small) {
       className += ' small';

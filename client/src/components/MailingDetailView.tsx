@@ -91,6 +91,9 @@ export class MailingDetailView extends React.Component<
   componentDidUpdate (prevProps: MailingDetailViewProps) {
     if (prevProps.mailing.id !== this.props.mailing.id && this.editor) {
       this.editor.reset(this.props.mailing.html);
+      this.setState({
+        changed: false
+      });
     }
   }
 
@@ -101,6 +104,8 @@ export class MailingDetailView extends React.Component<
   render () {
     const { mailing } = this.props;
     const receivers = mailing.receivers ? mailing.receivers.length : '(загрузка)';
+    const firstButton = this.renderFirstButton();
+    const spacer = firstButton ? <div className='spacer'>&nbsp;</div> : null;
     return (
       <div className='mailing-detail-view'>
         <h2 className='header'>
@@ -131,25 +136,24 @@ export class MailingDetailView extends React.Component<
             <TextInput value={this.state.fields.replyTo} onChange={this.handlers.replyTo} />
           </FormGroup>
           <FormGroup stretch fraction={2}>
-            <Editor html={this.state.fields.html} ref={(e: Editor) => this.editor = e} />
+            <Editor onChange={this.handleHtmlChange} html={this.state.fields.html}
+                    ref={(e: Editor) => this.editor = e} />
           </FormGroup>
           <FormGroup stretch>
             <ReceiverList receivers={this.state.fields.receivers}
                           onChange={this.handlers.receivers} />
           </FormGroup>
           <div className='button-group'>
-            {this.renderStateButton()}
+            {firstButton}
+            {spacer}
+            <Button disabled={!this.canEdit()} onClick={this.handleClone}>
+              Дублировать
+            </Button>
             <ConfirmationButton
-              disabled={mailing.state === MailingState.RUNNING} onClick={this.handleDelete}
+              disabled={!this.canEdit()} onClick={this.handleDelete}
               type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
               Удалить
             </ConfirmationButton>
-            <Button onClick={this.handleClone}>
-              Дублировать
-            </Button>
-            <Button onClick={this.handleSave}>
-              Сохранить изменения
-            </Button>
           </div>
         </div>
 
@@ -158,7 +162,8 @@ export class MailingDetailView extends React.Component<
             <div className='horizontal-group'>
               <TextInput value={this.state.testEmail} onChange={this.handleChangeTestEmail}
                          placeholder='Адрес...' />
-              <Button disabled={!this.state.testEmail.length} onClick={this.handleSendTestEmail}>
+              <Button disabled={!this.state.testEmail.length || !this.canEdit()}
+                      onClick={this.handleSendTestEmail}>
                 Отправить пробное письмо
               </Button>
             </div>
@@ -168,6 +173,10 @@ export class MailingDetailView extends React.Component<
     );
   }
 
+
+  private canEdit () {
+    return !this.props.mailing.locked && this.props.mailing.state !== MailingState.RUNNING;
+  }
 
   private getHandler (field: string) {
     return (value: string) => {
@@ -196,12 +205,21 @@ export class MailingDetailView extends React.Component<
     this.props.onDelete(this.props.mailing);
   }
 
+  private handleHtmlChange = () => {
+    this.setState({
+      changed: true
+    });
+  }
+
   private handleSave = () => {
     if (this.props.onUpdate && this.editor) {
       const saveData = Object.assign({}, this.state.fields, {
         html: this.editor.getContent()
       });
       this.props.onUpdate(this.props.mailing, saveData);
+      this.setState({
+        changed: false
+      });
     }
   }
 
@@ -229,19 +247,34 @@ export class MailingDetailView extends React.Component<
     }
   }
 
+  private renderFirstButton () {
+    if (this.state.changed) {
+      return (
+        <Button disabled={!this.canEdit()} onClick={this.handleSave}
+                type={ButtonType.PRIMARY}>
+          Сохранить изменения
+        </Button>
+      );
+    } else {
+      return this.renderStateButton();
+    }
+  }
+
   private renderStateButton () {
     const { mailing } = this.props;
     if (mailing.state === MailingState.FINISHED) {
       return null;
     } else if (mailing.state === MailingState.RUNNING) {
       return (
-        <Button disabled={mailing.locked} onClick={this.handleStop}>
+        <Button disabled={mailing.locked} onClick={this.handleStop}
+                type={ButtonType.PRIMARY}>
           Приостановить
         </Button>
       );
     } else {
       return (
-        <Button disabled={mailing.locked} onClick={this.handleStart}>
+        <Button disabled={mailing.locked || this.state.changed}
+                onClick={this.handleStart} type={ButtonType.PRIMARY}>
           Запустить
         </Button>
       );

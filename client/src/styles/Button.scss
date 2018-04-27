@@ -18,11 +18,20 @@
   }
 
   &.danger {
-    background-color: #f81100;
+    background-color: #f14441;
     color: white;
 
     &:not([disabled]):hover:active {
-      background-color: #dd0f00;
+      background-color: #d85049;
+    }
+  }
+
+  &.primary {
+    background-color: #3ab0ff;
+    color: white;
+
+    &:not([disabled]):hover:active {
+      background-color: #309ce4;
     }
   }
 
@@ -36,6 +45,7 @@
 
   &[disabled] {
     color: grey;
+    cursor: not-allowed;
   }
 
   &.small {
@@ -50,4 +60,11 @@
 
 .button-group {
   display: block;
+
+  .spacer {
+    border: 1px solid #bbb;
+    display: inline-block;
+    margin: 0 10px;
+    width: 0;
+  }
 }

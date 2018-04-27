@@ -4,6 +4,7 @@ import { Loading } from './elements/Loading';
 
 export interface CKEditorProps {
   html: string;
+  onChange?: (value: string) => void;
 }
 
 interface CKEditorState {
@@ -48,6 +49,11 @@ export class CKEditor extends React.Component<CKEditorProps, CKEditorState> {
   private mountEditor = async (ref: HTMLTextAreaElement | null) => {
     if (ref) {
       this.editor = await this.state.editorModule.create(ref);
+      this.editor.model.document.on('change', () => {
+        if (this.props.onChange) {
+          this.props.onChange(this.getContent());
+        }
+      });
     } else {
       await this.editor.destroy();
     }

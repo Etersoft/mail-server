@@ -7,6 +7,7 @@ import * as pretty from 'pretty';
 
 export interface EditorProps {
   html: string;
+  onChange?: (value: string) => void;
 }
 
 interface EditorState {
@@ -42,7 +43,8 @@ export class Editor extends React.Component<EditorProps, EditorState> {
         </TabList>
         <TabPanel>
           <div className='editor-wrapper'>
-            <CKEditor html={this.state.rawHtml} ref={editor => this.editor = editor} />
+            <CKEditor onChange={this.props.onChange} html={this.state.rawHtml}
+                      ref={editor => this.editor = editor} />
           </div>
         </TabPanel>
         <TabPanel>
@@ -68,6 +70,9 @@ export class Editor extends React.Component<EditorProps, EditorState> {
     this.setState({
       rawHtml: event.currentTarget.value
     });
+    if (this.props.onChange) {
+      this.props.onChange(event.currentTarget.value);
+    }
   }
 
   private handleTabSwitch = (index: number) => {
