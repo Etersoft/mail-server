@@ -9,6 +9,7 @@ export enum ButtonType {
 export interface ButtonProps {
   disabled?: boolean;
   onClick?: () => void;
+  small?: boolean;
   type?: ButtonType;
 }
 
@@ -28,9 +29,13 @@ export class Button extends React.Component<ButtonProps> {
   }
 
   private getClassName () {
-    return {
+    let className = {
       [ButtonType.DEFAULT]: 'default',
       [ButtonType.DANGER]: 'danger'
     }[this.props.type!] || '';
+    if (this.props.small) {
+      className += ' small';
+    }
+    return className;
   }
 }

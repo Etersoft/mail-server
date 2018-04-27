@@ -41,3 +41,17 @@ h3.block-header {
   margin: 0;
   padding: 12px;
 }
+
+.horizontal-group {
+  display: flex;
+  flex-direction: row;
+
+  .input {
+    flex: 1;
+    height: auto;
+  }
+
+  .input + .button {
+    margin-left: 10px;
+  }
+}

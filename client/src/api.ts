@@ -63,6 +63,12 @@ export function getReceivers (id: number): Promise<Receiver[]> {
   return apiRequest(`/mailings/${id}/receivers`);
 }
 
+export function sendTestEmail (mailingId: number, email: string): Promise<void> {
+  return apiRequest(`/mailings/${mailingId}/send-test-email`, 'POST', null, {
+    email
+  });
+}
+
 export async function updateMailing (id: number, data: any): Promise<void> {
   await apiRequest('/mailings/' + id, 'PUT', null, data);
 }

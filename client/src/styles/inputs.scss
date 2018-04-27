@@ -4,6 +4,11 @@ input.input {
   box-sizing: border-box;
   font-size: 16px;
   height: 26px;
+  outline: none !important;
   padding-left: 5px;
   width: 100%;
+
+  &:focus {
+    border: 1px solid #99f;
+  }
 }

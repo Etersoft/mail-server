@@ -8,6 +8,7 @@ import { startMailing } from '../../actions/startMailing';
 import { stopMailing } from '../../actions/stopMailing';
 import { reloadSingleMailing } from '../../actions/reloadSingleMailing';
 import { deleteMailing } from '../../actions/deleteMailing';
+import { sendTestEmail } from '../../actions/sendTestEmail';
 
 
 function mapStateToProps (state: RootState) {
@@ -23,6 +24,9 @@ function mapDispatchToProps (dispatch: Dispatch<RootState>) {
   return {
     onDelete: (mailing: Mailing) => dispatch(deleteMailing(mailing.id)),
     onRefresh: (mailing: Mailing) => dispatch(reloadSingleMailing(mailing.id)),
+    onSendTestEmail: (mailing: Mailing, email: string) => dispatch(
+      sendTestEmail(mailing, email)
+    ),
     onStart: (mailing: Mailing) => dispatch(startMailing(mailing.id)),
     onStop: (mailing: Mailing) => dispatch(stopMailing(mailing.id))
   };

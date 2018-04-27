@@ -30,7 +30,7 @@ export class CKEditor extends React.Component<CKEditorProps, CKEditorState> {
 
   render () {
     return this.state.editorModule ? (
-      <textarea ref={this.mountEditor} value={this.props.html}></textarea>
+      <textarea ref={this.mountEditor} defaultValue={this.props.html}></textarea>
     ) : <Loading>Загрузка редактора...</Loading>;
   }
 

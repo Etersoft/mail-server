@@ -30,8 +30,8 @@ export class ConfirmationButton extends React.Component<
       return (
         <div className='confirmation-button active'>
           <span className='comment'>Вы уверены?</span>
-          <Button type={this.props.typeYes} onClick={this.handleAccept}>Да</Button>
-          <Button type={this.props.typeNo} onClick={this.handleReject}>Нет</Button>
+          <Button small type={this.props.typeYes} onClick={this.handleAccept}>Да</Button>
+          <Button small type={this.props.typeNo} onClick={this.handleReject}>Нет</Button>
         </div>
       );
     } else {

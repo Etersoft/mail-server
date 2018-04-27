@@ -5,6 +5,7 @@ export enum ActionTypes {
   ADD_MAILING,
   DELETE_MAILING,
   UPDATE_MAILING,
+  SEND_TEST_EMAIL,
   // UI actions
   SHOW_ADD_FORM,
   HIDE_ADD_FORM,

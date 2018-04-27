@@ -1,5 +1,8 @@
 .confirmation-button {
-  display: inline-block;
+  align-items: center;
+  display: inline-flex;
+  height: 32px;
+  padding: 0 5px;
 
   &.active {
     border: 1px solid #ddd;

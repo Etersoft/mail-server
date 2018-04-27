@@ -18,6 +18,7 @@ import { SmtpMailSender } from './SmtpMailSender';
 import { deleteMailing } from './controllers/deleteMailing';
 import { RedisAddressStatsRepository } from './RedisAddressStatsRepository';
 import { RedisConnectionPoolImpl } from './RedisConnectionPool';
+import { sendTestEmail } from './controllers/sendTestEmail';
 
 
 async function main () {
@@ -54,7 +55,7 @@ async function main () {
   );
   await stateManager.initialize();
   const app = createExpressServer(config.server);
-  setupRoutes(config, app, mailingRepository, stateManager, logger);
+  setupRoutes(config, app, mailingRepository, stateManager, logger, executor);
   const port = config.server.port;
   app.listen(port, () => {
     logger.info(`Listening on port ${port}`);
@@ -67,13 +68,14 @@ async function main () {
 
 function setupRoutes (
   config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
-  logger: Logger
+  logger: Logger, executor: MailingExecutor
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(config, repository, logger));
   app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
   app.get('/mailings/:id/receivers', getReceivers(repository));
+  app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger))
   app.delete('/mailings/:id', deleteMailing(repository, logger));
 }
 

@@ -5,6 +5,8 @@ import { MailingStateView } from './MailingStateView';
 import { MailingState } from 'server/src/Mailing';
 import { Button, ButtonType } from './elements/Button';
 import { ConfirmationButton } from './elements/ConfirmationButton';
+import { FormGroup } from './elements/FormGroup';
+import { TextInput } from './elements/TextInput';
 
 
 const REFRESH_INTERVAL = 1000;
@@ -13,12 +15,26 @@ export interface MailingDetailViewProps {
   mailing: Mailing;
   onDelete: (mailing: Mailing) => void;
   onRefresh?: (mailing: Mailing) => void;
+  onSendTestEmail?: (mailing: Mailing, address: string) => void;
   onStart?: (mailing: Mailing) => void;
   onStop?: (mailing: Mailing) => void;
 }
 
-export class MailingDetailView extends React.Component<MailingDetailViewProps> {
+interface MailingDetailViewState {
+  testEmail: string;
+}
+
+export class MailingDetailView extends React.Component<
+  MailingDetailViewProps, MailingDetailViewState
+> {
   private refreshInterval: number;
+
+  constructor (props: MailingDetailViewProps) {
+    super(props);
+    this.state = {
+      testEmail: ''
+    };
+  }
 
   componentDidMount () {
     this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL) as any;
@@ -58,20 +74,47 @@ export class MailingDetailView extends React.Component<MailingDetailViewProps> {
           <h5 className='field-name'>Количество ошибок доставки (DSN status 4.* или 5.*): </h5>
           <span className='field-value'>{mailing.undeliveredCount}</span><br />
           <br />
-          {this.renderStateButton()}
-          <ConfirmationButton
-            disabled={mailing.state === MailingState.RUNNING} onClick={this.handleDelete}
-            type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
-            Удалить рассылку
-          </ConfirmationButton>
+
+          <div className='button-group'>
+            {this.renderStateButton()}
+            <ConfirmationButton
+              disabled={mailing.state === MailingState.RUNNING} onClick={this.handleDelete}
+              type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
+              Удалить рассылку
+            </ConfirmationButton>
+          </div>
+
+          <br />
+          <br />
+          <FormGroup title='Отправить пробное письмо:'>
+            <div className='horizontal-group'>
+              <TextInput value={this.state.testEmail} onChange={this.handleChangeTestEmail}
+                         placeholder='Адрес...' />
+              <Button disabled={!this.state.testEmail.length} onClick={this.handleSendTestEmail}>
+                Отправить
+              </Button>
+            </div>
+          </FormGroup>
         </div>
       </div>
     );
   }
 
 
+  private handleChangeTestEmail = (value: string) => {
+    this.setState({
+      testEmail: value
+    });
+  }
+
   private handleDelete = () => {
     this.props.onDelete(this.props.mailing);
+  }
+
+  private handleSendTestEmail = () => {
+    if (this.props.onSendTestEmail) {
+      this.props.onSendTestEmail(this.props.mailing, this.state.testEmail);
+    }
   }
 
   private handleStart = () => {

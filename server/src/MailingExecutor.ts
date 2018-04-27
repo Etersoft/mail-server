@@ -39,6 +39,12 @@ export class MailingExecutor extends EventEmitter {
     });
   }
 
+  async sendTestEmail (mailing: Mailing, address: string) {
+    const [ email ] = this.createEmails(mailing, [new Receiver(address)]);
+    await this.mailer.sendEmail(email);
+    this.logger.verbose(`#${mailing.id}: sent test email to ${address}`);
+  }
+
   async startExecution (mailing: Mailing): Promise<void> {
     if (mailing.state === MailingState.RUNNING) { return; }
 
