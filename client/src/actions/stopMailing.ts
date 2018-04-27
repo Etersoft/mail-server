@@ -4,7 +4,7 @@ import { RootState } from '../reducers/index';
 import { updateMailing as updateMailingOnServer } from '../api';
 import { MailingState } from '../../../server/src/Mailing';
 import { updateMailing } from './updateMailing';
-import { notifyAboutError } from './notifyAboutError';
+import { notifyAboutError } from './notify';
 
 
 export function stopMailing (id: number) {
@@ -21,7 +21,10 @@ export function stopMailing (id: number) {
         state: MailingState.PAUSED
       }));
     } catch (error) {
-      dispatch(notifyAboutError('Не удалось остановить рассылку'));
+      dispatch(notifyAboutError('Не удалось остановить рассылку.'));
+      dispatch(updateMailing(id, {
+        locked: false
+      }));
     }
   };
 }

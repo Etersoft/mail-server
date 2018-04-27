@@ -2,8 +2,8 @@ import { ActionTypes } from '../ActionTypes';
 import { Dispatch } from 'redux';
 import { RootState } from '../reducers/index';
 import { deleteMailing as deleteMailingFromServer } from '../api';
-import { notifyAboutError } from './notifyAboutError';
 import { lockMailing } from './lockMailing';
+import { notifyAboutError, notifySuccess } from './notify';
 
 
 export function deleteMailing (id: number) {
@@ -15,9 +15,10 @@ export function deleteMailing (id: number) {
         data: id,
         type: ActionTypes.DELETE_MAILING
       });
+      dispatch(notifySuccess('Рассылка удалена успешно.'));
     } catch (error) {
       dispatch(lockMailing(id, false));
-      dispatch(notifyAboutError(error));
+      dispatch(notifyAboutError('Не удалось удалить рассылку.'));
     }
   };
 }

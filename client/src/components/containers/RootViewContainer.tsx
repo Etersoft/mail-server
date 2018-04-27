@@ -11,9 +11,12 @@ import { createMailing } from '../../actions/createMailing';
 import { hideAddForm } from '../../actions/hideAddForm';
 import { AddForm, MailingCreateData } from '../AddForm';
 import { Animator } from '../Animator';
+import * as Notifications from 'react-notification-system-redux';
+import { Notification } from 'react-notification-system';
 
 
 export interface RootViewProps {
+  notifications: Notification[];
   onAdd: (mailing: MailingCreateData) => void;
   onHideAddForm: () => void;
   selectedMailing?: number;
@@ -41,6 +44,7 @@ class RootView extends React.Component<RootViewProps> {
         <Animator show={this.props.showAddForm}>
           <AddForm onAdd={this.props.onAdd} onClose={this.props.onHideAddForm} />
         </Animator>
+        <Notifications notifications={this.props.notifications} />
       </div>
     );
   }
@@ -48,6 +52,7 @@ class RootView extends React.Component<RootViewProps> {
 
 function mapStateToProps (state: RootState) {
   return {
+    notifications: state.notifications,
     selectedMailing: state.mailings.selected,
     showAddForm: state.ui.showAddForm
   };
