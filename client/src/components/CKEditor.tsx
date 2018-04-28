@@ -50,7 +50,8 @@ export class CKEditor extends React.Component<CKEditorProps, CKEditorState> {
     if (ref) {
       this.editor = await this.state.editorModule.create(ref);
       this.editor.model.document.on('change', () => {
-        if (this.props.onChange) {
+        const documentChanged = this.editor.model.document.differ.getChanges().length > 0;
+        if (this.props.onChange && documentChanged) {
           this.props.onChange(this.getContent());
         }
       });
