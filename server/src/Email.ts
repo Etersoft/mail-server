@@ -32,7 +32,7 @@ export class Email {
 
   constructor (parameters: EmailParameters) {
     this.attachments = parameters.attachments;
-    this.headers = defaultHeaders;
+    this.headers = parameters.headers || defaultHeaders;
     this.html = parameters.html;
     this.receivers = parameters.receivers;
     this.replyTo = parameters.replyTo;
