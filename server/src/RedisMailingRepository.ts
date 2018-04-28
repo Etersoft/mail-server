@@ -126,7 +126,7 @@ implements MailingRepository {
         email: props.email
       }));
       const key = this.getReceiversListKey(id);
- 
+
       const multi = redisClient.multi();
       multi.del(key);
       multi.rpush(key, jsonReceiversList);
@@ -139,9 +139,9 @@ implements MailingRepository {
       if (!mailing.id) {
         throw new Error('Attempt to update mailing without ID');
       }
-  
+
       const jsonString = this.serializeEntity(mailing);
-  
+
       await redisClient.setAsync(this.getCommonDataKey(mailing.id), jsonString);
     });
   }

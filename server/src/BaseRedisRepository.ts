@@ -48,7 +48,7 @@ export abstract class BaseRedisRepository<Entity, Key> {
    * 3. Выполняется transaction с multi-клиентом.
    * 4. Выполняется exec. В случае успеха, возвращается result из transaction,
    * иначе - переход к шагу 1.
-   * 
+   *
    * @param keysToWatch Ключи, изменение которых в промежутке между шагами 1 и 3 приведёт
    * к провалу exec
    * @param beforeTransaction Выполнение действий перед транзакцией - например, поиск
@@ -83,7 +83,7 @@ export abstract class BaseRedisRepository<Entity, Key> {
           return result;
         }
       }
-    };
+    }
     return this.redisConnectionPool.runWithConnection<Result | null>(scenario);
   }
 }

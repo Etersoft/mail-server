@@ -12,7 +12,7 @@ export function sendTestEmail (
 ) {
   const handler = async function (req: Request, res: Response) {
     const id = Number(req.params.id);
-    
+
     if (!(id > 0)) {
       res.status(400).json(error('Invalid ID'));
       return;

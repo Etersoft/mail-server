@@ -60,8 +60,8 @@ export class MailingStateManager {
     const allMailings = await this.mailingRepository.getAll();
     const running = allMailings.filter(mailing => mailing.state === MailingState.RUNNING);
     await Promise.all(running.map(async mailing => {
-      await this.mailingRepository.updateInTransaction(mailing.id, mailing => {
-        mailing.state = MailingState.PAUSED;
+      await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+        mailingToUpdate.state = MailingState.PAUSED;
       });
     }));
   }
@@ -95,9 +95,9 @@ export class MailingStateManager {
     let fromString;
     const toString = MailingState[to];
     const mailing = await this.mailingRepository.updateInTransaction(
-      mailingId, mailing => {
-        fromString = MailingState[mailing.state];
-        mailing.state = to;
+      mailingId, mailingToUpdate => {
+        fromString = MailingState[mailingToUpdate.state];
+        mailingToUpdate.state = to;
       }
     );
     if (mailing) {

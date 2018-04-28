@@ -41,7 +41,7 @@ export class RedisConnectionPoolImpl implements RedisConnectionPool {
   async release (client: PromiseRedisClient): Promise<void> {
     await this.pool.release(client);
   }
-  
+
   async runWithConnection<T> (
     scenario: (client: PromiseRedisClient) => Promise<T>
   ): Promise<T> {

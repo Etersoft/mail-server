@@ -27,8 +27,8 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     logger.info(`Created mailing ${properties.name} with ID #${mailing.id}`);
 
     const listId = getListId(config, mailing);
-    await mailingRepository.updateInTransaction(mailing.id, mailing => {
-      mailing.listId = listId;
+    await mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+      mailingToUpdate.listId = listId;
     });
     logger.verbose(`#${mailing.id}: assigned List-Id = ${listId}`);
 

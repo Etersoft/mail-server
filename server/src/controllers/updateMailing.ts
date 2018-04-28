@@ -19,19 +19,21 @@ export function updateMailing (
       return;
     }
 
-    const mailing = await mailingRepository.updateInTransaction(id, mailing => {
+    const mailing = await mailingRepository.updateInTransaction(id, mailingToUpdate => {
       if (typeof req.body.html === 'string') {
-        mailing.html = req.body.html;
-        logger.verbose(`#${mailing.id}: updating HTML content`);
+        mailingToUpdate.html = req.body.html;
+        logger.verbose(`#${mailingToUpdate.id}: updating HTML content`);
       }
 
-      const fields = ['name', 'replyTo', 'subject'] as (keyof Mailing)[];
+      const fields = ['name', 'replyTo', 'subject'] as Array<keyof Mailing>;
 
       for (const field of fields) {
         if (req.body[field] !== undefined) {
-          mailing[field] = req.body[field];
+          mailingToUpdate[field] = req.body[field];
           logger.verbose(
-            `#${mailing.id}: updating ${field} ${mailing[field]} -> ${req.body[field]}`
+            `#${mailingToUpdate.id}: updating ${field} ${
+              mailingToUpdate[field]
+            } -> ${req.body[field]}`
           );
         }
       }
@@ -102,7 +104,7 @@ const requestBodyJsonSchema = {
     },
     subject: {
       type: 'string',
-      minLength: 1,
+      minLength: 1
     }
   }
 };

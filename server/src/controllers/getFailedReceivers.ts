@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { AddressStatsRepository } from '../AddressStatsRepository';
+import { AddressStats } from '../AddressStats';
 
 
 export function getFailedReceivers (
@@ -28,9 +29,11 @@ export function getFailedReceivers (
     const statsList = await Promise.all(receivers.map(receiver =>
       statsRepository.getByEmail(receiver.email)
     ));
-    const list = statsList.filter(stats => stats.lastStatus).map(stats => ({
-      email: stats.email,
-      lastStatus: stats.lastStatus
+    const list = statsList
+    .filter(stats => stats && stats.lastStatus)
+    .map(stats => ({
+      email: stats!.email,
+      lastStatus: stats!.lastStatus
     }));
 
     res.json(success(list));

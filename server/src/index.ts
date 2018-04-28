@@ -79,7 +79,7 @@ function setupRoutes (
   app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
   app.get('/mailings/:id/receivers', getReceivers(repository));
   app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, statsRepository));
-  app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger))
+  app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger));
   app.delete('/mailings/:id', deleteMailing(repository, logger));
 }
 

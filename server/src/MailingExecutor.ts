@@ -76,7 +76,7 @@ export class MailingExecutor extends EventEmitter {
     if (this.config.server.mail.listUnsubscribe) {
       headers['List-Unsubscribe'] = this.config.server.mail.listUnsubscribe;
     }
-    headers['Precedence'] = 'bulk';
+    headers.Precedence = 'bulk';
 
     return receivers.map(receiver => {
       return new Email({
