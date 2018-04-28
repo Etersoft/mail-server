@@ -10,6 +10,7 @@ import { TextInput } from './elements/TextInput';
 import pick from 'lodash-es/pick';
 import { Editor } from './Editor';
 import { ReceiverList } from './ReceiverList';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 
 const REFRESH_INTERVAL = 1000;
@@ -146,10 +147,20 @@ export class MailingDetailView extends React.Component<
                     ref={(e: Editor) => this.editor = e} />
           </FormGroup>
           <FormGroup stretch horizontal>
-            <ReceiverList receivers={this.state.fields.receivers}
-                          onChange={this.handlers.receivers} />
-            <ReceiverList receivers={this.props.mailing.failedReceivers || []} unlimited
-                          title='Ошибки доставки' />
+            <Tabs>
+              <TabList>
+                <Tab>Получатели</Tab>
+                <Tab>Ошибки доставки</Tab>
+              </TabList>
+              <TabPanel>
+                <ReceiverList receivers={this.state.fields.receivers}
+                              onChange={this.handlers.receivers} />
+              </TabPanel>
+              <TabPanel>
+                <ReceiverList receivers={this.props.mailing.failedReceivers || []} unlimited
+                              title='Ошибки доставки' />
+              </TabPanel>
+            </Tabs>
           </FormGroup>
           <div className='button-group'>
             {firstButton}

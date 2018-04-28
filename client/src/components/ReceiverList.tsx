@@ -13,11 +13,11 @@ export interface ReceiverListProps {
 }
 
 export class ReceiverList extends React.Component<ReceiverListProps> {
-  private fileInput: HTMLInputElement | null;
-
   static defaultProps = {
     title: 'Получатели'
   };
+
+  private fileInput: HTMLInputElement | null;
 
   render () {
     const receivers = this.props.unlimited ?
