@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Mailing } from '../reducers/mailings';
 import '../styles/List';
-import { StateMarker } from 'client/src/components/StateMarker';
+import { StateMarker } from './StateMarker';
+import { Loading } from './elements/Loading';
 
 
 export interface MailingListProps {
@@ -16,10 +17,15 @@ export class MailingList extends React.Component<MailingListProps> {
     const items = this.props.mailings.map(mailing => {
       const className = (mailing.id === this.props.selectedMailing) ? 'selected' : '';
       const onClick = (() => this.props.onSelect && this.props.onSelect(mailing));
+      const loadingMarker = mailing.locked ? (
+        <Loading>(загрузка)</Loading>
+      ) : null;
       return (
         <li className={className} key={mailing.id} onClick={onClick}>
           <StateMarker state={mailing.state} />
           {mailing.name}
+          &nbsp;
+          {loadingMarker}
         </li>
       );
     });
