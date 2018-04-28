@@ -33,7 +33,7 @@ export function getFailedReceivers (
     .filter(stats => stats && stats.lastStatus)
     .map(stats => ({
       email: stats!.email,
-      lastStatus: stats!.lastStatus
+      status: stats!.lastStatus
     }));
 
     res.json(success(list));
