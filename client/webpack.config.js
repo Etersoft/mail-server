@@ -64,6 +64,10 @@ module.exports = {
           fallback: 'style-loader',
           use: ['css-loader']
         }) : ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.svg$/,
+        use: 'raw-loader'
       }
     ]
   },
@@ -76,7 +80,8 @@ module.exports = {
     ...hmrPlugin,
     new webpack.DefinePlugin({
       API_URL: `'${config.client.apiUrl}'`,
-      BASE_URL: `'${config.client.staticUrl}'`
+      BASE_URL: `'${config.client.staticUrl}'`,
+      IMAGE_SERVICE_URL: `'${config.client.imageServiceUrl}'`
     }),
     ...(isProduction ? [styles] : []),
     new HtmlPlugin({

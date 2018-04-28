@@ -1,6 +1,7 @@
 {
   "client": {
     "apiUrl": "/api",
+    "imageServiceUrl": "/images",
     "staticUrl": "/",
     "webpack": {
       "port": 8080,
