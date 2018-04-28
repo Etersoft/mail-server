@@ -19,6 +19,7 @@ import { deleteMailing } from './controllers/deleteMailing';
 import { RedisAddressStatsRepository } from './RedisAddressStatsRepository';
 import { RedisConnectionPoolImpl } from './RedisConnectionPool';
 import { sendTestEmail } from './controllers/sendTestEmail';
+import { getFailedReceivers } from './controllers/getFailedReceivers';
 
 
 async function main () {
@@ -55,7 +56,9 @@ async function main () {
   );
   await stateManager.initialize();
   const app = createExpressServer(config.server);
-  setupRoutes(config, app, mailingRepository, stateManager, logger, executor);
+  setupRoutes(
+    config, app, mailingRepository, stateManager, logger, executor, addressStatsRepository
+  );
   const port = config.server.port;
   app.listen(port, () => {
     logger.info(`Listening on port ${port}`);
@@ -68,13 +71,14 @@ async function main () {
 
 function setupRoutes (
   config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
-  logger: Logger, executor: MailingExecutor
+  logger: Logger, executor: MailingExecutor, statsRepository: RedisAddressStatsRepository
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(config, repository, logger));
   app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
   app.get('/mailings/:id/receivers', getReceivers(repository));
+  app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, statsRepository));
   app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger))
   app.delete('/mailings/:id', deleteMailing(repository, logger));
 }

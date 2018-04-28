@@ -13,6 +13,7 @@ import { ReceiverList } from './ReceiverList';
 
 
 const REFRESH_INTERVAL = 1000;
+const FAILED_RECEIVERS_REFRESH_INTERVAL = 30000;
 
 const editableFields = {
   html: 'Текст рассылки',
@@ -36,6 +37,7 @@ export interface MailingDetailViewProps {
   onClone?: (mailing: Mailing) => void;
   onDelete: (mailing: Mailing) => void;
   onRefresh?: (mailing: Mailing) => void;
+  onRefreshFailedReceivers?: (mailing: Mailing) => void;
   onSendTestEmail?: (mailing: Mailing, address: string) => void;
   onStart?: (mailing: Mailing) => void;
   onStop?: (mailing: Mailing) => void;
@@ -72,6 +74,7 @@ export class MailingDetailView extends React.Component<
   }
 
   private editor: Editor | null;
+  private failedReceiversRefreshInterval: number;
   private handlers: { [name: string]: (value: any) => void };
   private refreshInterval: number;
 
@@ -86,6 +89,9 @@ export class MailingDetailView extends React.Component<
 
   componentDidMount () {
     this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL) as any;
+    this.failedReceiversRefreshInterval = setInterval(
+      this.refreshFailedReceivers, FAILED_RECEIVERS_REFRESH_INTERVAL
+    ) as any;
   }
 
   componentDidUpdate (prevProps: MailingDetailViewProps) {
@@ -139,9 +145,11 @@ export class MailingDetailView extends React.Component<
             <Editor onChange={this.handleHtmlChange} html={this.state.fields.html}
                     ref={(e: Editor) => this.editor = e} />
           </FormGroup>
-          <FormGroup stretch>
+          <FormGroup stretch horizontal>
             <ReceiverList receivers={this.state.fields.receivers}
                           onChange={this.handlers.receivers} />
+            <ReceiverList receivers={this.props.mailing.failedReceivers || []} unlimited
+                          title='Ошибки доставки' />
           </FormGroup>
           <div className='button-group'>
             {firstButton}
@@ -244,6 +252,12 @@ export class MailingDetailView extends React.Component<
   private refresh = () => {
     if (this.props.onRefresh) {
       this.props.onRefresh(this.props.mailing);
+    }
+  }
+
+  private refreshFailedReceivers = () => {
+    if (this.props.onRefreshFailedReceivers) {
+      this.props.onRefreshFailedReceivers(this.props.mailing);
     }
   }
 

@@ -5,6 +5,7 @@ import { ActionTypes } from '../ActionTypes';
 import { loadReceivers } from './loadReceivers';
 import { getMailingById } from '../api';
 import { updateMailing } from './updateMailing';
+import { reloadFailedReceivers } from './reloadFailedReceivers';
 
 
 export function loadFullMailingData (id: number) {
@@ -12,5 +13,6 @@ export function loadFullMailingData (id: number) {
     const mailing = await getMailingById(id);
     dispatch(updateMailing(id, mailing));
     await dispatch(loadReceivers(mailing.id));
+    await dispatch(reloadFailedReceivers(mailing.id));
   };
 }

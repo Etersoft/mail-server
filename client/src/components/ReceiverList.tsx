@@ -8,34 +8,41 @@ const MAX_RECEIVERS = 100;
 export interface ReceiverListProps {
   onChange?: (receivers: Receiver[]) => void;
   receivers: Receiver[];
+  title?: string;
+  unlimited?: boolean;
 }
 
 export class ReceiverList extends React.Component<ReceiverListProps> {
   private fileInput: HTMLInputElement | null;
 
+  static defaultProps = {
+    title: 'Получатели'
+  };
+
   render () {
-    const items = this.props.receivers.slice(0, MAX_RECEIVERS).map((receiver, index) => {
+    const receivers = this.props.unlimited ?
+      this.props.receivers :
+      this.props.receivers.slice(0, MAX_RECEIVERS);
+    const items = receivers.map((receiver, index) => {
+      if (receiver.status) {
+        return (
+          <li key={index}>{receiver.email} (статус {receiver.status})</li>
+        );
+      }
       return (
         <li key={index}>{receiver.email}</li>
       );
     });
-    const overflow = (this.props.receivers.length > MAX_RECEIVERS) ? (
+    const overflow = (this.props.receivers.length > MAX_RECEIVERS && !this.props.unlimited) ? (
       <li className='overflow-item'>
         ...и ещё {this.props.receivers.length - MAX_RECEIVERS} получателей
       </li>
     ) : null;
     return (
-      <div className='list-block with-border'>
+      <div className='receiver-list list-block with-border'>
         <h4 className='block-header'>
-          Получатели ({this.props.receivers.length})
-          <div className='header-actions'>
-            <button className='action' onClick={this.loadFromFile}>
-              Из файла
-            </button>
-            <button className='action' onClick={this.reset}>
-              Очистить
-            </button>
-          </div>
+          {this.props.title} ({this.props.receivers.length})
+          {this.renderActions()}
         </h4>
         <ul className='list'>
           {items}
@@ -77,6 +84,23 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       reader.onerror = reject;
       reader.readAsText(file);
     });
+  }
+
+  private renderActions () {
+    if (!this.props.onChange) {
+      return null;
+    }
+
+    return (
+      <div className='header-actions'>
+        <button className='action' onClick={this.loadFromFile}>
+          Из файла
+        </button>
+        <button className='action' onClick={this.reset}>
+          Очистить
+        </button>
+      </div>
+    );
   }
 
   private reset = () => {

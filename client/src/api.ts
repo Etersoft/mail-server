@@ -60,6 +60,10 @@ export function getMailings (): Promise<Mailing[]> {
   return apiRequest('/mailings');
 }
 
+export function getFailedReceivers (id: number): Promise<Receiver[]> {
+  return apiRequest(`/mailings/${id}/failed-receivers`);
+}
+
 export function getReceivers (id: number): Promise<Receiver[]> {
   return apiRequest(`/mailings/${id}/receivers`);
 }
