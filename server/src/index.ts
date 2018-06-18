@@ -63,7 +63,7 @@ async function main () {
   app.listen(port, () => {
     logger.info(`Listening on port ${port}`);
   });
-  app.on('error', (error: Error) => {
+  app.on('error', (error: any) => {
     console.error(error);
     process.exit(1);
   });
