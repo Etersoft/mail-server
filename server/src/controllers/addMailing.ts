@@ -20,7 +20,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       subject: req.body.subject,
       undeliveredCount: 0
     };
-    const validEmails = req.body.receivers.filter((email: any) => isEmail(email));
+    const validEmails = req.body.receivers.filter((receiver: any) => isEmail(receiver.email));
 
     const receivers = validEmails.map((receiver: any) => ({
       email: receiver.email
@@ -37,7 +37,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
 
     res.json(success({
       id: mailing.id,
-      rejectedReceivers: req.body.receivers.filter((email: any) => !isEmail(email)),
+      rejectedReceivers: req.body.receivers.filter((receiver: any) => !isEmail(receiver.email)),
       listId
     }));
   };
