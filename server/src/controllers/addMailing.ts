@@ -6,6 +6,7 @@ import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { getListId } from '../getListId';
 import { Logger } from '../Logger';
+import { isEmail } from 'validator';
 
 
 export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger) {
@@ -19,7 +20,9 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       subject: req.body.subject,
       undeliveredCount: 0
     };
-    const receivers = req.body.receivers.map((receiver: any) => ({
+    const validEmails = req.body.receivers.filter((email: any) => isEmail(email));
+
+    const receivers = validEmails.map((receiver: any) => ({
       email: receiver.email
     }));
 
@@ -34,6 +37,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
 
     res.json(success({
       id: mailing.id,
+      rejectedReceivers: req.body.receivers.filter((email: any) => !isEmail(email)),
       listId
     }));
   };
@@ -68,7 +72,6 @@ const requestBodyJsonSchema = {
         additionalProperties: false,
         properties: {
           email: {
-            format: 'email',
             type: 'string'
           }
         },
