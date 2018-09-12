@@ -14,7 +14,10 @@ export interface MailingListProps {
 
 export class MailingList extends React.Component<MailingListProps> {
   render () {
-    const items = this.props.mailings.map(mailing => {
+    const sorted = this.props.mailings.slice(0).sort((a, b) => {
+      return a.id > b.id ? 1 : -1;
+    });
+    const items = sorted.map(mailing => {
       const className = (mailing.id === this.props.selectedMailing) ? 'selected' : '';
       const onClick = (() => this.props.onSelect && this.props.onSelect(mailing));
       const loadingMarker = mailing.locked ? (
