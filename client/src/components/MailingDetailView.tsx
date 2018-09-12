@@ -38,6 +38,7 @@ export interface MailingEditData {
 export interface MailingDetailViewProps {
   mailing: Mailing;
   onClone?: (mailing: Mailing) => void;
+  onCreateRetry?: (mailing: Mailing) => void;
   onDelete: (mailing: Mailing) => void;
   onRefresh?: (mailing: Mailing) => void;
   onRefreshFailedReceivers?: (mailing: Mailing) => void;
@@ -112,9 +113,13 @@ export class MailingDetailView extends React.Component<
 
   render () {
     const { mailing } = this.props;
-    const receivers = mailing.receivers ? mailing.receivers.length : '(загрузка)';
     const firstButton = this.renderFirstButton();
     const spacer = firstButton ? <div className='spacer'>&nbsp;</div> : null;
+    const retryButton = this.props.mailing.failedReceiversCount ? (
+      <Button disabled={!this.canEdit()} onClick={this.handleCreateRetry}>
+        Повтор рассылки по ошибочным адресам
+      </Button>
+    ) : null;
     return (
       <div className='mailing-detail-view'>
         <h2 className='header'>
@@ -172,6 +177,7 @@ export class MailingDetailView extends React.Component<
             <Button disabled={!this.canEdit()} onClick={this.handleClone}>
               Дублировать
             </Button>
+            {retryButton}
             <ConfirmationButton
               disabled={!this.canEdit()} onClick={this.handleDelete}
               type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
@@ -221,6 +227,12 @@ export class MailingDetailView extends React.Component<
   private handleClone = () => {
     if (this.props.onClone) {
       this.props.onClone(this.props.mailing);
+    }
+  }
+
+  private handleCreateRetry = () => {
+    if (this.props.onCreateRetry) {
+      this.props.onCreateRetry(this.props.mailing);
     }
   }
 

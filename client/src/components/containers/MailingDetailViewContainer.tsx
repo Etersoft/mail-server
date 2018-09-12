@@ -12,6 +12,7 @@ import { sendTestEmail } from '../../actions/sendTestEmail';
 import { cloneMailing } from '../../actions/cloneMailing';
 import { updateMailingOnServer } from '../../actions/updateMailingOnServer';
 import { reloadFailedReceivers } from '../../actions/reloadFailedReceivers';
+import { createRetryMailing } from '../../actions/createRetryMailing';
 
 
 function mapStateToProps (state: RootState) {
@@ -26,6 +27,7 @@ function mapStateToProps (state: RootState) {
 function mapDispatchToProps (dispatch: Dispatch<RootState>) {
   return {
     onClone: (mailing: Mailing) => dispatch(cloneMailing(mailing)),
+    onCreateRetry: (mailing: Mailing) => dispatch(createRetryMailing(mailing)),
     onDelete: (mailing: Mailing) => dispatch(deleteMailing(mailing.id)),
     onRefresh: (mailing: Mailing) => dispatch(reloadSingleMailing(mailing.id)),
     onRefreshFailedReceivers: (mailing: Mailing) => dispatch(

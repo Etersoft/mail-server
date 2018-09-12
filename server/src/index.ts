@@ -21,6 +21,7 @@ import { RedisConnectionPoolImpl } from './RedisConnectionPool';
 import { sendTestEmail } from './controllers/sendTestEmail';
 import { getFailedReceivers } from './controllers/getFailedReceivers';
 import { FailureCounter } from './FailureCounter';
+import { createRetryMailing } from './controllers/createRetryMailing';
 
 
 async function main () {
@@ -78,6 +79,9 @@ function setupRoutes (
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(config, repository, logger));
+  app.post('/mailings/create-retry', createRetryMailing(
+    config, repository, logger, failureCounter
+  ));
   app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
   app.get('/mailings/:id/receivers', getReceivers(repository));
   app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, failureCounter));

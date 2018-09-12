@@ -61,6 +61,10 @@ export async function createMailing (mailing: MailingCreateData): Promise<Create
   return apiRequest('/mailings', 'POST', null, mailing);
 }
 
+export function createRetryMailing (sourceId: number): Promise<CreateResponse> {
+  return apiRequest('/mailings/create-retry', 'POST', null, { sourceId });
+}
+
 export function deleteMailing (id: number): Promise<void> {
   return apiRequest('/mailings/' + id, 'DELETE');
 }

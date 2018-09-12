@@ -16,14 +16,14 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     let source;
     let isClone = false;
     if (req.body.sourceId) {
-      const mailing = await mailingRepository.getById(req.body.sourceId);
-      if (!mailing) {
+      const sourceMailing = await mailingRepository.getById(req.body.sourceId);
+      if (!sourceMailing) {
         res.status(404).json(error('Source mailing not found'));
         return;
       }
-      source = mailing;
+      source = sourceMailing;
       isClone = true;
-      receivers = await mailingRepository.getReceivers(mailing.id);
+      receivers = await mailingRepository.getReceivers(sourceMailing.id);
     } else {
       source = req.body;
       receivers = req.body.receivers;
@@ -51,8 +51,8 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
 
     res.json(success({
       id: mailing.id,
-      rejectedReceivers: receivers.filter(receiver => !isEmail(receiver.email)),
-      listId
+      listId,
+      rejectedReceivers: receivers.filter(receiver => !isEmail(receiver.email))
     }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
