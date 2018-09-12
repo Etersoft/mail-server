@@ -109,6 +109,7 @@ export class MailingDetailView extends React.Component<
 
   componentWillUnmount () {
     clearInterval(this.refreshInterval);
+    clearInterval(this.failedReceiversRefreshInterval);
   }
 
   render () {
