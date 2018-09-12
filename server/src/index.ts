@@ -20,6 +20,7 @@ import { RedisAddressStatsRepository } from './RedisAddressStatsRepository';
 import { RedisConnectionPoolImpl } from './RedisConnectionPool';
 import { sendTestEmail } from './controllers/sendTestEmail';
 import { getFailedReceivers } from './controllers/getFailedReceivers';
+import { FailureCounter } from './FailureCounter';
 
 
 async function main () {
@@ -36,6 +37,7 @@ async function main () {
   const addressStatsRepository = new RedisAddressStatsRepository(
     redisConnectionPool, config.server.redis.prefixes
   );
+  const failureCounter = new FailureCounter(mailingRepository, addressStatsRepository);
   const logger = new Logger(config.server.logLevel);
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
     from: config.server.mail.from,
@@ -57,7 +59,7 @@ async function main () {
   await stateManager.initialize();
   const app = createExpressServer(config.server);
   setupRoutes(
-    config, app, mailingRepository, stateManager, logger, executor, addressStatsRepository
+    config, app, mailingRepository, stateManager, logger, executor, failureCounter
   );
   const port = config.server.port;
   app.listen(port, () => {
@@ -71,14 +73,14 @@ async function main () {
 
 function setupRoutes (
   config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
-  logger: Logger, executor: MailingExecutor, statsRepository: RedisAddressStatsRepository
+  logger: Logger, executor: MailingExecutor, failureCounter: FailureCounter
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(config, repository, logger));
   app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
   app.get('/mailings/:id/receivers', getReceivers(repository));
-  app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, statsRepository));
+  app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, failureCounter));
   app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger));
   app.delete('/mailings/:id', deleteMailing(repository, logger));
 }

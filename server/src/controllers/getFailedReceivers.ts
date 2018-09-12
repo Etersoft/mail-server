@@ -2,11 +2,11 @@ import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
-import { AddressStatsRepository } from '../AddressStatsRepository';
+import { FailureCounter } from '../FailureCounter';
 
 
 export function getFailedReceivers (
-  mailingRepository: MailingRepository, statsRepository: AddressStatsRepository
+  mailingRepository: MailingRepository, failureCounter: FailureCounter
 ) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
@@ -24,25 +24,14 @@ export function getFailedReceivers (
       return;
     }
 
-    const receivers = await mailingRepository.getReceivers(id);
-    // Получаем статистику для всех адресов из рассылки
-    const statsList = await Promise.all(receivers.map(receiver =>
-      statsRepository.getByEmail(receiver.email)
-    ));
-    let list = statsList.filter(stats => stats && stats.lastStatus);
+    let list = await failureCounter.getFailedReceivers(mailing);
     const total = list.length;
     if (limit) {
       list = list.slice(0, limit);
     }
 
-    const responseList = list.map(stats => ({
-      email: stats!.email,
-      status: stats!.lastStatus
-    }));
-
     res.json(success({
-      list: responseList,
-      total
+      list, total
     }));
   });
 }
