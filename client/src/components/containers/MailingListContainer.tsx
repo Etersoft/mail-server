@@ -17,7 +17,7 @@ function mapStateToProps (state: RootState) {
 function mapDispatchToProps (dispatch: Dispatch<RootState>) {
   return {
     onSelect (mailing: Mailing): void {
-      dispatch(selectMailing(mailing));
+      dispatch(selectMailing(mailing.id));
     },
     onShowAddForm () {
       dispatch(showAddForm());

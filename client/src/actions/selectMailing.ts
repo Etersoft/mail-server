@@ -6,17 +6,17 @@ import { loadFullMailingData } from './loadFullMailingData';
 import { lockMailing } from './lockMailing';
 
 
-export function selectMailing (mailing: Mailing) {
+export function selectMailing (mailingId: number) {
   return async function (dispatch: Dispatch<RootState>) {
     try {
-      dispatch(lockMailing(mailing.id, true));
-      await dispatch(loadFullMailingData(mailing.id));
+      dispatch(lockMailing(mailingId, true));
+      await dispatch(loadFullMailingData(mailingId));
       dispatch({
-        data: mailing.id,
+        data: mailingId,
         type: ActionTypes.SELECT_MAILING
       });
     } finally {
-      dispatch(lockMailing(mailing.id, false));
+      dispatch(lockMailing(mailingId, false));
     }
   };
 }

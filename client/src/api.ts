@@ -1,6 +1,7 @@
 import { stringify } from 'query-string';
 import { Mailing, Receiver } from './reducers/mailings';
 import { MailingCreateData } from './components/AddForm';
+import { MAX_RECEIVERS } from './components/ReceiverList';
 
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -42,9 +43,16 @@ export async function apiRequest (
   return jsonResponse.data;
 }
 
-export async function createMailing (mailing: MailingCreateData): Promise<{
-  id: number; listId: string;
-}> {
+export interface CreateResponse {
+  id: number;
+  listId: string;
+}
+
+export function cloneMailing (sourceId: number): Promise<CreateResponse> {
+  return apiRequest('/mailings', 'POST', null, { sourceId });
+}
+
+export async function createMailing (mailing: MailingCreateData): Promise<CreateResponse> {
   return apiRequest('/mailings', 'POST', null, mailing);
 }
 
@@ -64,8 +72,11 @@ export function getFailedReceivers (id: number): Promise<Receiver[]> {
   return apiRequest(`/mailings/${id}/failed-receivers`);
 }
 
-export function getReceivers (id: number): Promise<Receiver[]> {
-  return apiRequest(`/mailings/${id}/receivers`);
+export function getReceivers (id: number): Promise<{
+  list: Receiver[],
+  total: number
+}> {
+  return apiRequest(`/mailings/${id}/receivers?limit=${MAX_RECEIVERS}`);
 }
 
 export function sendTestEmail (mailingId: number, email: string): Promise<void> {

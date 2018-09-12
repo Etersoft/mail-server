@@ -18,6 +18,7 @@ export interface Mailing {
   locked: boolean;
   name: string;
   receivers?: Receiver[];
+  receiversCount?: number;
   replyTo?: string;
   sentCount: number;
   state: MailingState;

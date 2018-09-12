@@ -20,6 +20,7 @@ const editableFields = {
   html: 'Текст рассылки',
   name: 'Название',
   receivers: 'Получатели',
+  receiversCount: 'Количество получателей',
   replyTo: 'Обратный адрес (Reply-To)',
   subject: 'Тема письма'
 };
@@ -29,6 +30,7 @@ export interface MailingEditData {
   html: string;
   name: string;
   receivers: Receiver[];
+  receiversCount: number;
   replyTo: string;
   subject: string;
 }
@@ -154,6 +156,7 @@ export class MailingDetailView extends React.Component<
               </TabList>
               <TabPanel>
                 <ReceiverList receivers={this.state.fields.receivers}
+                              receiversCount={this.state.fields.receiversCount}
                               onChange={this.handlers.receivers} />
               </TabPanel>
               <TabPanel>

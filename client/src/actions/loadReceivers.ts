@@ -8,9 +8,10 @@ import { notifyAboutError } from './notify';
 export function loadReceivers (id: number) {
   return async function (dispatch: Dispatch<RootState>) {
     try {
-      const receivers = await getReceiversFromServer(id);
+      const { list, total } = await getReceiversFromServer(id);
       dispatch(updateMailing(id, {
-        receivers
+        receivers: list,
+        receiversCount: total
       }));
     } catch (error) {
       dispatch(notifyAboutError('Не удалось загрузить список рассылок.'));

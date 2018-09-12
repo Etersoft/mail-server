@@ -7,16 +7,23 @@ import { catchPromise } from '../utils/catchPromise';
 export function getReceivers (mailingRepository: MailingRepository) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
 
     if (!(id > 0)) {
       res.status(400).json(error('Invalid ID'));
       return;
     }
 
-    const receivers = await mailingRepository.getReceivers(id);
+    let receivers = await mailingRepository.getReceivers(id);
+    const total = receivers.length;
+    if (limit) {
+      receivers = receivers.slice(0, limit);
+    }
     const list = receivers.map(receiver => ({
       email: receiver.email
     }));
-    res.json(success(list));
+    res.json(success({
+      list, total
+    }));
   });
 }

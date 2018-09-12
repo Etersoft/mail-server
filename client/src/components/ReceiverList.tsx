@@ -3,11 +3,12 @@ import { Receiver } from '../reducers/mailings';
 import '../styles/ReceiverList';
 
 
-const MAX_RECEIVERS = 100;
+export const MAX_RECEIVERS = 10;
 
 export interface ReceiverListProps {
   onChange?: (receivers: Receiver[]) => void;
   receivers: Receiver[];
+  receiversCount?: number;
   title?: string;
   unlimited?: boolean;
 }
@@ -23,6 +24,7 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
     const receivers = this.props.unlimited ?
       this.props.receivers :
       this.props.receivers.slice(0, MAX_RECEIVERS);
+    const length = this.props.receiversCount || this.props.receivers.length;
     const items = receivers.map((receiver, index) => {
       if (receiver.status) {
         return (
@@ -33,15 +35,15 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
         <li key={index}>{receiver.email}</li>
       );
     });
-    const overflow = (this.props.receivers.length > MAX_RECEIVERS && !this.props.unlimited) ? (
+    const overflow = (length > MAX_RECEIVERS && !this.props.unlimited) ? (
       <li className='overflow-item'>
-        ...и ещё {this.props.receivers.length - MAX_RECEIVERS} получателей
+        ...и ещё {length - MAX_RECEIVERS} получателей
       </li>
     ) : null;
     return (
       <div className='receiver-list list-block with-border'>
         <h4 className='block-header'>
-          {this.props.title} ({this.props.receivers.length})
+          {this.props.title} ({length})
           {this.renderActions()}
         </h4>
         <ul className='list'>
