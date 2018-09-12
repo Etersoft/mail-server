@@ -10,7 +10,6 @@ import { TextInput } from './elements/TextInput';
 import pick from 'lodash-es/pick';
 import { Editor } from './Editor';
 import { ReceiverList } from './ReceiverList';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 
 
 const REFRESH_INTERVAL = 1000;
@@ -209,6 +208,18 @@ export class MailingDetailView extends React.Component<
   }
 
   private getHandler (field: string) {
+    if (field === 'receivers') {
+      return (value: ReadonlyArray<Receiver>) => {
+        this.setState({
+          changed: true,
+          fields: Object.assign({}, this.state.fields, {
+            receivers: value,
+            receiversCount: value.length
+          })
+        });
+      };
+    }
+
     return (value: string) => {
       this.setState({
         changed: true,
