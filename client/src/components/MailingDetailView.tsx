@@ -121,6 +121,24 @@ export class MailingDetailView extends React.Component<
         Повтор рассылки по ошибочным адресам
       </Button>
     ) : null;
+    const listTabs = [
+      {
+        content: (
+          <ReceiverList receivers={this.state.fields.receivers}
+                        receiversCount={this.state.fields.receiversCount}
+                        onChange={this.handlers.receivers} key='1' />
+        ),
+        name: 'Получатели'
+      },
+      {
+        content: (
+          <ReceiverList receivers={this.props.mailing.failedReceivers || []}
+                        receiversCount={this.props.mailing.failedReceiversCount}
+                        title='Ошибки доставки' key='2' />
+        ),
+        name: 'Ошибки доставки'
+      }
+    ];
     return (
       <div className='mailing-detail-view'>
         <h2 className='header'>
@@ -152,25 +170,7 @@ export class MailingDetailView extends React.Component<
           </FormGroup>
           <FormGroup stretch fraction={2}>
             <Editor onChange={this.handleHtmlChange} html={this.state.fields.html}
-                    ref={(e: Editor) => this.editor = e} />
-          </FormGroup>
-          <FormGroup stretch horizontal>
-            <Tabs>
-              <TabList>
-                <Tab>Получатели</Tab>
-                <Tab>Ошибки доставки</Tab>
-              </TabList>
-              <TabPanel>
-                <ReceiverList receivers={this.state.fields.receivers}
-                              receiversCount={this.state.fields.receiversCount}
-                              onChange={this.handlers.receivers} />
-              </TabPanel>
-              <TabPanel>
-                <ReceiverList receivers={this.props.mailing.failedReceivers || []}
-                              receiversCount={this.props.mailing.failedReceiversCount}
-                              title='Ошибки доставки' />
-              </TabPanel>
-            </Tabs>
+                    ref={(e: Editor) => this.editor = e} additionalTabs={listTabs} />
           </FormGroup>
           <div className='button-group'>
             {firstButton}

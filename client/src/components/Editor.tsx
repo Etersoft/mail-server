@@ -6,13 +6,16 @@ import * as pretty from 'pretty';
 
 
 export interface EditorProps {
+  additionalTabs?: ReadonlyArray<{
+    content: JSX.Element; name: string;
+  }>;
   html: string;
   onChange?: (value: string) => void;
 }
 
 interface EditorState {
   rawHtml: string;
-  showRawHtml: boolean;
+  tabIndex: number;
 }
 
 export class Editor extends React.Component<EditorProps, EditorState> {
@@ -22,12 +25,12 @@ export class Editor extends React.Component<EditorProps, EditorState> {
     super(props);
     this.state = {
       rawHtml: props.html,
-      showRawHtml: false
+      tabIndex: 0
     };
   }
 
   getContent () {
-    if (this.state.showRawHtml) {
+    if (this.showRawHtml) {
       return this.state.rawHtml;
     } else if (this.editor) {
       return this.editor.getContent();
@@ -35,24 +38,39 @@ export class Editor extends React.Component<EditorProps, EditorState> {
   }
 
   render () {
+    const tabs = [
+      {
+        content: (
+          <CKEditor onChange={this.props.onChange} html={this.state.rawHtml}
+                    ref={editor => this.editor = editor} />
+        ),
+        name: 'Редактор'
+      },
+      {
+        content: (
+          <textarea value={this.state.rawHtml} onChange={this.handleRawHtmlChange}>
+          </textarea>
+        ),
+        name: 'HTML'
+      }
+    ].concat(this.props.additionalTabs || []);
+
+    const tabElements = tabs.map(tab =>
+      <Tab key={tab.name}>{tab.name}</Tab>
+    );
+    const tabPanels = tabs.map(tab =>
+      <TabPanel key={tab.name}>
+        <div className='editor-wrapper'>
+          {tab.content}
+        </div>
+      </TabPanel>
+    );
     return (
-      <Tabs selectedIndex={this.state.showRawHtml ? 1 : 0} onSelect={this.handleTabSwitch}>
+      <Tabs selectedIndex={this.state.tabIndex} onSelect={this.handleTabSwitch}>
         <TabList>
-          <Tab>Редактор</Tab>
-          <Tab>HTML</Tab>
+          {tabElements}
         </TabList>
-        <TabPanel>
-          <div className='editor-wrapper'>
-            <CKEditor onChange={this.props.onChange} html={this.state.rawHtml}
-                      ref={editor => this.editor = editor} />
-          </div>
-        </TabPanel>
-        <TabPanel>
-          <div className='editor-wrapper'>
-            <textarea value={this.state.rawHtml} onChange={this.handleRawHtmlChange}>
-            </textarea>
-          </div>
-        </TabPanel>
+        {tabPanels}
       </Tabs>
     );
   }
@@ -79,12 +97,16 @@ export class Editor extends React.Component<EditorProps, EditorState> {
     if (index === 1 && this.editor) {
       this.setState({
         rawHtml: pretty(this.editor.getContent()),
-        showRawHtml: true
+        tabIndex: index
       });
     } else {
       this.setState({
-        showRawHtml: false
+        tabIndex: index
       });
     }
+  }
+
+  private get showRawHtml () {
+    return this.state.tabIndex === 1;
   }
 }
