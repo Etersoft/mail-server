@@ -12,6 +12,7 @@ export interface MailingListState {
 
 export interface Mailing {
   failedReceivers?: Receiver[];
+  failedReceiversCount?: number;
   html: string;
   id: number;
   listId: string;

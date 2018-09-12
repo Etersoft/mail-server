@@ -160,7 +160,8 @@ export class MailingDetailView extends React.Component<
                               onChange={this.handlers.receivers} />
               </TabPanel>
               <TabPanel>
-                <ReceiverList receivers={this.props.mailing.failedReceivers || []} unlimited
+                <ReceiverList receivers={this.props.mailing.failedReceivers || []}
+                              receiversCount={this.props.mailing.failedReceiversCount}
                               title='Ошибки доставки' />
               </TabPanel>
             </Tabs>

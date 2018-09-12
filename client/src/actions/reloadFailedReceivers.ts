@@ -7,9 +7,10 @@ import { updateMailing } from './updateMailing';
 
 export function reloadFailedReceivers (id: number) {
   return async function (dispatch: Dispatch<RootState>) {
-    const failedReceivers = await getFailedReceivers(id);
+    const { list, total } = await getFailedReceivers(id);
     dispatch(updateMailing(id, {
-      failedReceivers
+      failedReceivers: list,
+      failedReceiversCount: total
     }));
   };
 }

@@ -48,6 +48,11 @@ export interface CreateResponse {
   listId: string;
 }
 
+export interface ReceiverList {
+  list: Receiver[];
+  total: number;
+}
+
 export function cloneMailing (sourceId: number): Promise<CreateResponse> {
   return apiRequest('/mailings', 'POST', null, { sourceId });
 }
@@ -68,14 +73,11 @@ export function getMailings (): Promise<Mailing[]> {
   return apiRequest('/mailings');
 }
 
-export function getFailedReceivers (id: number): Promise<Receiver[]> {
-  return apiRequest(`/mailings/${id}/failed-receivers`);
+export function getFailedReceivers (id: number): Promise<ReceiverList> {
+  return apiRequest(`/mailings/${id}/failed-receivers?limit=${MAX_RECEIVERS}`);
 }
 
-export function getReceivers (id: number): Promise<{
-  list: Receiver[],
-  total: number
-}> {
+export function getReceivers (id: number): Promise<ReceiverList> {
   return apiRequest(`/mailings/${id}/receivers?limit=${MAX_RECEIVERS}`);
 }
 

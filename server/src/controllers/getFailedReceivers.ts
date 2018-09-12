@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { AddressStatsRepository } from '../AddressStatsRepository';
-import { AddressStats } from '../AddressStats';
 
 
 export function getFailedReceivers (
@@ -11,6 +10,7 @@ export function getFailedReceivers (
 ) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
 
     if (!(id > 0)) {
       res.status(400).json(error('Invalid ID'));
@@ -29,13 +29,20 @@ export function getFailedReceivers (
     const statsList = await Promise.all(receivers.map(receiver =>
       statsRepository.getByEmail(receiver.email)
     ));
-    const list = statsList
-    .filter(stats => stats && stats.lastStatus)
-    .map(stats => ({
+    let list = statsList.filter(stats => stats && stats.lastStatus);
+    const total = list.length;
+    if (limit) {
+      list = list.slice(0, limit);
+    }
+
+    const responseList = list.map(stats => ({
       email: stats!.email,
       status: stats!.lastStatus
     }));
 
-    res.json(success(list));
+    res.json(success({
+      list: responseList,
+      total
+    }));
   });
 }
