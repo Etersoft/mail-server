@@ -4,6 +4,7 @@ import { Receiver, ReceiverProperties } from './Receiver';
 import { MailingRepository } from './MailingRepository';
 import { BaseRedisRepository } from './BaseRedisRepository';
 import { RedisConnectionPool } from './RedisConnectionPool';
+import * as moment from 'moment';
 
 
 export interface RedisMailingRepositoryConfig {
@@ -32,6 +33,7 @@ implements MailingRepository {
 
   async create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing> {
     const data = {
+      creationDate: properties.creationDate,
       html: properties.html,
       name: properties.name,
       replyTo: properties.replyTo,
@@ -158,6 +160,7 @@ implements MailingRepository {
 
   protected serializeEntity (properties: MailingProperties): string {
     return JSON.stringify({
+      creationDate: properties.creationDate ? properties.creationDate.unix() : undefined,
       html: properties.html,
       listId: properties.listId,
       name: properties.name,
@@ -181,6 +184,9 @@ implements MailingRepository {
   private parseMailing (jsonString: string | null, id: number): Mailing | null {
     if (!jsonString) { return null; }
     const object = JSON.parse(jsonString);
+    if (Number.isInteger(object.creationDate)) {
+      object.creationDate = moment.unix(object.creationDate);
+    }
     return new Mailing(id, object, this);
   }
 }

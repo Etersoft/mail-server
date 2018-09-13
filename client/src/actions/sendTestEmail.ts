@@ -1,5 +1,5 @@
 import { Mailing } from '../reducers/mailings';
-import { Dispatch } from 'react-redux';
+import { Dispatch } from 'redux';
 import { RootState } from '../reducers/index';
 import { ActionTypes } from '../ActionTypes';
 import { loadReceivers } from './loadReceivers';

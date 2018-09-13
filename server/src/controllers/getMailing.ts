@@ -22,6 +22,7 @@ export function getMailing (mailingRepository: MailingRepository) {
     }
 
     res.json(success({
+      creationDate: mailing.creationDate && mailing.creationDate.unix(),
       html: mailing.html,
       id: mailing.id,
       listId: mailing.listId,

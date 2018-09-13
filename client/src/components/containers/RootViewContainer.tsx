@@ -2,7 +2,8 @@ import * as React from 'react';
 import '../../styles/RootView';
 import { MailingListContainer } from './MailingListContainer';
 import { RootState } from 'client/src/reducers';
-import { connect, Dispatch } from 'react-redux';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import {
   MailingDetailViewContainer
 } from './MailingDetailViewContainer';

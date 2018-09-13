@@ -25,16 +25,16 @@ export function updateMailing (
         logger.verbose(`#${mailingToUpdate.id}: updating HTML content`);
       }
 
-      const fields = ['name', 'replyTo', 'subject'] as Array<keyof Mailing>;
+      const fields = ['name', 'replyTo', 'subject'];
 
       for (const field of fields) {
         if (req.body[field] !== undefined) {
-          mailingToUpdate[field] = req.body[field];
           logger.verbose(
             `#${mailingToUpdate.id}: updating ${field} ${
-              mailingToUpdate[field]
+              (mailingToUpdate as any)[field]
             } -> ${req.body[field]}`
           );
+          (mailingToUpdate as any)[field] = req.body[field];
         }
       }
     });

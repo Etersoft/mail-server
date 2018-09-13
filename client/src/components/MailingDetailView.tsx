@@ -138,6 +138,14 @@ export class MailingDetailView extends React.Component<
         name: 'Ошибки доставки'
       }
     ];
+    const creationDateInfo = mailing.creationDate ? (
+      <React.Fragment>
+        <h5 className='field-name'>Дата создания: </h5>
+        <span className='field-value'>
+          {mailing.creationDate.format('DD.MM.YYYY HH:mm:ss')}
+        </span><br />
+      </React.Fragment>
+    ) : null;
     return (
       <div className='mailing-detail-view'>
         <h2 className='header'>
@@ -146,6 +154,8 @@ export class MailingDetailView extends React.Component<
         <div className='details'>
           <h5 className='field-name'>List-Id: </h5>
           <span className='field-value'>{mailing.listId}</span><br />
+
+          {creationDateInfo}
 
           <h5 className='field-name'>Состояние: </h5>
           <span className='field-value'><MailingStateView state={mailing.state} /></span><br />

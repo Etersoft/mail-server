@@ -1,5 +1,6 @@
 import { Receiver } from './Receiver';
 import { MailingRepository } from './MailingRepository';
+import * as moment from 'moment';
 
 
 export enum MailingState {
@@ -11,6 +12,7 @@ export enum MailingState {
 }
 
 export interface MailingProperties {
+  creationDate?: moment.Moment;
   html: string;
   listId?: string;
   name: string;
@@ -33,6 +35,7 @@ export class Mailing implements MailingProperties {
   public sentCount: number;
   public subject: string;
   public undeliveredCount: number;
+  private savedCreationDate?: moment.Moment;
 
   constructor (
     public id: number,
@@ -40,6 +43,7 @@ export class Mailing implements MailingProperties {
     public repository: MailingRepository,
     private receivers?: Receiver[]
   ) {
+    this.savedCreationDate = properties.creationDate;
     this.html = properties.html;
     this.listId = properties.listId;
     this.name = properties.name;
@@ -48,6 +52,22 @@ export class Mailing implements MailingProperties {
     this.sentCount = properties.sentCount || 0;
     this.subject = properties.subject;
     this.undeliveredCount = properties.undeliveredCount || 0;
+  }
+
+  /**
+   * Хак: если дата не определена, то пытаемся вынуть её из названия
+   */
+  get creationDate (): moment.Moment | undefined {
+    if (this.savedCreationDate) {
+      return this.savedCreationDate;
+    }
+
+    const matchIndex = this.name.search(/\d{2}\.\d{2}\.\d{4} \d{2}\:\d{2}\:\d{2}/g);
+    if (matchIndex === -1) {
+      return undefined;
+    }
+
+    return moment(this.name.slice(matchIndex), 'DD.MM.YYYY HH:mm:ss');
   }
 
   async getReceivers (): Promise<ReadonlyArray<Receiver>> {

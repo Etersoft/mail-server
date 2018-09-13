@@ -2,6 +2,7 @@ import { MailingState } from 'server/src/Mailing';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
 import { MailingCreateData } from '../components/AddForm';
+import * as moment from 'moment';
 
 
 export interface MailingListState {
@@ -11,6 +12,7 @@ export interface MailingListState {
 }
 
 export interface Mailing {
+  creationDate?: moment.Moment;
   failedReceivers?: Receiver[];
   failedReceiversCount?: number;
   html: string;

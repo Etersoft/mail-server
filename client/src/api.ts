@@ -2,6 +2,7 @@ import { stringify } from 'query-string';
 import { Mailing, Receiver } from './reducers/mailings';
 import { MailingCreateData } from './components/AddForm';
 import { MAX_RECEIVERS } from './components/ReceiverList';
+import * as moment from 'moment';
 
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -69,8 +70,12 @@ export function deleteMailing (id: number): Promise<void> {
   return apiRequest('/mailings/' + id, 'DELETE');
 }
 
-export function getMailingById (id: number): Promise<Mailing> {
-  return apiRequest(`/mailings/${id}`);
+export async function getMailingById (id: number): Promise<Mailing> {
+  const mailing = await apiRequest(`/mailings/${id}`);
+  if (mailing.creationDate) {
+    mailing.creationDate = moment.unix(mailing.creationDate);
+  }
+  return mailing;
 }
 
 export function getMailings (): Promise<Mailing[]> {

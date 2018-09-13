@@ -1,4 +1,4 @@
-import { Dispatch } from 'react-redux';
+import { Dispatch } from 'redux';
 import { RootState } from '../reducers/index';
 import { loadReceivers } from './loadReceivers';
 import { getFailedReceivers } from '../api';
