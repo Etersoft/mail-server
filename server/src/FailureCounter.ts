@@ -16,11 +16,20 @@ export class FailureCounter {
 
   async getFailedReceivers (mailing: Mailing): Promise<FailedReceiver[]> {
     const receivers = await this.mailingRepository.getReceivers(mailing.id);
+  
     // Получаем статистику для всех адресов из рассылки
-    const statsList = await Promise.all(receivers.map(receiver =>
+    let statsList = await Promise.all(receivers.map(receiver =>
       this.statsRepository.getByEmail(receiver.email)
     ));
-    return statsList.filter(stats => stats && stats.lastStatus).map(stats => ({
+    statsList = statsList.filter(stats => stats && stats.lastStatus);
+
+    if (mailing.creationDate) {
+      statsList = statsList.filter(stats =>
+        mailing.creationDate!.isBefore(stats!.lastStatusDate)
+      );
+    }
+
+    return statsList.map(stats => ({
       email: stats!.email,
       status: stats!.lastStatus!
     }));
