@@ -10,10 +10,10 @@ import { TextInput } from './elements/TextInput';
 import pick from 'lodash-es/pick';
 import { Editor } from './Editor';
 import { ReceiverList } from './ReceiverList';
+import { FailureList } from './FailureList';
 
 
 const REFRESH_INTERVAL = 1000;
-const FAILED_RECEIVERS_REFRESH_INTERVAL = 30000;
 
 const editableFields = {
   html: 'Текст рассылки',
@@ -77,7 +77,6 @@ export class MailingDetailView extends React.Component<
   }
 
   private editor: Editor | null;
-  private failedReceiversRefreshInterval: number;
   private handlers: { [name: string]: (value: any) => void };
   private refreshInterval: number;
 
@@ -92,9 +91,6 @@ export class MailingDetailView extends React.Component<
 
   componentDidMount () {
     this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL) as any;
-    this.failedReceiversRefreshInterval = setInterval(
-      this.refreshFailedReceivers, FAILED_RECEIVERS_REFRESH_INTERVAL
-    ) as any;
   }
 
   componentDidUpdate (prevProps: MailingDetailViewProps) {
@@ -108,7 +104,6 @@ export class MailingDetailView extends React.Component<
 
   componentWillUnmount () {
     clearInterval(this.refreshInterval);
-    clearInterval(this.failedReceiversRefreshInterval);
   }
 
   render () {
@@ -131,9 +126,7 @@ export class MailingDetailView extends React.Component<
       },
       {
         content: (
-          <ReceiverList receivers={this.props.mailing.failedReceivers || []}
-                        receiversCount={this.props.mailing.failedReceiversCount}
-                        title='Ошибки доставки' key='2' />
+          <FailureList mailing={this.props.mailing} onReload={this.refreshFailedReceivers} />
         ),
         name: 'Ошибки доставки'
       }

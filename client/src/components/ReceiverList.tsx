@@ -5,7 +5,14 @@ import '../styles/ReceiverList';
 
 export const MAX_RECEIVERS = 10;
 
+export interface ReceiverListButton {
+  onClick: () => void;
+  text: string;
+}
+
 export interface ReceiverListProps {
+  buttons?: ReceiverListButton[];
+  loading?: boolean;
   onChange?: (receivers: Receiver[]) => void;
   receivers: Receiver[];
   receiversCount?: number;
@@ -25,7 +32,11 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       this.props.receivers :
       this.props.receivers.slice(0, MAX_RECEIVERS);
     const length = this.props.receiversCount || this.props.receivers.length;
-    const items = receivers.map((receiver, index) => {
+    const content = this.props.loading ? (
+      <li className='overflow-item'>
+        (загрузка)
+      </li>
+    ) : receivers.map((receiver, index) => {
       if (receiver.status) {
         return (
           <li key={index}>{receiver.email} (статус {receiver.status})</li>
@@ -35,7 +46,9 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
         <li key={index}>{receiver.email}</li>
       );
     });
-    const overflow = (length > MAX_RECEIVERS && !this.props.unlimited) ? (
+    const overflow = (
+      length > MAX_RECEIVERS && !this.props.unlimited && !this.props.loading
+    ) ? (
       <li className='overflow-item'>
         ...и ещё {length - MAX_RECEIVERS} получателей
       </li>
@@ -47,7 +60,7 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
           {this.renderActions()}
         </h4>
         <ul className='list'>
-          {items}
+          {content}
           {overflow}
         </ul>
         <input type='file' onChange={this.changeFile}
@@ -89,18 +102,27 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
   }
 
   private renderActions () {
-    if (!this.props.onChange) {
-      return null;
-    }
-
-    return (
-      <div className='header-actions'>
+    const stdButtons = this.props.onChange ? (
+      <React.Fragment>
         <button className='action' onClick={this.loadFromFile}>
           Из файла
         </button>
         <button className='action' onClick={this.reset}>
           Очистить
         </button>
+      </React.Fragment>
+    ) : null;
+
+    const buttons = (this.props.buttons || []).map(button =>
+      <button className='action' key={button.text} onClick={button.onClick}>
+        {button.text}
+      </button>
+    );
+
+    return (
+      <div className='header-actions'>
+        {stdButtons}
+        {buttons}
       </div>
     );
   }

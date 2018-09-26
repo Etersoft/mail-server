@@ -18,6 +18,7 @@ export interface Mailing {
   html: string;
   id: number;
   listId: string;
+  loadingFailedReceivers: boolean;
   locked: boolean;
   name: string;
   receivers?: Receiver[];
@@ -40,6 +41,7 @@ function createMailing (data: MailingCreateData, id: number, listId: string): Ma
     html: data.html,
     id,
     listId,
+    loadingFailedReceivers: false,
     locked: false,
     name: data.name,
     receivers: data.receivers,
