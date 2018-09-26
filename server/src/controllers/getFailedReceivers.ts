@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { FailureCounter } from '../FailureCounter';
-import { sleep } from '../utils/sleep';
 
 
 export function getFailedReceivers (
@@ -19,14 +18,13 @@ export function getFailedReceivers (
     }
 
     const mailing = await mailingRepository.getById(id);
-    await sleep(5000);
 
     if (!mailing) {
       res.status(404).json(error('Mailing not found'));
       return;
     }
 
-    let list = await failureCounter.getFailedReceivers(mailing);
+    let list = await failureCounter.getFailedReceivers(mailing, limit);
     const total = list.length;
     if (limit) {
       list = list.slice(0, limit);
