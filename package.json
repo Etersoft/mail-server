@@ -36,7 +36,7 @@
     "@types/lodash-es": "^4.17.0",
     "@types/nodemailer": "^4.6.0",
     "@types/query-string": "^5.1.0",
-    "@types/react-dom": "^16.0.4",
+    "@types/react-dom": "^16.0.7",
     "@types/react-notification-system": "^0.2.37",
     "@types/react-notification-system-redux": "^1.1.5",
     "@types/react-onclickoutside": "^6.0.3",
