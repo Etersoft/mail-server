@@ -88,6 +88,7 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
 
   private loadFromFile = () => {
     if (this.fileInput) {
+      this.fileInput.value = '';
       this.fileInput.click();
     }
   }
