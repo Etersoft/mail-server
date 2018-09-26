@@ -14,9 +14,12 @@ export function updateMailingOnServer (mailing: Mailing, editData: MailingEditDa
     try {
       dispatch(lockMailing(mailing.id, true));
       await updateMailingApi(mailing.id, pick(editData, [
-        'html', 'name', 'subject', 'replyTo', 'receivers'
+        'html', 'name', 'subject', 'replyTo', ...(editData.receiversChanged ? ['receivers'] : [])
       ]));
-      dispatch(updateMailing(mailing.id, editData));
+      dispatch(updateMailing(mailing.id, {
+        ...editData,
+        receiversChanged: false
+      }));
       dispatch(notifySuccess('Рассылка изменена.'));
     } catch (error) {
       dispatch(notifyAboutError('Не удалось изменить рассылку.'));
