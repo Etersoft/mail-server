@@ -14,11 +14,8 @@ export function getReceivers (mailingRepository: MailingRepository) {
       return;
     }
 
-    let receivers = await mailingRepository.getReceivers(id);
-    const total = receivers.length;
-    if (limit) {
-      receivers = receivers.slice(0, limit);
-    }
+    const receivers = await mailingRepository.getReceivers(id, 0, limit || -1);
+    const total = await mailingRepository.getReceiverCount(id);
     const list = receivers.map(receiver => ({
       email: receiver.email
     }));

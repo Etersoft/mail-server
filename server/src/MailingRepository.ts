@@ -18,6 +18,7 @@ export interface MailingRepository {
    * Получение списка получателей
    */
   getReceivers (id: number, start?: number, stop?: number): Promise<Receiver[]>;
+  getReceiverCount (id: number): Promise<number>;
   setReceivers (id: number, receivers: Receiver[]): Promise<void>;
   remove (mailing: Mailing): Promise<void>;
   update (mailing: Mailing): Promise<void>;

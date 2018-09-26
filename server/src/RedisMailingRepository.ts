@@ -102,15 +102,22 @@ implements MailingRepository {
   async getReceivers (id: number, start: number = 0, stop: number = -1): Promise<Receiver[]> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const key = this.config.receiversListKeyPrefix + id;
-      // Вычитаем 1 из-за поведения Redis, которое не совпадает с JS.
+      // Вычитаем 1 из stop из-за поведения Redis, которое не совпадает с JS.
       // См. https://redis.io/commands/lrange
       // В JS stop не включительный
-      const data = await redisClient.lrangeAsync(key, start, stop - 1);
+      const data = await redisClient.lrangeAsync(key, start, stop > 0 ? stop - 1 : stop);
 
       return data.map(jsonString => {
         const object = JSON.parse(jsonString);
         return new Receiver(object.email, object.name);
       });
+    });
+  }
+
+  async getReceiverCount (id: number): Promise<number> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const key = this.config.receiversListKeyPrefix + id;
+      return await redisClient.llenAsync(key);
     });
   }
 
