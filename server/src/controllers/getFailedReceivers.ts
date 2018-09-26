@@ -24,7 +24,7 @@ export function getFailedReceivers (
       return;
     }
 
-    let list = await failureCounter.getFailedReceivers(mailing, limit);
+    let list = await failureCounter.getFailedReceivers(mailing);
     const total = list.length;
     if (limit) {
       list = list.slice(0, limit);
