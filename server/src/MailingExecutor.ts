@@ -6,6 +6,7 @@ import { EventEmitter } from 'events';
 import { MailingRepository } from 'src/MailingRepository';
 import { Logger } from './Logger';
 import { AddressStatsRepository } from './AddressStatsRepository';
+import { isEmail } from 'validator';
 
 
 export class MailingExecutor extends EventEmitter {
@@ -78,7 +79,17 @@ export class MailingExecutor extends EventEmitter {
     }
     headers.Precedence = 'bulk';
 
-    return receivers.map(receiver => {
+    return receivers.filter(receiver => {
+      if (!receiver) {
+        this.logger.warn(`#${mailing.id}: dropping empty receiver object`);
+        return false;
+      }
+      if (!isEmail(receiver.email)) {
+        this.logger.warn(`#${mailing.id}: dropping non-email ${receiver.email}`);
+        return false;
+      }
+      return true;
+    }).map(receiver => {
       return new Email({
         headers,
         html: mailing.html,
