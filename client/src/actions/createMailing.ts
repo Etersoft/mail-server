@@ -5,7 +5,7 @@ import { createMailing as createMailingOnServer } from '../api';
 import { addMailing } from './addMailing';
 import { hideAddForm } from './hideAddForm';
 import { notifyAboutError, notifySuccess } from './notify';
-import { ActionTypes } from 'client/src/ActionTypes';
+import { selectMailing } from './selectMailing';
 
 
 export function createMailing (mailing: MailingCreateData) {
@@ -14,10 +14,7 @@ export function createMailing (mailing: MailingCreateData) {
       const { id, listId } = await createMailingOnServer(mailing);
       dispatch(addMailing(mailing, id, listId));
       dispatch(hideAddForm());
-      dispatch({
-        data: id,
-        type: ActionTypes.SELECT_MAILING
-      });
+      dispatch(selectMailing(id));
       dispatch(notifySuccess('Рассылка создана успешно.'));
     } catch (error) {
       dispatch(notifyAboutError('Не удалось создать рассылку.'));
