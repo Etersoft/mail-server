@@ -8,6 +8,7 @@ import { getListId } from '../getListId';
 import { Logger } from '../Logger';
 import { isEmail } from 'validator';
 import { Receiver } from '../Receiver';
+import * as moment from 'moment';
 
 
 export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger) {
@@ -30,6 +31,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     }
 
     const properties = {
+      creationDate: moment(),
       html: source.html,
       name: source.name + (isClone ? ' (копия)' : ''),
       replyTo: source.replyTo,
