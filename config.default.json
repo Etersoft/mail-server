@@ -16,6 +16,7 @@
       "listIdDomain": "some.domain"
     },
     "port": 8000,
+    "receiverBatchSize": 100,
     "redis": {
       "db": 0,
       "pool": {

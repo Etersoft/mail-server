@@ -41,7 +41,7 @@ export class MailingExecutor extends EventEmitter {
   }
 
   async sendTestEmail (mailing: Mailing, address: string) {
-    const [ email ] = this.createEmails(mailing, [new Receiver(address)]);
+    const email = this.createEmail(mailing, new Receiver(address));
     await this.mailer.sendEmail(email);
     this.logger.verbose(`#${mailing.id}: sent test email to ${address}`);
   }
@@ -51,25 +51,23 @@ export class MailingExecutor extends EventEmitter {
 
     this.logger.debug(`#${mailing.id}: starting execution`);
 
-    const unsentReceivers = await mailing.getUnsentReceivers();
-    this.logger.debug(`#${mailing.id}: ${unsentReceivers.length} unsent receivers`);
-    if (!unsentReceivers.length) {
-      this.logger.warn(`#${mailing.id}: has no unsent receivers, but is not finished`);
-      this.emit(MailingExecutorEvents.MAILING_FINISHED, mailing.id);
-      return;
-    }
-    const emails = this.createEmails(mailing, unsentReceivers);
-
     this.executionStates.set(mailing.id, { stopping: false });
     this.emit(MailingExecutorEvents.MAILING_STARTED, mailing.id);
     // Это не ошибка - не ждём через await намеренно, пусть выполняется в фоне
-    this.runMailing(mailing.id, emails).catch(error => {
+    this.runMailing(mailing).catch(error => {
       this.emit(MailingExecutorEvents.MAILING_ERROR, mailing.id, error);
     });
   }
 
+  private checkReceiver (mailing: Mailing, receiver: Receiver) {
+    if (!isEmail(receiver.email)) {
+      this.logger.warn(`#${mailing.id}: dropping non-email ${receiver.email}`);
+      return false;
+    }
+    return true;
+  }
 
-  private createEmails (mailing: Mailing, receivers: Receiver[]) {
+  private createEmail (mailing: Mailing, receiver: Receiver) {
     const headers: Headers = {};
     if (mailing.listId) {
       headers['List-Id'] = mailing.listId;
@@ -79,24 +77,12 @@ export class MailingExecutor extends EventEmitter {
     }
     headers.Precedence = 'bulk';
 
-    return receivers.filter(receiver => {
-      if (!receiver) {
-        this.logger.warn(`#${mailing.id}: dropping empty receiver object`);
-        return false;
-      }
-      if (!isEmail(receiver.email)) {
-        this.logger.warn(`#${mailing.id}: dropping non-email ${receiver.email}`);
-        return false;
-      }
-      return true;
-    }).map(receiver => {
-      return new Email({
-        headers,
-        html: mailing.html,
-        receivers: [receiver],
-        replyTo: mailing.replyTo,
-        subject: mailing.subject
-      });
+    return new Email({
+      headers,
+      html: mailing.html,
+      receivers: [receiver],
+      replyTo: mailing.replyTo,
+      subject: mailing.subject
     });
   }
 
@@ -105,8 +91,21 @@ export class MailingExecutor extends EventEmitter {
     return Boolean(state && state.stopping);
   }
 
-  private async runMailing (mailingId: number, emails: Email[]): Promise<void> {
-    for (const email of emails) {
+  private async runMailing (generalInfoMailing: Mailing): Promise<void> {
+    // generalInfoMailing - объект с общей информацией об ошибке.
+    // Он может быть устаревшим, поэтому его не обновляем напрямую,
+    // а используем updateInTransaction
+    const receivers = await generalInfoMailing.getUnsentReceiversStream(
+      this.config.server.receiverBatchSize
+    );
+
+    const mailingId = generalInfoMailing.id;
+    for await (const receiver of receivers) {
+      if (!this.checkReceiver(generalInfoMailing, receiver)) {
+        continue;
+      }
+
+      const email = this.createEmail(generalInfoMailing, receiver);
       if (this.isStopping(mailingId)) {
         this.logger.debug(`#${mailingId}: execution was stopped, exiting`);
         this.executionStates.delete(mailingId);

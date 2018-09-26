@@ -24,6 +24,9 @@ import { FailureCounter } from './FailureCounter';
 import { createRetryMailing } from './controllers/createRetryMailing';
 
 
+// Поддержка for await (... of asyncIterator) { ... }
+(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for('Symbol.asyncIterator');
+
 async function main () {
   const config = readConfig();
   // Будет исключение, если конфиг некорректный

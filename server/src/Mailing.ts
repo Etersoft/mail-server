@@ -23,6 +23,8 @@ export interface MailingProperties {
   undeliveredCount: number;
 }
 
+const DEFAULT_STREAM_BATCH_SIZE = 100;
+
 /**
  * Класс рассылки
  */
@@ -78,10 +80,28 @@ export class Mailing implements MailingProperties {
     }
   }
 
+  async *getReceiversStream (start: number = 0, batchSize: number = DEFAULT_STREAM_BATCH_SIZE) {
+    let batchId = 0;
+    let result: Receiver[];
+    do {
+      result = await this.repository.getReceivers(
+        this.id, start + batchId * batchSize, start + (batchId + 1) * batchSize
+      );
+      for (const receiver of result) {
+        yield receiver;
+      }
+      batchId++;
+    } while (result.length === batchSize);
+  }
+
   async getUnsentReceivers () {
     const receivers = await this.getReceivers();
     const unsentReceivers = receivers.slice(this.sentCount);
     return unsentReceivers;
+  }
+
+  getUnsentReceiversStream (batchSize: number = DEFAULT_STREAM_BATCH_SIZE) {
+    return this.getReceiversStream(this.sentCount, batchSize);
   }
 
   hasValidExecutionState (): boolean {

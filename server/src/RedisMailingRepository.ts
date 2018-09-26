@@ -99,10 +99,13 @@ implements MailingRepository {
     return null;
   }
 
-  async getReceivers (id: number): Promise<Receiver[]> {
+  async getReceivers (id: number, start: number = 0, stop: number = -1): Promise<Receiver[]> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const key = this.config.receiversListKeyPrefix + id;
-      const data = await redisClient.lrangeAsync(key, 0, -1);
+      // Вычитаем 1 из-за поведения Redis, которое не совпадает с JS.
+      // См. https://redis.io/commands/lrange
+      // В JS stop не включительный
+      const data = await redisClient.lrangeAsync(key, start, stop - 1);
 
       return data.map(jsonString => {
         const object = JSON.parse(jsonString);
