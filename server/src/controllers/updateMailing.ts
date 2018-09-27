@@ -6,6 +6,8 @@ import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { MailingState, Mailing } from '../Mailing';
 import { MailingStateManager } from 'src/MailingStateManager';
 import { Logger } from '../Logger';
+import { isEmail } from 'validator';
+import { Receiver } from '../Receiver';
 
 
 export function updateMailing (
@@ -45,7 +47,10 @@ export function updateMailing (
     }
 
     if (req.body.receivers) {
-      mailingRepository.setReceivers(mailing.id, req.body.receivers);
+      const validReceivers = req.body.receivers.filter((receiver: Receiver) =>
+        isEmail(receiver.email)
+      );
+      mailingRepository.setReceivers(mailing.id, validReceivers);
       logger.verbose(`#${mailing.id}: updating receivers list`);
     }
 
