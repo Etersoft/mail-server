@@ -46,11 +46,15 @@ export function updateMailing (
       return;
     }
 
+    let rejectedReceivers;
     if (req.body.receivers) {
       const validReceivers = req.body.receivers.filter((receiver: Receiver) =>
         isEmail(receiver.email)
       );
-      mailingRepository.setReceivers(mailing.id, validReceivers);
+      await mailingRepository.setReceivers(mailing.id, validReceivers);
+      rejectedReceivers = req.body.receivers.filter((receiver: Receiver) =>
+        !isEmail(receiver.email)
+      );
       logger.verbose(`#${mailing.id}: updating receivers list`);
     }
 
@@ -66,7 +70,9 @@ export function updateMailing (
 
     logger.info(`#${mailing.id}: updated`);
 
-    res.json(success());
+    res.json(success({
+      rejectedReceivers
+    }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }

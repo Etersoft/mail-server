@@ -19,6 +19,7 @@ export interface AddFormProps {
 }
 
 interface AddFormState {
+  html: string;
   name: string;
   receivers: Receiver[];
   replyTo: string;
@@ -31,6 +32,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   constructor (props: AddFormProps) {
     super(props);
     this.state = {
+      html: '',
       name: '',
       receivers: [],
       replyTo: '',
@@ -68,7 +70,8 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
             </div>
             <div className='form-group stretch double'>
               <span className='input-name'>Текст рассылки:</span>
-              <Editor ref={(editor: Editor) => this.editor = editor} html='' />
+              <Editor ref={(editor: Editor) => this.editor = editor} html={this.state.html}
+                      onChange={this.changeHtml} />
             </div>
             <div className='form-group stretch horizontal'>
               <ReceiverList onChange={this.changeReceivers} receivers={this.state.receivers} />
@@ -86,7 +89,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
       return;
     }
     const mailing = {
-      html: this.editor.getContent(),
+      html: this.state.html,
       name: this.state.name,
       receivers: this.state.receivers,
       replyTo: this.state.replyTo || undefined,
@@ -97,6 +100,12 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
 
   private canAdd () {
     return this.state.name.trim().length && this.state.receivers.length;
+  }
+
+  private changeHtml = (value: string) => {
+    this.setState({
+      html: value
+    });
   }
 
   private changeName = (event: React.FormEvent<HTMLInputElement>) => {

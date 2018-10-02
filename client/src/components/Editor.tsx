@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { CKEditor } from './CKEditor';
+import { RichTextEditor } from './RichTextEditor';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.scss';
-import * as pretty from 'pretty';
 
 
 export interface EditorProps {
@@ -14,41 +13,31 @@ export interface EditorProps {
 }
 
 interface EditorState {
-  rawHtml: string;
   tabIndex: number;
 }
 
 export class Editor extends React.Component<EditorProps, EditorState> {
-  private editor: CKEditor | null;
+  private editor: RichTextEditor | null;
 
   constructor (props: EditorProps) {
     super(props);
     this.state = {
-      rawHtml: props.html,
       tabIndex: 0
     };
-  }
-
-  getContent () {
-    if (this.showRawHtml) {
-      return this.state.rawHtml;
-    } else if (this.editor) {
-      return this.editor.getContent();
-    }
   }
 
   render () {
     const tabs = [
       {
         content: (
-          <CKEditor onChange={this.props.onChange} html={this.state.rawHtml}
-                    ref={editor => this.editor = editor} />
+          <RichTextEditor onChange={this.props.onChange} html={this.props.html}
+                          ref={editor => this.editor = editor} />
         ),
         name: 'Редактор'
       },
       {
         content: (
-          <textarea value={this.state.rawHtml} onChange={this.handleRawHtmlChange}>
+          <textarea value={this.props.html} onChange={this.handleRawHtmlChange}>
           </textarea>
         ),
         name: 'HTML'
@@ -75,38 +64,15 @@ export class Editor extends React.Component<EditorProps, EditorState> {
     );
   }
 
-  reset (html: string) {
-    this.setState({
-      rawHtml: html
-    });
-    if (this.editor) {
-      this.editor.reset(html);
-    }
-  }
-
   private handleRawHtmlChange = (event: React.FormEvent<HTMLTextAreaElement>) => {
-    this.setState({
-      rawHtml: event.currentTarget.value
-    });
     if (this.props.onChange) {
       this.props.onChange(event.currentTarget.value);
     }
   }
 
   private handleTabSwitch = (index: number) => {
-    if (index === 1 && this.editor) {
-      this.setState({
-        rawHtml: pretty(this.editor.getContent()),
-        tabIndex: index
-      });
-    } else {
-      this.setState({
-        tabIndex: index
-      });
-    }
-  }
-
-  private get showRawHtml () {
-    return this.state.tabIndex === 1;
+    this.setState({
+      tabIndex: index
+    });
   }
 }

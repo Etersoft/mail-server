@@ -78,7 +78,6 @@ export class MailingDetailView extends React.Component<
     return null;
   }
 
-  private editor: Editor | null;
   private handlers: { [name: string]: (value: any) => void };
   private refreshInterval: number;
 
@@ -93,15 +92,6 @@ export class MailingDetailView extends React.Component<
 
   componentDidMount () {
     this.refreshInterval = setInterval(this.refresh, REFRESH_INTERVAL) as any;
-  }
-
-  componentDidUpdate (prevProps: MailingDetailViewProps) {
-    if (prevProps.mailing.id !== this.props.mailing.id && this.editor) {
-      this.editor.reset(this.props.mailing.html);
-      this.setState({
-        changed: false
-      });
-    }
   }
 
   componentWillUnmount () {
@@ -173,8 +163,8 @@ export class MailingDetailView extends React.Component<
             <TextInput value={this.state.fields.replyTo} onChange={this.handlers.replyTo} />
           </FormGroup>
           <FormGroup stretch fraction={2}>
-            <Editor onChange={this.handleHtmlChange} html={this.state.fields.html}
-                    ref={(e: Editor) => this.editor = e} additionalTabs={listTabs} />
+            <Editor onChange={this.handlers.html} html={this.state.fields.html}
+                    additionalTabs={listTabs} />
           </FormGroup>
           <div className='button-group'>
             {firstButton}
@@ -265,11 +255,8 @@ export class MailingDetailView extends React.Component<
   }
 
   private handleSave = () => {
-    if (this.props.onUpdate && this.editor) {
-      const saveData = Object.assign({}, this.state.fields, {
-        html: this.editor.getContent()
-      });
-      this.props.onUpdate(this.props.mailing, saveData);
+    if (this.props.onUpdate) {
+      this.props.onUpdate(this.props.mailing, this.state.fields);
       this.setState({
         changed: false
       });

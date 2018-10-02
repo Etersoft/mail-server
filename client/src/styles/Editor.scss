@@ -27,19 +27,22 @@
     flex: 1;
   }
 
-  .ck-editor {
+  .pell-container {
     display: flex;
     flex: 1;
     flex-direction: column;
 
-    .ck-editor__main {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
+    .pell-actionbar {
+      margin-top: 1px;
+
+      .pell-button {
+        min-width: 30px;
+        width: auto;
+      }
     }
 
-    .ck-editor__editable {
-      height: 100%;
+    .pell-content {
+      flex: 1;
     }
   }
 }

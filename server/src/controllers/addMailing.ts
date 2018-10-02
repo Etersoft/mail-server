@@ -42,7 +42,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     };
     const validEmails = receivers.filter(receiver => isEmail(receiver.email));
 
-    const mailing = await mailingRepository.create(properties, receivers);
+    const mailing = await mailingRepository.create(properties, validEmails);
     logger.info(`Created mailing ${properties.name} with ID #${mailing.id}`);
 
     const listId = getListId(config, mailing);
