@@ -3,6 +3,8 @@ import { Receiver } from '../reducers/mailings';
 import '../styles/AddForm';
 import { ReceiverList } from './ReceiverList';
 import { Editor } from './Editor';
+// tslint:disable-next-line
+const template = require('email-template.html');
 
 
 export interface MailingCreateData {
@@ -32,7 +34,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   constructor (props: AddFormProps) {
     super(props);
     this.state = {
-      html: '',
+      html: template,
       name: '',
       receivers: [],
       replyTo: '',

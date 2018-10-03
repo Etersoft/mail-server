@@ -66,7 +66,7 @@ module.exports = {
         }) : ['style-loader', 'css-loader']
       },
       {
-        test: /\.svg$/,
+        test: /\.html$/,
         use: 'raw-loader'
       }
     ]
