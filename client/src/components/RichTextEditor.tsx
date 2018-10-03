@@ -11,14 +11,11 @@ export interface RichTextEditorProps {
 export class RichTextEditor extends React.Component<
   RichTextEditorProps
 > {
+  private container: HTMLDivElement;
   private editor: any;
 
   render () {
     return <div className='pell-container' ref={this.mountEditor}></div>;
-  }
-
-  reset (html: string) {
-    this.editor.setData(html);
   }
 
   private handleChange = (html: string) => {
@@ -35,6 +32,13 @@ export class RichTextEditor extends React.Component<
       try {
         const fileLink = await this.uploadFile(file);
         exec('insertImage', fileLink);
+        const image = this.container.querySelector(
+          `.pell-content img[src="${fileLink}"]`
+        ) as HTMLImageElement;
+        if (image) {
+          image.width = 500;
+          this.handleChange(this.editor.content.innerHTML);
+        }
       } catch (error) {
         alert('Не удалось загрузить картинку.');
         // tslint:disable-next-line no-console
@@ -46,6 +50,7 @@ export class RichTextEditor extends React.Component<
 
   private mountEditor = (ref: HTMLDivElement | null) => {
     if (ref) {
+      this.container = ref;
       this.editor = init({
         actions: [
           'bold',

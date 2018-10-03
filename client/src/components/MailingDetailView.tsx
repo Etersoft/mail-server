@@ -248,12 +248,6 @@ export class MailingDetailView extends React.Component<
     this.props.onDelete(this.props.mailing);
   }
 
-  private handleHtmlChange = () => {
-    this.setState({
-      changed: true
-    });
-  }
-
   private handleSave = () => {
     if (this.props.onUpdate) {
       this.props.onUpdate(this.props.mailing, this.state.fields);

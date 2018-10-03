@@ -2,6 +2,7 @@ import * as React from 'react';
 import { RichTextEditor } from './RichTextEditor';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.scss';
+import * as pretty from 'pretty';
 
 
 export interface EditorProps {
@@ -71,6 +72,9 @@ export class Editor extends React.Component<EditorProps, EditorState> {
   }
 
   private handleTabSwitch = (index: number) => {
+    if (this.state.tabIndex === 0 && this.props.onChange) {
+      this.props.onChange(pretty(this.props.html));
+    }
     this.setState({
       tabIndex: index
     });
