@@ -65,6 +65,24 @@ export class RichTextEditor extends React.Component<
           'code',
           'line',
           {
+            icon: '<small>Aa-</small>',
+            name: 'font-small',
+            result: () => exec('fontSize', 1),
+            title: 'Мелкий шрифт'
+          },
+          {
+            icon: 'Aa',
+            name: 'font-normal',
+            result: () => exec('fontSize', 3),
+            title: 'Обычный шрифт'
+          },
+          {
+            icon: '<big>Aa+</big>',
+            name: 'font-large',
+            result: () => exec('fontSize', 5),
+            title: 'Крупный шрифт'
+          },
+          {
             icon: '&lt;a href=...&gt;',
             name: 'link',
             title: 'Ссылка'
