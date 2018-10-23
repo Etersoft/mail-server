@@ -25,7 +25,9 @@ import { createRetryMailing } from './controllers/createRetryMailing';
 
 
 // Поддержка for await (... of asyncIterator) { ... }
-(Symbol as any).asyncIterator = Symbol.asyncIterator || Symbol.for('Symbol.asyncIterator');
+if (!('asyncIterator' in Symbol as any)) {
+  (Symbol as any).asyncIterator = Symbol.for('Symbol.asyncIterator');
+}
 
 async function main () {
   const config = readConfig();
