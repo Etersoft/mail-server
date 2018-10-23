@@ -60,7 +60,7 @@ export class MailingExecutor extends EventEmitter {
   }
 
   private checkReceiver (mailing: Mailing, receiver: Receiver) {
-    if (!isEmail(receiver.email)) {
+    if (!isEmail(receiver.email) || receiver.email[0] === '-') {
       this.logger.warn(`#${mailing.id}: dropping non-email ${receiver.email}`);
       return false;
     }
