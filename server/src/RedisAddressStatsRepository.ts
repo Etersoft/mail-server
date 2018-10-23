@@ -56,6 +56,7 @@ implements AddressStatsRepository {
 
   protected serializeEntity (properties: AddressStatsProperties): string {
     return JSON.stringify({
+      diagnosticCode: properties.diagnosticCode,
       email: properties.email,
       lastSendDate: properties.lastSendDate && properties.lastSendDate.toISOString(),
       lastStatus: properties.lastStatus,
@@ -70,6 +71,7 @@ implements AddressStatsRepository {
     if (!jsonString) { return null; }
     const object = JSON.parse(jsonString);
     return new AddressStats({
+      diagnosticCode: object.diagnosticCode,
       email: object.email,
       lastSendDate: object.lastSendDate && new Date(object.lastSendDate),
       lastStatus: object.lastStatus,

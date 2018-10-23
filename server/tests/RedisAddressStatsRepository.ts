@@ -13,6 +13,7 @@ use(chaiAsPromised);
 
 const testEmail = 'test-email-address@etersoft.ru';
 const nonExistentEmail = 'test-non-existent@etersoft.ru';
+const diagnosticCode = 'smtp; 500 test 123';
 
 describe('RedisAddressStatsRepository', () => {
   describe('#updateInTransaction', () => {
@@ -31,6 +32,7 @@ describe('RedisAddressStatsRepository', () => {
 
     beforeEach(async () => {
       await repositoryOne.create({
+        diagnosticCode,
         email: testEmail,
         lastSendDate: new Date(2018, 0),
         sentCount: 0
@@ -63,6 +65,22 @@ describe('RedisAddressStatsRepository', () => {
         }
       );
       assert.equal(object.spam, true);
+    });
+
+    it('should store diagnosticCode', async () => {
+      const object = await repositoryOne.getByEmail(testEmail);
+      assert.equal(object.diagnosticCode, diagnosticCode);
+    });
+
+    it('should update diagnosticCode', async () => {
+      await repositoryOne.updateInTransaction(
+        testEmail,
+        async (stats: AddressStats) => {
+          stats.diagnosticCode = 'test';
+        }
+      );
+      const object = await repositoryOne.getByEmail(testEmail);
+      assert.equal(object.diagnosticCode, 'test');
     });
 
     it('should return null for non-existent emails', async () => {

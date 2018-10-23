@@ -1,4 +1,5 @@
 export interface AddressStatsProperties {
+  diagnosticCode?: string;
   readonly email: string;
   lastSendDate?: Date;
   sentCount?: number;
@@ -10,6 +11,7 @@ export interface AddressStatsProperties {
 
 
 export class AddressStats implements AddressStatsProperties {
+  public diagnosticCode?: string;
   public readonly email: string;
   public lastSendDate?: Date;
   public sentCount?: number;
@@ -19,6 +21,7 @@ export class AddressStats implements AddressStatsProperties {
   public temporaryFailureCount: number;
 
   constructor (properties: AddressStatsProperties) {
+    this.diagnosticCode = properties.diagnosticCode;
     this.email = properties.email;
     this.lastSendDate = properties.lastSendDate;
     this.sentCount = properties.sentCount;
