@@ -33,6 +33,7 @@ export interface Mailing {
 
 export interface Receiver {
   email: string;
+  spam?: boolean;
   status?: string;
 }
 

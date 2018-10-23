@@ -45,8 +45,9 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       </li>
     ) : receivers.map((receiver, index) => {
       if (receiver.status) {
+        const comment = receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`;
         return (
-          <li key={index}>{receiver.email} (статус {receiver.status})</li>
+          <li key={index}>{receiver.email} ({comment})</li>
         );
       }
       return (
