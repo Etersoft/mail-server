@@ -19,7 +19,7 @@ export class MailingStateManager {
     [MailingState.FINISHED]: []
   };
 
-  private autoPaused: Set<number> = new Set();
+  private autoPauseIds: Map<number, number> = new Map();
   private maxEmailsWithoutPause: number;
   private pauseDuration: number;
   private sentWithoutPause: Map<number, number> = new Map();
@@ -58,6 +58,8 @@ export class MailingStateManager {
       await this.executor.pauseExecution(mailing);
       this.logger.info(`#${mailing.id}: paused`);
     }
+    this.incrementAutoPauseId(mailing.id);
+    this.sentWithoutPause.set(mailing.id, 0);
     return true;
   }
 
@@ -78,17 +80,8 @@ export class MailingStateManager {
 
   private async autoPause (mailing: Mailing) {
     this.logger.info(`#${mailing.id} has hit the limit and should be paused`);
-    await Promise.all([
-      this.changeState(mailing, MailingState.PAUSED),
-      new Promise(resolve => { // wait for actual pause
-        this.executor.once(MailingExecutorEvents.MAILING_PAUSED, (mailingId: number) => {
-          if (mailingId === mailing.id) {
-            resolve();
-          }
-        });
-      })
-    ]);
-    this.autoPaused.add(mailing.id);
+    await this.changeState(mailing, MailingState.PAUSED);
+    const thisPauseId = this.incrementAutoPauseId(mailing.id);
     this.sentWithoutPause.set(mailing.id, 0);
 
     await sleep(this.pauseDuration * 1000);
@@ -96,10 +89,10 @@ export class MailingStateManager {
     // Update mailing - it could have changed
     const updatedMailing = await this.mailingRepository.getById(mailing.id);
     if (updatedMailing && updatedMailing.state === MailingState.PAUSED &&
-        this.autoPaused.has(mailing.id)) {
+        this.autoPauseIds.get(mailing.id) === thisPauseId) {
       this.logger.info(`#${mailing.id} has been auto-paused and now should be started again`);
       await this.changeState(updatedMailing, MailingState.RUNNING);
-      this.autoPaused.delete(mailing.id);
+      this.autoPauseIds.delete(mailing.id);
     } else {
       this.logger.info(`#${mailing.id} has been auto-paused but its state has been changed`);
       this.logger.info(`    by someone after that. It will not be automatically started.`);
@@ -139,6 +132,12 @@ export class MailingStateManager {
       const updatedMailing = await this.mailingRepository.getById(mailing.id);
       await this.autoPause(updatedMailing!);
     }
+  }
+
+  private incrementAutoPauseId (mailingId: number) {
+    const pauseId = (this.autoPauseIds.get(mailingId) || 0) + 1;
+    this.autoPauseIds.set(mailingId, pauseId);
+    return pauseId;
   }
 
   private initExecutorEvents () {
