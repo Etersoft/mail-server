@@ -60,7 +60,8 @@ async function main () {
   const stateManager = new MailingStateManager(
     executor,
     logger,
-    mailingRepository
+    mailingRepository,
+    config
   );
   await stateManager.initialize();
   const app = createExpressServer(config.server);

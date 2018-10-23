@@ -24,7 +24,7 @@ const editableFields = {
   replyTo: 'Обратный адрес (Reply-To)',
   subject: 'Тема письма'
 };
-const keys = Object.keys(editableFields);
+const keys = Object.keys(editableFields) as Array<keyof MailingEditData>;
 
 export interface MailingEditData {
   html: string;
@@ -207,7 +207,7 @@ export class MailingDetailView extends React.Component<
     return !this.props.mailing.locked && this.props.mailing.state !== MailingState.RUNNING;
   }
 
-  private getHandler (field: string) {
+  private getHandler (field: keyof MailingEditData) {
     if (field === 'receivers') {
       return (value: ReadonlyArray<Receiver>) => {
         this.setState({
@@ -222,12 +222,14 @@ export class MailingDetailView extends React.Component<
     }
 
     return (value: string) => {
-      this.setState({
-        changed: true,
-        fields: Object.assign({}, this.state.fields, {
-          [field]: value
-        })
-      });
+      if (this.state.fields[field] !== value) {
+        this.setState({
+          changed: true,
+          fields: Object.assign({}, this.state.fields, {
+            [field]: value
+          })
+        });
+      }
     };
   }
 

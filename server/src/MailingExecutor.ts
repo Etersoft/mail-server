@@ -118,6 +118,9 @@ export class MailingExecutor extends EventEmitter {
       await this.mailingRepository.updateInTransaction(mailingId, mailing => {
         mailing.sentCount++;
       });
+
+      this.emit(MailingExecutorEvents.EMAIL_SENT, generalInfoMailing, email);
+
       // TODO: думаю, что это стоит вынести в отдельный класс-наблюдатель,
       // чтобы подсчёт статистики работал по событию отправки письма
       for (const address of email.receivers) {
@@ -151,7 +154,8 @@ export enum MailingExecutorEvents {
   MAILING_ERROR = 'error',
   MAILING_FINISHED = 'finished',
   MAILING_PAUSED = 'paused',
-  MAILING_STARTED = 'started'
+  MAILING_STARTED = 'started',
+  EMAIL_SENT = 'sent'
 }
 
 interface MailingExecutionState {
