@@ -4,6 +4,7 @@ export interface AddressStatsProperties {
   sentCount?: number;
   lastStatus?: string;
   lastStatusDate?: Date;
+  spam?: boolean;
   temporaryFailureCount?: number;
 }
 
@@ -14,6 +15,7 @@ export class AddressStats implements AddressStatsProperties {
   public sentCount?: number;
   public lastStatus?: string;
   public lastStatusDate?: Date;
+  public spam: boolean;
   public temporaryFailureCount: number;
 
   constructor (properties: AddressStatsProperties) {
@@ -22,6 +24,7 @@ export class AddressStats implements AddressStatsProperties {
     this.sentCount = properties.sentCount;
     this.lastStatus = properties.lastStatus;
     this.lastStatusDate = properties.lastStatusDate;
+    this.spam = Boolean(properties.spam);
     this.temporaryFailureCount = properties.temporaryFailureCount || 0;
   }
 }

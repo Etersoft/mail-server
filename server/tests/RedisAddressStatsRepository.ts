@@ -50,6 +50,21 @@ describe('RedisAddressStatsRepository', () => {
       assert.equal((await repositoryOne.getByEmail(testEmail)).sentCount, 1);
     });
 
+    it('should store spam = false by default', async () => {
+      const object = await repositoryOne.getByEmail(testEmail);
+      assert.equal(object.spam, false);
+    });
+
+    it('should update spam flag', async () => {
+      const object = await repositoryOne.updateInTransaction(
+        testEmail,
+        async (stats: AddressStats) => {
+          stats.spam = true;
+        }
+      );
+      assert.equal(object.spam, true);
+    });
+
     it('should return null for non-existent emails', async () => {
       const object = await repositoryOne.updateInTransaction(
         nonExistentEmail,

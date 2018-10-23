@@ -107,11 +107,16 @@ export class MailingDetailView extends React.Component<
         Повтор рассылки по ошибочным адресам
       </Button>
     ) : null;
+    const downloadButton = {
+      link: API_URL + `/mailings/${mailing.id}/receivers?format=csv`,
+      text: 'Скачать'
+    };
     const listTabs = [
       {
         content: (
           <ReceiverList receivers={this.state.fields.receivers}
                         receiversCount={this.state.fields.receiversCount}
+                        buttons={[ downloadButton ]}
                         onChange={this.handlers.receivers} key='1' />
         ),
         name: 'Получатели'

@@ -22,16 +22,20 @@ export class FailureList extends React.Component<FailureListProps> {
   }
 
   render () {
+    const { mailing } = this.props;
+    const downloadButton = {
+      link: API_URL + `/mailings/${mailing.id}/failed-receivers?format=csv`,
+      text: 'Скачать'
+    };
     const reloadFailuresButton = {
       onClick: this.reload,
       text: 'Обновить'
     };
-    const { mailing } = this.props;
     return (
       <ReceiverList receivers={mailing.failedReceivers || []}
                     receiversCount={mailing.failedReceiversCount}
                     loading={mailing.loadingFailedReceivers}
-                    title='Ошибки доставки' buttons={[ reloadFailuresButton ]} />
+                    title='Ошибки доставки' buttons={[ reloadFailuresButton, downloadButton ]} />
     );
   }
 

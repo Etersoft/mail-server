@@ -5,10 +5,17 @@ import '../styles/ReceiverList';
 
 export const MAX_RECEIVERS = 10;
 
-export interface ReceiverListButton {
+export interface ReceiverListClickableButton {
   onClick: () => void;
   text: string;
 }
+
+export interface ReceiverListLinkButton {
+  link: string;
+  text: string;
+}
+
+export type ReceiverListButton = ReceiverListClickableButton | ReceiverListLinkButton;
 
 export interface ReceiverListProps {
   buttons?: ReceiverListButton[];
@@ -114,11 +121,23 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       </React.Fragment>
     ) : null;
 
-    const buttons = (this.props.buttons || []).map(button =>
-      <button className='action' key={button.text} onClick={button.onClick}>
-        {button.text}
-      </button>
-    );
+    const buttons = (this.props.buttons || []).map(button => {
+      if ('onClick' in button) {
+        return (
+          <button className='action' key={button.text} onClick={button.onClick}>
+            {button.text}
+          </button>
+        );
+      } else {
+        return (
+          <a href={button.link} key={button.text}>
+            <button className='action'>
+              {button.text}
+            </button>
+          </a>
+        );
+      }
+    });
 
     return (
       <div className='header-actions'>

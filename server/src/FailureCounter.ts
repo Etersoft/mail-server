@@ -5,6 +5,7 @@ import { Mailing } from './Mailing';
 
 export interface FailedReceiver {
   email: string;
+  spam: boolean;
   status: string;
 }
 
@@ -33,6 +34,7 @@ export class FailureCounter {
       }
       statsList.push({
         email: stats!.email,
+        spam: stats!.spam,
         status: stats!.lastStatus!
       });
     }
