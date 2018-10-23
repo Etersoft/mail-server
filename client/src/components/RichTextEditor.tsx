@@ -14,6 +14,12 @@ export class RichTextEditor extends React.Component<
   private container: HTMLDivElement;
   private editor: any;
 
+  componentDidUpdate (prevProps: RichTextEditorProps) {
+    if (this.props.html !== prevProps.html) {
+      this.container.querySelector('.pell-content')!.innerHTML = this.props.html;
+    }
+  }
+
   render () {
     return <div className='pell-container' ref={this.mountEditor}></div>;
   }
