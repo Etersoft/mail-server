@@ -29,6 +29,7 @@ export class SmtpMailSender implements MailSender {
       html: email.html,
       replyTo: email.replyTo,
       subject: email.subject,
+      text: email.html ? undefined : email.text,
       to: email.receivers.map(receiver => receiver.email).join(', ')
     });
   }
