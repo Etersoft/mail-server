@@ -3,7 +3,7 @@ import { Receiver } from '../reducers/mailings';
 import '../styles/ReceiverList';
 
 
-export const MAX_RECEIVERS = 10;
+export const MAX_RECEIVERS = 100;
 
 export interface ReceiverListClickableButton {
   onClick: () => void;
