@@ -32,6 +32,7 @@ export interface Mailing {
 }
 
 export interface Receiver {
+  diagnosticCode?: string;
   email: string;
   spam?: boolean;
   status?: string;

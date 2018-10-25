@@ -27,11 +27,16 @@ export interface ReceiverListProps {
   unlimited?: boolean;
 }
 
-export class ReceiverList extends React.Component<ReceiverListProps> {
+interface ReceiverListState {
+  selected?: string;
+}
+
+export class ReceiverList extends React.Component<ReceiverListProps, ReceiverListState> {
   static defaultProps = {
     title: 'Получатели'
   };
 
+  public state: ReceiverListState = {};
   private fileInput: HTMLInputElement | null;
 
   render () {
@@ -44,10 +49,16 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
         (загрузка)
       </li>
     ) : receivers.map((receiver, index) => {
-      if (receiver.status) {
+      if (this.state.selected === receiver.email) {
+        return <li key={index} className='selected'>
+          <b>{receiver.email}</b>: {receiver.diagnosticCode}
+        </li>;
+      } else if (receiver.status) {
         const comment = receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`;
         return (
-          <li key={index}>{receiver.email} ({comment})</li>
+          <li key={index} onClick={this.showDetails(receiver.email)}>
+            {receiver.email} ({comment})
+          </li>
         );
       }
       return (
@@ -152,5 +163,13 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
     if (this.props.onChange) {
       this.props.onChange([]);
     }
+  }
+
+  private showDetails = (email: string) => {
+    return () => {
+      this.setState({
+        selected: email
+      });
+    };
   }
 }
