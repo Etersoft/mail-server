@@ -1,9 +1,19 @@
-import { createRedisClient, PromiseRedisClient } from '../src/createRedisClient';
 import { readConfig } from '../src/readConfig';
 import { RedisConnectionPoolImpl } from '../src/RedisConnectionPool';
+import * as sinon from 'sinon';
 
 
 const config = readConfig();
+
+export function createFakeLogger () {
+  return {
+    debug: sinon.spy(),
+    error: sinon.spy(),
+    info: sinon.spy(),
+    silly: sinon.spy(),
+    warning: sinon.spy()
+  } as any;
+}
 
 export async function getTestingRedisConnectionPool () {
   const pool = new RedisConnectionPoolImpl(Object.assign({}, config.server.redis, {
@@ -41,6 +51,6 @@ export function lock (): LockObject {
   };
 }
 
-export function sleep (ms) {
+export function sleep (ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

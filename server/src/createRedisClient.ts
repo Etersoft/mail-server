@@ -16,10 +16,12 @@ export interface PromiseRedisClient extends RedisClient {
   incrAsync (key: string): Promise<number>;
   llenAsync (key: string): Promise<number>;
   lrangeAsync (key: string, from: number, to: number): Promise<string[]>;
+  lremAsync (key: string, count: number, value: string): Promise<number>;
   multi (): PromiseMulti;
   mgetAsync (keys: string[]): Promise<string[]>;
   rpushAsync (key: string, items: string[]): Promise<void>;
   setAsync (key: string, value: string): Promise<void>;
+  setAsync (key: string, value: string, mode: string, duration: number): Promise<void>;
   unwatchAsync (): Promise<void>;
   watchAsync (keys: string[]): Promise<void>;
 }

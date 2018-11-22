@@ -27,7 +27,7 @@ export function updateMailing (
         logger.verbose(`#${mailingToUpdate.id}: updating HTML content`);
       }
 
-      const fields = ['name', 'replyTo', 'subject'];
+      const fields = ['name', 'openForSubscription', 'replyTo', 'subject'];
 
       for (const field of fields) {
         if (req.body[field] !== undefined) {
@@ -92,6 +92,9 @@ const requestBodyJsonSchema = {
     name: {
       type: 'string',
       minLength: 1
+    },
+    openForSubscription: {
+      type: 'boolean'
     },
     receivers: {
       type: 'array',

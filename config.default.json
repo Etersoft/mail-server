@@ -28,6 +28,10 @@
     "smtp": {
       "host": "localhost",
       "port": 587
+    },
+    "subscription": {
+      "requestTTL": 1209600,
+      "subject": "Подписка на рассылку"
     }
   }
 }

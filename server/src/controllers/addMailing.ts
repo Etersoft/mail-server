@@ -34,6 +34,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       creationDate: moment(),
       html: source.html,
       name: source.name + (isClone ? ' (копия)' : ''),
+      openForSubscription: source.openForSubscription,
       replyTo: source.replyTo,
       sentCount: 0,
       state: MailingState.NEW,
@@ -77,6 +78,9 @@ const requestBodyJsonSchema = {
         name: {
           type: 'string',
           minLength: 1
+        },
+        openForSubscription: {
+          type: 'boolean'
         },
         subject: {
           type: 'string',

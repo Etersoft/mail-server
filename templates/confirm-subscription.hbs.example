@@ -1,0 +1,22 @@
+<h3>Здравствуйте!</h3>
+
+<p>
+  Вы запросили подписку на рассылку <b>«{{ mailing.name }}»</b>.
+  Чтобы подтвердить ваш email-адрес, перейдите по ссылке:
+</p>
+<h4>
+  <a href="https://azbyka.ru/subscribe?email={{
+    subscriptionRequest.email
+  }}&code={{
+    subscriptionRequest.code
+  }}&mailingId={{
+    mailing.id
+  }}">
+    Подписаться
+  </a>
+</h4>
+<p>
+  Если же вы не подписывались на эту рассылку, то просто проигнорируйте письмо,
+  не переходя по ссылке.
+</p>
+

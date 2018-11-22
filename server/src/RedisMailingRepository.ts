@@ -20,7 +20,7 @@ const defaultConfig: RedisMailingRepositoryConfig = {
 };
 
 export class RedisMailingRepository
-extends BaseRedisRepository<Mailing, number>
+extends BaseRedisRepository<Mailing, MailingProperties, number>
 implements MailingRepository {
   private listIdMailingCache = new Map<string, Mailing>();
 
@@ -31,11 +31,20 @@ implements MailingRepository {
     super(redisConnectionPool);
   }
 
+  addReceiver (mailingId: number, receiver: Receiver) {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const key = this.getReceiversListKey(mailingId);
+      const item = this.serializeReceiver(receiver);
+      await redisClient.rpushAsync(key, [item]);
+    });
+  }
+
   async create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing> {
     const data = {
       creationDate: properties.creationDate,
       html: properties.html,
       name: properties.name,
+      openForSubscription: properties.openForSubscription,
       replyTo: properties.replyTo,
       sentCount: 0,
       state: MailingState.NEW,
@@ -43,16 +52,14 @@ implements MailingRepository {
       undeliveredCount: 0
     };
     const jsonString = this.serializeEntity(data);
-    const jsonReceiversList = receivers.map(props => JSON.stringify({
-      email: props.email
-    }));
+    const jsonReceiversList = receivers.map(r => this.serializeReceiver(r));
 
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const id = await this.getNextId(redisClient);
 
       // Создаём общие данные и список рассылки единой транзакцией
       const multi = redisClient.multi();
-      multi.set(this.getCommonDataKey(id), jsonString);
+      multi.set(this.getRedisKey(id), jsonString);
       multi.rpush(this.getReceiversListKey(id), jsonReceiversList);
       await multi.execAsync();
 
@@ -75,7 +82,7 @@ implements MailingRepository {
       const data = await redisClient.mgetAsync(keys);
 
       return data.map((jsonString, index) => {
-        return this.parseMailing(jsonString, ids[index]);
+        return this.parseEntity(jsonString, ids[index]);
       }).filter(object =>
         object !== null && object.id <= maxId
       ) as Mailing[];
@@ -109,7 +116,7 @@ implements MailingRepository {
 
       return data.map(jsonString => {
         const object = JSON.parse(jsonString);
-        return new Receiver(object.email, object.name);
+        return new Receiver(object.email, object.name, object.code, object.periodicDate);
       });
     });
   }
@@ -123,7 +130,7 @@ implements MailingRepository {
 
   async remove (mailing: Mailing): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
-      const key = this.getCommonDataKey(mailing.id);
+      const key = this.getRedisKey(mailing.id);
       const receiversListKey = this.getReceiversListKey(mailing.id);
       const multi = redisClient.multi();
       multi.del(key);
@@ -132,40 +139,49 @@ implements MailingRepository {
     });
   }
 
+  async removeReceiver (id: number, receiver: Receiver) {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const key = this.getReceiversListKey(id);
+      const json = this.serializeReceiver(receiver);
+      return Boolean(await redisClient.lremAsync(key, 0, json));
+    });
+  }
+
   async setReceivers (id: number, receivers: Receiver[]): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
-      const jsonReceiversList = receivers.map(props => JSON.stringify({
-        email: props.email
-      }));
+      const jsonReceiversList = receivers.map(r => this.serializeReceiver(r));
       const key = this.getReceiversListKey(id);
 
       const multi = redisClient.multi();
       multi.del(key);
-      multi.rpush(key, jsonReceiversList);
+      if (jsonReceiversList.length) {
+        multi.rpush(key, jsonReceiversList);
+      }
       await multi.execAsync();
     });
   }
 
-  async update (mailing: Mailing): Promise<void> {
-    return this.redisConnectionPool.runWithConnection(async redisClient => {
-      if (!mailing.id) {
-        throw new Error('Attempt to update mailing without ID');
-      }
 
-      const jsonString = this.serializeEntity(mailing);
-
-      await redisClient.setAsync(this.getCommonDataKey(mailing.id), jsonString);
-    });
+  protected extractKey () {
+    return 1;
   }
 
-
-  protected async getByKey (id: number, redisClient: PromiseRedisClient) {
-    const jsonString = await redisClient.getAsync(this.getCommonDataKey(id));
-    return this.parseMailing(jsonString, id);
+  protected async getByKey (id: number, client: PromiseRedisClient): Promise<Mailing | null> {
+    const json = await client.getAsync(this.getRedisKey(id));
+    return this.parseEntity(json, id);
   }
 
-  protected getCommonDataKey (id: number): string {
+  protected getRedisKey (id: number): string {
     return this.config.commonDataKeyPrefix + id;
+  }
+
+  protected parseEntity (jsonString: string | null, id: number): Mailing | null {
+    if (!jsonString) { return null; }
+    const object = JSON.parse(jsonString);
+    if (Number.isInteger(object.creationDate)) {
+      object.creationDate = moment.unix(object.creationDate);
+    }
+    return new Mailing(id, object, this);
   }
 
   protected serializeEntity (properties: MailingProperties): string {
@@ -174,6 +190,7 @@ implements MailingRepository {
       html: properties.html,
       listId: properties.listId,
       name: properties.name,
+      openForSubscription: properties.openForSubscription,
       replyTo: properties.replyTo,
       sentCount: properties.sentCount,
       state: properties.state,
@@ -191,12 +208,12 @@ implements MailingRepository {
     return client.incrAsync(this.config.idCounterKey);
   }
 
-  private parseMailing (jsonString: string | null, id: number): Mailing | null {
-    if (!jsonString) { return null; }
-    const object = JSON.parse(jsonString);
-    if (Number.isInteger(object.creationDate)) {
-      object.creationDate = moment.unix(object.creationDate);
-    }
-    return new Mailing(id, object, this);
+  private serializeReceiver (receiver: ReceiverProperties): string {
+    return JSON.stringify({
+      code: receiver.code,
+      email: receiver.email,
+      name: receiver.name,
+      periodicDate: receiver.periodicDate
+    });
   }
 }

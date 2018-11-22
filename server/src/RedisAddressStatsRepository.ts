@@ -1,4 +1,3 @@
-import { PromiseRedisClient } from './createRedisClient';
 import { AddressStatsRepository } from './AddressStatsRepository';
 import { AddressStatsProperties, AddressStats } from './AddressStats';
 import { BaseRedisRepository } from './BaseRedisRepository';
@@ -14,7 +13,7 @@ const defaultConfig: RedisAddressStatsRepositoryConfig = {
 };
 
 export class RedisAddressStatsRepository
-extends BaseRedisRepository<AddressStats, string>
+extends BaseRedisRepository<AddressStats, AddressStatsProperties, string>
 implements AddressStatsRepository {
   constructor (
     redisConnectionPool: RedisConnectionPool,
@@ -26,31 +25,21 @@ implements AddressStatsRepository {
   create (properties: AddressStatsProperties): Promise<AddressStats> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const jsonString = this.serializeEntity(properties);
-      await redisClient.set(this.getCommonDataKey(properties.email), jsonString);
+      await redisClient.setAsync(this.getRedisKey(this.extractKey(properties)), jsonString);
       return new AddressStats(properties);
     });
-  }
+  }  
 
   getByEmail (email: string): Promise<AddressStats | null> {
-    return this.redisConnectionPool.runWithConnection(async redisClient => {
-      return this.getByKey(email, redisClient);
-    });
-  }
-
-  update (stats: AddressStats): Promise<void> {
-    return this.redisConnectionPool.runWithConnection(async redisClient => {
-      const jsonString = this.serializeEntity(stats);
-      await redisClient.setAsync(this.getCommonDataKey(stats.email), jsonString);
-    });
+    return this.get(email);
   }
 
 
-  protected async getByKey (email: string, redisClient: PromiseRedisClient) {
-    const jsonString = await redisClient.getAsync(this.getCommonDataKey(email));
-    return this.parseAddressStats(jsonString);
+  protected extractKey (props: AddressStatsProperties): string {
+    return props.email;
   }
 
-  protected getCommonDataKey (email: string): string {
+  protected getRedisKey (email: string): string {
     return this.config.addressStatsKeyPrefix + email;
   }
 
@@ -67,7 +56,7 @@ implements AddressStatsRepository {
     });
   }
 
-  private parseAddressStats (jsonString: string | null): AddressStats | null {
+  protected parseEntity (jsonString: string | null): AddressStats | null {
     if (!jsonString) { return null; }
     const object = JSON.parse(jsonString);
     return new AddressStats({

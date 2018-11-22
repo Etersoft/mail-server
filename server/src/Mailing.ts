@@ -16,6 +16,7 @@ export interface MailingProperties {
   html: string;
   listId?: string;
   name: string;
+  openForSubscription?: boolean;
   replyTo?: string;
   state?: MailingState;
   sentCount?: number;
@@ -32,6 +33,7 @@ export class Mailing implements MailingProperties {
   public html: string;
   public listId?: string;
   public name: string;
+  public openForSubscription: boolean;
   public replyTo?: string;
   public state: MailingState;
   public sentCount: number;
@@ -49,11 +51,16 @@ export class Mailing implements MailingProperties {
     this.html = properties.html;
     this.listId = properties.listId;
     this.name = properties.name;
+    this.openForSubscription = properties.openForSubscription || false;
     this.replyTo = properties.replyTo;
     this.state = properties.state || MailingState.NEW;
     this.sentCount = properties.sentCount || 0;
     this.subject = properties.subject;
     this.undeliveredCount = properties.undeliveredCount || 0;
+  }
+
+  addReceiver (receiver: Receiver) {
+    return this.repository.addReceiver(this.id, receiver);
   }
 
   /**
@@ -104,7 +111,20 @@ export class Mailing implements MailingProperties {
     return this.getReceiversStream(this.sentCount, batchSize);
   }
 
+  async hasReceiver (email: string) {
+    for await (const receiver of this.getReceiversStream()) {
+      if (receiver.email === email) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   hasValidExecutionState (): boolean {
     return this.state === MailingState.NEW || this.state === MailingState.PAUSED;
+  }
+
+  removeReceiver (receiver: Receiver) {
+    return this.repository.removeReceiver(this.id, receiver);
   }
 }

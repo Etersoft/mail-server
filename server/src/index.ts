@@ -22,6 +22,14 @@ import { sendTestEmail } from './controllers/sendTestEmail';
 import { getFailedReceivers } from './controllers/getFailedReceivers';
 import { FailureCounter } from './FailureCounter';
 import { createRetryMailing } from './controllers/createRetryMailing';
+import { requestSubscription, SubscribeTemplateContext } from './controllers/requestSubscription';
+import { SubscriptionRequestRepository } from './SubscriptionRequestRepository';
+import { MailSender } from './MailSender';
+import { Template } from './templates/Template';
+import { RedisSubscriptionRequestRepository } from './RedisSubscriptionRequestRepository';
+import { readHandlebarsTemplate } from './templates/readTemplate';
+import { subscribe } from './controllers/subscribe';
+import { unsubscribe } from './controllers/unsubscribe';
 
 
 // Поддержка for await (... of asyncIterator) { ... }
@@ -42,6 +50,9 @@ async function main () {
   );
   const addressStatsRepository = new RedisAddressStatsRepository(
     redisConnectionPool, config.server.redis.prefixes
+  );
+  const subscriptionRepository = new RedisSubscriptionRequestRepository(
+    redisConnectionPool, config.server.subscription.requestTTL
   );
   const failureCounter = new FailureCounter(mailingRepository, addressStatsRepository);
   const logger = new Logger(config.server.logLevel);
@@ -66,7 +77,8 @@ async function main () {
   await stateManager.initialize();
   const app = createExpressServer(config.server);
   setupRoutes(
-    config, app, mailingRepository, stateManager, logger, executor, failureCounter
+    config, app, mailingRepository, stateManager, logger, executor, failureCounter,
+    subscriptionRepository, sender, readHandlebarsTemplate('confirm-subscription.hbs')
   );
   const port = config.server.port;
   app.listen(port, () => {
@@ -80,7 +92,9 @@ async function main () {
 
 function setupRoutes (
   config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
-  logger: Logger, executor: MailingExecutor, failureCounter: FailureCounter
+  logger: Logger, executor: MailingExecutor, failureCounter: FailureCounter,
+  subscriptionRepository: SubscriptionRequestRepository, sender: MailSender,
+  subscribeTemplate: Template<SubscribeTemplateContext>
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
@@ -93,6 +107,16 @@ function setupRoutes (
   app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, failureCounter));
   app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger));
   app.delete('/mailings/:id', deleteMailing(repository, logger));
+  app.post('/mailings/:mailingId/requestSubscription', requestSubscription(
+    subscriptionRepository, repository, logger, sender, subscribeTemplate,
+    config.server.subscription
+  ));
+  app.post('/mailings/:mailingId/subscribe', subscribe(
+    subscriptionRepository, repository, logger
+  ));
+  app.post('/mailings/:mailingId/unsubscribe', unsubscribe(
+    subscriptionRepository, repository, logger
+  ));
 }
 
 main().catch(error => {

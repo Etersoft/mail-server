@@ -7,6 +7,7 @@ import { Receiver, ReceiverProperties } from './Receiver';
  * так и выполняющихся)
  */
 export interface MailingRepository {
+  addReceiver (mailingId: number, receiver: Receiver): Promise<void>;
   create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing>;
   /**
    * Получение рассылок из хранилища
@@ -21,6 +22,7 @@ export interface MailingRepository {
   getReceiverCount (id: number): Promise<number>;
   setReceivers (id: number, receivers: Receiver[]): Promise<void>;
   remove (mailing: Mailing): Promise<void>;
+  removeReceiver (id: number, receiver: Receiver): Promise<boolean>;
   update (mailing: Mailing): Promise<void>;
   updateInTransaction (
     mailingId: number, scenario: (mailing: Mailing) => Promise<void> | void

@@ -16,7 +16,7 @@ export class MailingStateManager {
     [MailingState.ERROR]: [MailingState.RUNNING],
     [MailingState.PAUSED]: [MailingState.RUNNING],
     [MailingState.RUNNING]: [MailingState.PAUSED],
-    [MailingState.FINISHED]: []
+    [MailingState.FINISHED]: [MailingState.RUNNING]
   };
 
   private autoPauseIds: Map<number, number> = new Map();

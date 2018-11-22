@@ -7,6 +7,7 @@ import { MailingRepository } from 'src/MailingRepository';
 import { Logger } from './Logger';
 import { AddressStatsRepository } from './AddressStatsRepository';
 import { isEmail } from 'validator';
+import * as moment from 'moment';
 
 
 export class MailingExecutor extends EventEmitter {
@@ -51,6 +52,13 @@ export class MailingExecutor extends EventEmitter {
 
     this.logger.debug(`#${mailing.id}: starting execution`);
 
+    if (mailing.state === MailingState.FINISHED) {
+      this.logger.verbose(`#${mailing.id}: reset sentCount`);
+      mailing = await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+        mailingToUpdate.sentCount = 0;
+      }) || mailing;
+    }
+
     this.executionStates.set(mailing.id, { stopping: false });
     this.emit(MailingExecutorEvents.MAILING_STARTED, mailing.id);
     // Это не ошибка - не ждём через await намеренно, пусть выполняется в фоне
@@ -59,12 +67,13 @@ export class MailingExecutor extends EventEmitter {
     });
   }
 
-  private checkReceiver (mailing: Mailing, receiver: Receiver) {
+  private checkReceiver (mailing: Mailing, receiver: Receiver, startedAt: moment.Moment) {
     if (!isEmail(receiver.email) || receiver.email[0] === '-') {
       this.logger.warn(`#${mailing.id}: dropping non-email ${receiver.email}`);
       return false;
     }
-    return true;
+
+    return receiver.shouldSendAt(startedAt);
   }
 
   private createEmail (mailing: Mailing, receiver: Receiver) {
@@ -99,9 +108,10 @@ export class MailingExecutor extends EventEmitter {
       this.config.server.receiverBatchSize
     );
 
+    const startedAt = moment();
     const mailingId = generalInfoMailing.id;
     for await (const receiver of receivers) {
-      if (!this.checkReceiver(generalInfoMailing, receiver)) {
+      if (!this.checkReceiver(generalInfoMailing, receiver, startedAt)) {
         continue;
       }
 
@@ -113,6 +123,7 @@ export class MailingExecutor extends EventEmitter {
         return;
       }
       this.logger.debug(`#${mailingId}: sending email to ${email.receivers.join(',')}`);
+      this.logger.debug(`${receiver.email}: periodicDate = ${receiver.periodicDate}`);
       await this.mailer.sendEmail(email);
       this.logger.verbose(`#${mailingId}: sent to ${email.receivers.join(',')}`);
       await this.mailingRepository.updateInTransaction(mailingId, mailing => {

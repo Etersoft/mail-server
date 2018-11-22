@@ -14,7 +14,8 @@ export function updateMailingOnServer (mailing: Mailing, editData: MailingEditDa
     try {
       dispatch(lockMailing(mailing.id, true));
       await updateMailingApi(mailing.id, pick(editData, [
-        'html', 'name', 'subject', 'replyTo', ...(editData.receiversChanged ? ['receivers'] : [])
+        'html', 'name', 'subject', 'openForSubscription',
+        'replyTo', ...(editData.receiversChanged ? ['receivers'] : [])
       ]));
       dispatch(updateMailing(mailing.id, {
         ...editData,

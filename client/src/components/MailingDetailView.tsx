@@ -11,6 +11,7 @@ import pick from 'lodash-es/pick';
 import { Editor } from './Editor';
 import { ReceiverList } from './ReceiverList';
 import { FailureList } from './FailureList';
+import { Checkbox } from './elements/Checkbox';
 
 
 const REFRESH_INTERVAL = 1000;
@@ -18,6 +19,7 @@ const REFRESH_INTERVAL = 1000;
 const editableFields = {
   html: 'Текст рассылки',
   name: 'Название',
+  openForSubscription: 'Возможность подписки через API',
   receivers: 'Получатели',
   receiversChanged: '',
   receiversCount: 'Количество получателей',
@@ -29,6 +31,7 @@ const keys = Object.keys(editableFields) as Array<keyof MailingEditData>;
 export interface MailingEditData {
   html: string;
   name: string;
+  openForSubscription: boolean;
   receivers: Receiver[];
   receiversCount: number;
   receiversChanged: boolean;
@@ -155,6 +158,12 @@ export class MailingDetailView extends React.Component<
 
           <h5 className='field-name'>Количество ошибок доставки (DSN status 4.* или 5.*): </h5>
           <span className='field-value'>{mailing.undeliveredCount}</span><br />
+
+          <h5 className='field-name'>Возможность подписки через API:</h5>
+          <Checkbox
+            value={this.state.fields.openForSubscription}
+            onChange={this.handlers.openForSubscription}
+          />
         </div>
 
         <div className='form'>
@@ -310,7 +319,12 @@ export class MailingDetailView extends React.Component<
   private renderStateButton () {
     const { mailing } = this.props;
     if (mailing.state === MailingState.FINISHED) {
-      return null;
+      return (
+        <Button disabled={mailing.locked} onClick={this.handleStart}
+                type={ButtonType.PRIMARY}>
+          Перезапустить
+        </Button>
+      );
     } else if (mailing.state === MailingState.RUNNING) {
       return (
         <Button disabled={mailing.locked} onClick={this.handleStop}

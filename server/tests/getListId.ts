@@ -25,8 +25,12 @@ describe('getListId', () => {
   it('should use current date', () => {
     const now = new Date(2018, 3, 1);
     const timers = useFakeTimers(now);
-    const listId = getListId(fakeConfig, fakeMailing as Mailing).replace(/^<|>$/g, '');
-    assert.equal(listId.split('-')[0], `20180401`);
+    try {
+      const listId = getListId(fakeConfig, fakeMailing as Mailing).replace(/^<|>$/g, '');
+      assert.equal(listId.split('-')[0], `20180401`);
+    } finally {
+      timers.restore();
+    }
   });
 
   it('should use mailing ID', () => {

@@ -4,9 +4,8 @@ import { assert, use } from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import 'mocha';
 import { AddressStats } from '../src/AddressStats';
-import { createRedisClient } from '../src/createRedisClient';
 import { spy } from 'sinon';
-import { sleep, getTestingRedisConnectionPool, lock } from './testing-utils';
+import { getTestingRedisConnectionPool, lock } from './testing-utils';
 
 
 use(chaiAsPromised);

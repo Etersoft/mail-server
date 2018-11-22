@@ -4,17 +4,40 @@ import { PromiseRedisClient } from 'src/createRedisClient';
 import { Multi } from 'redis';
 
 
-export abstract class BaseRedisRepository<Entity, Key> {
+export abstract class BaseRedisRepository<
+  Entity extends EntityProperties, EntityProperties, Key
+> {
   constructor (
-    protected redisConnectionPool: RedisConnectionPool
+    protected readonly redisConnectionPool: RedisConnectionPool
   ) {}
+
+  get (key: Key): Promise<Entity | null> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const json = await redisClient.getAsync(this.getRedisKey(key));
+      return this.parseEntity(json);
+    });
+  }
+
+  remove (entity: Entity): Promise<void> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const key = this.getRedisKey(this.extractKey(entity));
+      await redisClient.delAsync(key);
+    });
+  }
+
+  update (entity: Entity): Promise<void> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const jsonString = this.serializeEntity(entity);
+      await redisClient.setAsync(this.getRedisKey(this.extractKey(entity)), jsonString);
+    });
+  }
 
   // Этот метод - адаптация более общего сценария транзакции для обновления
   // одного объекта по ключу
   async updateInTransaction (
     key: Key, scenario: (entity: Entity) => Promise<void> | void
   ): Promise<Entity | null> {
-    const redisKey = this.getCommonDataKey(key);
+    const redisKey = this.getRedisKey(key);
     let entity: Entity | null;
     return this.genericTransaction(
       [ redisKey ],
@@ -36,11 +59,11 @@ export abstract class BaseRedisRepository<Entity, Key> {
     );
   }
 
-  protected abstract getByKey (
-    key: Key, client: PromiseRedisClient
-  ): Promise<Entity | null>;
-  protected abstract getCommonDataKey (key: Key): string;
-  protected abstract serializeEntity (entity: Entity): string;
+  protected abstract extractKey (properties: EntityProperties): Key;
+  protected abstract getRedisKey (key: Key): string;
+  protected abstract serializeEntity (entity: EntityProperties): string;
+  protected abstract parseEntity (json: string | null, id?: Key): Entity | null;
+
   /**
    * Работает в четыре основных шага.
    * 1. Сначала вызывается watch для указанных ключей.
@@ -85,5 +108,10 @@ export abstract class BaseRedisRepository<Entity, Key> {
       }
     }
     return this.redisConnectionPool.runWithConnection<Result | null>(scenario);
+  }
+
+  protected async getByKey (key: Key, client: PromiseRedisClient): Promise<Entity | null> {
+    const json = await client.getAsync(this.getRedisKey(key));
+    return this.parseEntity(json);
   }
 }
