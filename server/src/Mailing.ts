@@ -1,15 +1,10 @@
 import { Receiver } from './Receiver';
 import { MailingRepository } from './MailingRepository';
 import * as moment from 'moment';
+import { Template } from './templates/Template';
+import { HandlebarsTemplate } from './templates/HandlebarsTemplate';
+import { MailingState } from './MailingState';
 
-
-export enum MailingState {
-  NEW = 1,
-  RUNNING = 2,
-  PAUSED = 3,
-  FINISHED = 4,
-  ERROR = 5
-}
 
 export interface MailingProperties {
   creationDate?: moment.Moment;
@@ -24,13 +19,19 @@ export interface MailingProperties {
   undeliveredCount: number;
 }
 
+export interface MailingTemplateContext {
+  mailing: Mailing;
+  receiver: Receiver;
+}
+
 const DEFAULT_STREAM_BATCH_SIZE = 100;
 
 /**
  * Класс рассылки
  */
 export class Mailing implements MailingProperties {
-  public html: string;
+  // tslint:disable-next-line
+  public _html: string;
   public listId?: string;
   public name: string;
   public openForSubscription: boolean;
@@ -39,6 +40,8 @@ export class Mailing implements MailingProperties {
   public sentCount: number;
   public subject: string;
   public undeliveredCount: number;
+  // tslint:disable-next-line
+  public _template?: Template<MailingTemplateContext>;
   private savedCreationDate?: moment.Moment;
 
   constructor (
@@ -77,6 +80,13 @@ export class Mailing implements MailingProperties {
     }
 
     return moment(this.name.slice(matchIndex), 'DD.MM.YYYY HH:mm:ss');
+  }
+
+  getHtmlForReceiver (receiver: Receiver): string {
+    return this.template.render({
+      mailing: this,
+      receiver
+    });
   }
 
   async getReceivers (): Promise<ReadonlyArray<Receiver>> {
@@ -124,7 +134,23 @@ export class Mailing implements MailingProperties {
     return this.state === MailingState.NEW || this.state === MailingState.PAUSED;
   }
 
+  get html () {
+    return this._html;
+  }
+
+  set html (value: string) {
+    this._template = undefined;
+    this._html = value;
+  }
+
   removeReceiver (receiver: Receiver) {
     return this.repository.removeReceiver(this.id, receiver);
+  }
+
+  private get template () {
+    if (!this._template) {
+      this._template = new HandlebarsTemplate(this.html);
+    }
+    return this._template;
   }
 }

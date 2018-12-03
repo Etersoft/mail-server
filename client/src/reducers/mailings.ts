@@ -1,4 +1,4 @@
-import { MailingState } from 'server/src/Mailing';
+import { MailingState } from 'server/src/MailingState';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
 import { MailingCreateData } from '../components/AddForm';

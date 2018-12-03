@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Mailing, Receiver } from '../reducers/mailings';
 import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
-import { MailingState } from 'server/src/Mailing';
+import { MailingState } from 'server/src/MailingState';
 import { Button, ButtonType } from './elements/Button';
 import { ConfirmationButton } from './elements/ConfirmationButton';
 import { FormGroup } from './elements/FormGroup';

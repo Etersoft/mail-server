@@ -2,7 +2,7 @@ import { Mailing } from '../reducers/mailings';
 import { Dispatch } from 'redux';
 import { RootState } from '../reducers/index';
 import { updateMailing as updateMailingOnServer } from '../api';
-import { MailingState } from '../../../server/src/Mailing';
+import { MailingState } from '../../../server/src/MailingState';
 import { updateMailing } from './updateMailing';
 import { notifyAboutError } from './notify';
 

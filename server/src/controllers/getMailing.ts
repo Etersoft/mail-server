@@ -2,7 +2,7 @@ import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
-import { MailingState } from '../Mailing';
+import { MailingState } from '../MailingState';
 
 
 export function getMailing (mailingRepository: MailingRepository) {

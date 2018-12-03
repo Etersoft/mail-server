@@ -1,7 +1,7 @@
 import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { error, success } from '../utils/response';
-import { MailingState } from '../Mailing';
+import { MailingState } from '../MailingState';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { getListId } from '../getListId';

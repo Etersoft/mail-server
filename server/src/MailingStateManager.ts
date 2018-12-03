@@ -1,5 +1,6 @@
 import { MailingExecutor, MailingExecutorEvents } from './MailingExecutor';
-import { Mailing, MailingState } from './Mailing';
+import { Mailing } from './Mailing';
+import { MailingState } from './MailingState';
 import { Logger } from './Logger';
 import { MailingRepository } from './MailingRepository';
 import { sleep } from './utils/sleep';

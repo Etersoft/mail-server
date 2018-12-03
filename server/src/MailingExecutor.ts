@@ -1,4 +1,5 @@
-import { Mailing, MailingState } from './Mailing';
+import { Mailing } from './Mailing';
+import { MailingState } from './MailingState';
 import { MailSender } from './MailSender';
 import { Receiver } from './/Receiver';
 import { Email, Headers } from './Email';
@@ -88,7 +89,7 @@ export class MailingExecutor extends EventEmitter {
 
     return new Email({
       headers,
-      html: mailing.html,
+      html: mailing.getHtmlForReceiver(receiver),
       receivers: [receiver],
       replyTo: mailing.replyTo,
       subject: mailing.subject

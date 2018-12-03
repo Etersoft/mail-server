@@ -1,5 +1,6 @@
 import { PromiseRedisClient } from './createRedisClient';
-import { Mailing, MailingProperties, MailingState } from './Mailing';
+import { Mailing, MailingProperties } from './Mailing';
+import { MailingState } from './MailingState';
 import { Receiver, ReceiverProperties } from './Receiver';
 import { MailingRepository } from './MailingRepository';
 import { BaseRedisRepository } from './BaseRedisRepository';
