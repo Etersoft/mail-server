@@ -12,7 +12,7 @@ export function unsubscribe (
   mailingRepository: MailingRepository, logger: Logger
 ) {
   const handler = async function (req: Request, res: Response) {
-    const mailingId = req.query.mailingId;
+    const mailingId = req.params.mailingId;
     const mailing = await mailingRepository.getById(mailingId);
 
     if (!mailing) {
