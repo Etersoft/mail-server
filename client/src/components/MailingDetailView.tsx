@@ -139,6 +139,7 @@ export class MailingDetailView extends React.Component<
         </span><br />
       </React.Fragment>
     ) : null;
+    const replyTo = typeof this.state.fields.replyTo === 'string' ? this.state.fields.replyTo : '';
     return (
       <div className='mailing-detail-view'>
         <h2 className='header'>
@@ -174,7 +175,7 @@ export class MailingDetailView extends React.Component<
             <TextInput value={this.state.fields.subject} onChange={this.handlers.subject} />
           </FormGroup>
           <FormGroup inline title='Обратный адрес (Reply-To):'>
-            <TextInput value={this.state.fields.replyTo} onChange={this.handlers.replyTo} />
+            <TextInput value={replyTo} onChange={this.handlers.replyTo} />
           </FormGroup>
           <FormGroup stretch fraction={2}>
             <Editor onChange={this.handlers.html} html={this.state.fields.html}
