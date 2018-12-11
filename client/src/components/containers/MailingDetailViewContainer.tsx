@@ -13,6 +13,7 @@ import { cloneMailing } from '../../actions/cloneMailing';
 import { updateMailingOnServer } from '../../actions/updateMailingOnServer';
 import { reloadFailedReceivers } from '../../actions/reloadFailedReceivers';
 import { createRetryMailing } from '../../actions/createRetryMailing';
+import { loadReceivers } from '../../actions/loadReceivers';
 
 
 function mapStateToProps (state: RootState) {
@@ -32,6 +33,9 @@ function mapDispatchToProps (dispatch: Dispatch<RootState>) {
     onRefresh: (mailing: Mailing) => dispatch(reloadSingleMailing(mailing.id)),
     onRefreshFailedReceivers: (mailing: Mailing) => dispatch(
       reloadFailedReceivers(mailing.id)
+    ),
+    onRefreshReceiversList: (mailing: Mailing) => dispatch(
+      loadReceivers(mailing.id)
     ),
     onSendTestEmail: (mailing: Mailing, email: string) => dispatch(
       sendTestEmail(mailing, email)

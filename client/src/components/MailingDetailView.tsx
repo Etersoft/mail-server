@@ -45,7 +45,8 @@ export interface MailingDetailViewProps {
   onCreateRetry?: (mailing: Mailing) => void;
   onDelete: (mailing: Mailing) => void;
   onRefresh?: (mailing: Mailing) => void;
-  onRefreshFailedReceivers?: (mailing: Mailing) => void;
+  onRefreshReceiversList?: (mailing: Mailing) => void;
+  onRefreshFailedReceivers?: (mailing: Mailing) => Promise<void>;
   onSendTestEmail?: (mailing: Mailing, address: string) => void;
   onStart?: (mailing: Mailing) => void;
   onStop?: (mailing: Mailing) => void;
@@ -114,12 +115,16 @@ export class MailingDetailView extends React.Component<
       link: API_URL + `/mailings/${mailing.id}/receivers?format=csv`,
       text: 'Скачать'
     };
+    const refreshButton = {
+      onClick: this.refreshReceiversList,
+      text: 'Обновить'
+    };
     const listTabs = [
       {
         content: (
           <ReceiverList receivers={this.state.fields.receivers}
                         receiversCount={this.state.fields.receiversCount}
-                        buttons={[ downloadButton ]}
+                        buttons={[ downloadButton, refreshButton ]}
                         onChange={this.handlers.receivers} key='1' />
         ),
         name: 'Получатели'
@@ -295,6 +300,19 @@ export class MailingDetailView extends React.Component<
   private refresh = () => {
     if (this.props.onRefresh) {
       this.props.onRefresh(this.props.mailing);
+    }
+  }
+
+  private refreshReceiversList = async () => {
+    if (this.props.onRefreshReceiversList) {
+      await this.props.onRefreshReceiversList(this.props.mailing);
+      this.setState({
+        fields: {
+          ...this.state.fields,
+          receivers: this.props.mailing.receivers!,
+          receiversCount: this.props.mailing.receiversCount!
+        }
+      });
     }
   }
 
