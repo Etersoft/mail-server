@@ -34,6 +34,7 @@ export function requestSubscription (
   const handler = async function (req: Request, res: Response) {
     const mailingId = req.params.mailingId;
     const mailing = await mailingRepository.getById(mailingId);
+    const schedule = req.body.schedule || String(req.body.periodicDate);
 
     if (!mailing) {
       res.status(404).json(error('Mailing not found'));
@@ -42,6 +43,11 @@ export function requestSubscription (
 
     if (!mailing.openForSubscription) {
       res.status(400).json(error('Mailing is closed for subscription.'));
+      return;
+    }
+
+    if (!Receiver.validateSchedule(schedule)) {
+      res.status(400).json(error('Invalid schedule.'));
       return;
     }
 
@@ -115,10 +121,9 @@ const requestBodyJsonSchema = {
     name: {
       type: 'string'
     },
-    periodicDate: {
-      type: 'integer',
-      min: 1,
-      max: 31
+    periodicDate: {},
+    schedule: {
+      type: 'string'
     }
   },
   required: [

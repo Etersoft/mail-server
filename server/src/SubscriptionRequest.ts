@@ -6,7 +6,7 @@ export interface SubscriptionRequestProperties {
   // код подтверждения подписки
   code: string;
   // для периодических рассылок - когда рассылать (число)
-  periodicDate?: number;
+  periodicDate?: string;
 }
 
 /**
@@ -16,7 +16,7 @@ export class SubscriptionRequest implements SubscriptionRequestProperties {
   email: string;
   mailingId: number;
   code: string;
-  periodicDate?: number;
+  periodicDate?: string;
 
   constructor (properties: SubscriptionRequestProperties) {
     this.email = properties.email;

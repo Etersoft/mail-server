@@ -42,6 +42,7 @@
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
+    "cron-converter": "0.0.12",
     "csv-stringify": "^4.3.1",
     "express": "^4.16.3",
     "generic-pool": "^3.4.2",

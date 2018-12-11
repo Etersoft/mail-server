@@ -5,7 +5,7 @@ import { spy } from 'sinon';
 import { sleep, getTestingRedisConnectionPool, lock } from './testing-utils';
 import { RedisMailingRepository } from '../src/RedisMailingRepository';
 import { RedisSubscriptionRequestRepository } from '../src/RedisSubscriptionRequestRepository';
-import { MailingState } from '../src/Mailing';
+import { MailingState } from '../src/MailingState';
 import { Receiver } from '../src/Receiver';
 import { requestSubscription, SubscribeTemplateContext } from '../src/controllers/requestSubscription';
 import { subscribe } from '../src/controllers/subscribe';
@@ -79,7 +79,7 @@ describe('subscription', () => {
     const defaultBody = {
       email: testReceiver2,
       name: '456',
-      periodicDate: 1
+      periodicDate: '1'
     };
 
     it('should add an entry to SubscriptionRequestRepository', async () => {
@@ -104,6 +104,31 @@ describe('subscription', () => {
       });
       await requestSubscriptionController(req, res);
       assert.isOk(sender.sendEmail.calledOnce);
+    });
+
+    it('should support cron schedules', async () => {
+      const req = mockReq({
+        body: {
+          ...defaultBody,
+          schedule: '* * *'
+        },
+        params: { mailingId }
+      });
+      await requestSubscriptionController(req, res);
+      assert.isOk(res.json.getCall(0).args[0].success);
+    });
+
+    it('should return error on invalid cron schedules', async () => {
+      const req = mockReq({
+        body: {
+          ...defaultBody,
+          schedule: '* * * *'
+        },
+        params: { mailingId }
+      });
+      await requestSubscriptionController(req, res);
+      assert.equal(res.status.getCall(0).args[0], 400);
+      assert.isOk(res.json.getCall(0).args[0].error);
     });
 
     it('should correctly render email template', async () => {
@@ -189,7 +214,7 @@ describe('subscription', () => {
         code: defaultBody.code,
         email: testReceiver2,
         mailingId,
-        periodicDate: 1
+        periodicDate: '1'
       });
     });
 

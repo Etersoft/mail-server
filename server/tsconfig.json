@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "experimentalDecorators": true,
     "importHelpers": true,
@@ -13,6 +15,9 @@
     "strictPropertyInitialization": false,
     "target": "es6"
   },
+  "files": [
+    "src/globals.d.ts"
+  ],
   "include": [
     "src/**/*"
   ]

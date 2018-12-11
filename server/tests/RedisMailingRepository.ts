@@ -4,7 +4,7 @@ import * as chaiAsPromised from 'chai-as-promised';
 import 'mocha';
 import { getTestingRedisConnectionPool } from './testing-utils';
 import { RedisMailingRepository } from '../src/RedisMailingRepository';
-import { MailingState } from '../src/Mailing';
+import { MailingState } from '../src/MailingState';
 import { Receiver } from '../src/Receiver';
 
 
