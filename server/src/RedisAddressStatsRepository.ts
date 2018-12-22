@@ -28,7 +28,7 @@ implements AddressStatsRepository {
       await redisClient.setAsync(this.getRedisKey(this.extractKey(properties)), jsonString);
       return new AddressStats(properties);
     });
-  }  
+  }
 
   getByEmail (email: string): Promise<AddressStats | null> {
     return this.get(email);

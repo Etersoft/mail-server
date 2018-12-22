@@ -39,6 +39,14 @@ export function subscribe (
       return;
     }
 
+    // if receiver exists - remove it first
+    for await (const receiver of mailing.getReceiversStream()) {
+      if (receiver.email === request.email) {
+        await mailing.removeReceiver(receiver);
+        break;
+      }
+    }
+
     await mailing.addReceiver(new Receiver(
       request.email, request.name, request.code, request.periodicDate
     ));

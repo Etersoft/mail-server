@@ -310,4 +310,49 @@ describe('subscription', () => {
       assert.equal(receivers.filter(r => r.email === testReceiver2)[0].name, 'test');
     });
   });
+
+  describe('update subscription', () => {
+    it('should work', async () => {
+      await subscriptionRepository.create({
+        code: '123',
+        email: testReceiver2,
+        mailingId,
+        name: 'test',
+        periodicDate: '1'
+      });
+      let req = mockReq({
+        body: {
+          code: '123',
+          email: testReceiver2
+        },
+        params: { mailingId }
+      });
+      await subscribeController(req, res);
+
+      await subscriptionRepository.create({
+        code: '123',
+        email: testReceiver2,
+        mailingId,
+        name: 'test 2',
+        periodicDate: '2'
+      });
+      req = mockReq({
+        body: {
+          code: '123',
+          email: testReceiver2
+        },
+        params: { mailingId }
+      });
+      await subscribeController(req, res);
+
+      const mailing = await mailingRepository.getById(mailingId);
+      for (const receiver of await mailing.getReceivers()) {
+        if (receiver.email === testReceiver2) {
+          assert.equal(receiver.periodicDate, '2');
+          assert.equal(receiver.name, 'test 2');
+          return;
+        }
+      }
+    });
+  });
 });

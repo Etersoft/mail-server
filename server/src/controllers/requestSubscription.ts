@@ -53,10 +53,7 @@ export function requestSubscription (
       return;
     }
 
-    if (await mailing.hasReceiver(req.body.email)) {
-      res.status(400).json(error('Already subscribed.', 'ALREADY_SUBSCRIBED'));
-      return;
-    }
+    const alreadySubscribed = await mailing.hasReceiver(req.body.email);
 
     let code = uuid();
 
@@ -86,6 +83,7 @@ export function requestSubscription (
     });
 
     const mailText = subscribeTemplate.render({
+      alreadySubscribed,
       mailing,
       name: req.body.name,
       subscriptionRequest
