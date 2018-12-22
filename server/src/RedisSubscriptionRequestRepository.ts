@@ -44,7 +44,8 @@ implements SubscriptionRequestRepository {
       email: object.email,
       mailingId: object.mailingId,
       code: object.code,
-      periodicDate: object.periodicDate
+      periodicDate: object.periodicDate,
+      name: object.name
     });
   }
 
@@ -53,7 +54,8 @@ implements SubscriptionRequestRepository {
       email: properties.email,
       mailingId: properties.mailingId,
       code: properties.code,
-      periodicDate: properties.periodicDate
+      periodicDate: properties.periodicDate,
+      name: properties.name
     });
   }
 }

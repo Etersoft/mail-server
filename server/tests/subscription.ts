@@ -202,6 +202,22 @@ describe('subscription', () => {
       });
       assert.isNotOk(request);
     });
+
+    it('should save names', async () => {
+      const req = mockReq({
+        body: {
+          ...defaultBody,
+          name: 'test'
+        },
+        params: { mailingId }
+      });
+      await requestSubscriptionController(req, res);
+      const request = await subscriptionRepository.get({
+        email: testReceiver2,
+        mailingId
+      });
+      assert.equal(request.name, 'test');
+    });
   });
 
   describe('#subscribe', () => {
@@ -216,7 +232,8 @@ describe('subscription', () => {
         code: defaultBody.code,
         email: testReceiver2,
         mailingId,
-        periodicDate: '1'
+        periodicDate: '1',
+        name: 'test'
       });
     });
 
@@ -280,6 +297,17 @@ describe('subscription', () => {
       assert.notInclude(receivers.map(r => r.email), testReceiver2);
       assert.isOk(res.status.calledWith(400));
       assert.isNotOk(res.json.getCall(0).args[0].success);
+    });
+
+    it('should preserve names from request', async () => {
+      const req = mockReq({
+        body: defaultBody,
+        params: { mailingId }
+      });
+      let receivers = await mailingRepository.getReceivers(mailingId);
+      await subscribeController(req, res);
+      receivers = await mailingRepository.getReceivers(mailingId);
+      assert.equal(receivers.filter(r => r.email === testReceiver2)[0].name, 'test');
     });
   });
 });
