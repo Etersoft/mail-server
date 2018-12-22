@@ -15,6 +15,7 @@ import { Receiver } from '../Receiver';
 
 
 export interface SubscribeTemplateContext {
+  alreadySubscribed: boolean;
   mailing: Mailing;
   name?: string;
   subscriptionRequest: SubscriptionRequest;
