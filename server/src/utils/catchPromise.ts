@@ -15,7 +15,7 @@ export function catchPromise (handler: PromiseHandler): RequestHandler {
     } catch (err) {
       // tslint:disable-next-line:no-console
       console.error('Request error: ', err);
-      res.status(500).json(error('Internal Server Error'));
+      res.status(500).json(error('Internal Server Error', 'INTERNAL_SERVER_ERROR'));
     }
   };
 }

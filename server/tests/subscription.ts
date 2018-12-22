@@ -128,6 +128,7 @@ describe('subscription', () => {
       });
       await requestSubscriptionController(req, res);
       assert.equal(res.status.getCall(0).args[0], 400);
+      assert.equal(res.json.getCall(0).args[0].code, 'INVALID_SCHEDULE');
       assert.isOk(res.json.getCall(0).args[0].error);
     });
 
@@ -184,6 +185,7 @@ describe('subscription', () => {
       });
       await requestSubscriptionController(req, res);
       assert.isOk(res.status.calledWith(404));
+      assert.equal(res.json.getCall(0).args[0].code, 'NOT_FOUND');
       assert.isNotOk(res.json.getCall(0).args[0].success);
     });
 

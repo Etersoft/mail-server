@@ -37,22 +37,24 @@ export function requestSubscription (
     const schedule = req.body.schedule || String(req.body.periodicDate);
 
     if (!mailing) {
-      res.status(404).json(error('Mailing not found'));
+      res.status(404).json(error('Mailing not found', 'NOT_FOUND'));
       return;
     }
 
     if (!mailing.openForSubscription) {
-      res.status(400).json(error('Mailing is closed for subscription.'));
+      res.status(400).json(
+        error('Mailing is closed for subscription.', 'CLOSED_FOR_SUBSCRIPTION')
+      );
       return;
     }
 
     if (!Receiver.validateSchedule(schedule)) {
-      res.status(400).json(error('Invalid schedule.'));
+      res.status(400).json(error('Invalid schedule.', 'INVALID_SCHEDULE'));
       return;
     }
 
     if (await mailing.hasReceiver(req.body.email)) {
-      res.status(400).json(error('Already subscribed.'));
+      res.status(400).json(error('Already subscribed.', 'ALREADY_SUBSCRIBED'));
       return;
     }
 

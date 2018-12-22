@@ -10,8 +10,9 @@ export function success (data?: any) {
   return response;
 }
 
-export function error (errorText: string): any {
+export function error (errorText: string, errorCode?: string): any {
   return {
+    code: errorCode,
     error: errorText,
     success: false
   };
