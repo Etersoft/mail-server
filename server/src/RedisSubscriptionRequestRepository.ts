@@ -26,9 +26,9 @@ implements SubscriptionRequestRepository {
       );
       return new SubscriptionRequest(properties);
     });
-  }  
+  }
 
-  
+
   protected extractKey (props: SubscriptionRequestProperties) {
     return props;
   }
@@ -41,21 +41,21 @@ implements SubscriptionRequestRepository {
     if (!jsonString) { return null; }
     const object = JSON.parse(jsonString);
     return new SubscriptionRequest({
+      code: object.code,
       email: object.email,
       mailingId: object.mailingId,
-      code: object.code,
-      periodicDate: object.periodicDate,
-      name: object.name
+      name: object.name,
+      periodicDate: object.periodicDate
     });
   }
 
   protected serializeEntity (properties: SubscriptionRequestProperties): string {
     return JSON.stringify({
+      code: properties.code,
       email: properties.email,
       mailingId: properties.mailingId,
-      code: properties.code,
-      periodicDate: properties.periodicDate,
-      name: properties.name
+      name: properties.name,
+      periodicDate: properties.periodicDate
     });
   }
 }

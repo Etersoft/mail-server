@@ -8,7 +8,7 @@ import { SubscriptionRequestRepository } from '../SubscriptionRequestRepository'
 
 
 export function unsubscribe (
-  subscriptionRepository: SubscriptionRequestRepository, 
+  subscriptionRepository: SubscriptionRequestRepository,
   mailingRepository: MailingRepository, logger: Logger
 ) {
   const handler = async function (req: Request, res: Response) {

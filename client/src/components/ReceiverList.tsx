@@ -44,25 +44,33 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
       this.props.receivers :
       this.props.receivers.slice(0, MAX_RECEIVERS);
     const length = this.props.receiversCount || this.props.receivers.length;
+
     const content = this.props.loading ? (
       <li className='overflow-item'>
         (загрузка)
       </li>
     ) : receivers.map((receiver, index) => {
+      let receiverInfo = receiver.email;
+      if (receiver.name) {
+        receiverInfo += ', имя: ' + receiver.name;
+      }
+      if (receiver.periodicDate) {
+        receiverInfo += ', расписание рассылки: ' + receiver.periodicDate;
+      }
       if (this.state.selected === receiver.email) {
         return <li key={index} className='selected'>
-          <b>{receiver.email}</b>: {receiver.diagnosticCode}
+          <b>{receiverInfo}</b>: {receiver.diagnosticCode}
         </li>;
       } else if (receiver.status) {
         const comment = receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`;
         return (
           <li key={index} onClick={this.showDetails(receiver.email)}>
-            {receiver.email} ({comment})
+            {receiverInfo} ({comment})
           </li>
         );
       }
       return (
-        <li key={index}>{receiver.email}</li>
+        <li key={index}>{receiverInfo}</li>
       );
     });
     const overflow = (

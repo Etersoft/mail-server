@@ -2,7 +2,6 @@ import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
-import { serializeToCsv } from '../utils/serializeToCsv';
 import { serveCsv } from '../utils/serveCsv';
 
 
@@ -26,7 +25,9 @@ export function getReceivers (mailingRepository: MailingRepository) {
 
     const total = await mailingRepository.getReceiverCount(id);
     const list = receivers.map(receiver => ({
-      email: receiver.email
+      email: receiver.email,
+      name: receiver.name,
+      periodicDate: receiver.periodicDate
     }));
     res.json(success({
       list, total

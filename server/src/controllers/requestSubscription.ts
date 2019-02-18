@@ -27,7 +27,7 @@ export interface SubscriptionConfig {
 }
 
 export function requestSubscription (
-  subscriptionRepository: SubscriptionRequestRepository, 
+  subscriptionRepository: SubscriptionRequestRepository,
   mailingRepository: MailingRepository, logger: Logger,
   sender: MailSender, subscribeTemplate: Template<SubscribeTemplateContext>,
   config: SubscriptionConfig
@@ -76,11 +76,11 @@ export function requestSubscription (
     }
 
     subscriptionRequest = await subscriptionRepository.create({
+      code,
       email: req.body.email,
       mailingId,
-      periodicDate: req.body.periodicDate,
-      code,
-      name: req.body.name
+      name: req.body.name,
+      periodicDate: req.body.periodicDate
     });
 
     const mailText = subscribeTemplate.render({
