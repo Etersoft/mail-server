@@ -185,7 +185,7 @@ export class MailingDetailView extends React.Component<
             <ConfirmationButton
               disabled={!this.canEdit()} onClick={this.handleDelete}
               type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
-              Удалить
+              Удалить рассылку
             </ConfirmationButton>
           </div>
           <br />
