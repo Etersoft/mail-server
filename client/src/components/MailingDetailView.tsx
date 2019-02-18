@@ -173,19 +173,6 @@ export class MailingDetailView extends React.Component<
         </div>
 
         <div className='form'>
-          <FormGroup inline title='Название:'>
-            <TextInput value={this.state.fields.name} onChange={this.handlers.name} />
-          </FormGroup>
-          <FormGroup inline title='Тема письма:'>
-            <TextInput value={this.state.fields.subject} onChange={this.handlers.subject} />
-          </FormGroup>
-          <FormGroup inline title='Обратный адрес (Reply-To):'>
-            <TextInput value={replyTo} onChange={this.handlers.replyTo} />
-          </FormGroup>
-          <FormGroup stretch fraction={2}>
-            <Editor onChange={this.handlers.html} html={this.state.fields.html}
-                    additionalTabs={listTabs} />
-          </FormGroup>
           <div className='button-group'>
             {firstButton}
             {spacer}
@@ -199,6 +186,20 @@ export class MailingDetailView extends React.Component<
               Удалить
             </ConfirmationButton>
           </div>
+          <br />
+          <FormGroup inline title='Название:'>
+            <TextInput value={this.state.fields.name} onChange={this.handlers.name} />
+          </FormGroup>
+          <FormGroup inline title='Тема письма:'>
+            <TextInput value={this.state.fields.subject} onChange={this.handlers.subject} />
+          </FormGroup>
+          <FormGroup inline title='Обратный адрес (Reply-To):'>
+            <TextInput value={replyTo} onChange={this.handlers.replyTo} />
+          </FormGroup>
+          <FormGroup stretch fraction={2}>
+            <Editor onChange={this.handlers.html} html={this.state.fields.html}
+                    additionalTabs={listTabs} />
+          </FormGroup>
         </div>
 
         <div className='test-email'>
