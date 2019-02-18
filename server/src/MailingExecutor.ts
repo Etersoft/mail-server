@@ -51,6 +51,14 @@ export class MailingExecutor extends EventEmitter {
   async startExecution (mailing: Mailing): Promise<void> {
     if (mailing.state === MailingState.RUNNING) { return; }
 
+    const { value: receiver } = await this.getActualReceiverStream(mailing).next();
+    if (!receiver) {
+      this.logger.debug(`#${mailing.id}: no receivers to send emails to, ignoring start request`);
+      return;
+    } else {
+      this.logger.debug(`#${mailing.id}: 123123123`, receiver);
+    }
+
     this.logger.debug(`#${mailing.id}: starting execution`);
 
     if (mailing.state === MailingState.FINISHED) {
@@ -63,9 +71,18 @@ export class MailingExecutor extends EventEmitter {
     this.executionStates.set(mailing.id, { stopping: false });
     this.emit(MailingExecutorEvents.MAILING_STARTED, mailing.id);
     // Это не ошибка - не ждём через await намеренно, пусть выполняется в фоне
-    this.runMailing(mailing).catch(error => {
+    this.runMailing(mailing, this.getActualReceiverStream(mailing)).catch(error => {
       this.emit(MailingExecutorEvents.MAILING_ERROR, mailing.id, error);
     });
+  }
+
+  private async *getActualReceiverStream (mailing: Mailing) {
+    const startedAt = moment();
+    for await (const receiver of mailing.getUnsentReceiversStream()) {
+      if (this.checkReceiver(mailing, receiver, startedAt)) {
+        yield receiver;
+      }
+    }
   }
 
   private checkReceiver (mailing: Mailing, receiver: Receiver, startedAt: moment.Moment) {
@@ -101,21 +118,15 @@ export class MailingExecutor extends EventEmitter {
     return Boolean(state && state.stopping);
   }
 
-  private async runMailing (generalInfoMailing: Mailing): Promise<void> {
+  private async runMailing (
+    generalInfoMailing: Mailing, actualReceiverStream: AsyncIterable<Receiver>
+  ): Promise<void> {
     // generalInfoMailing - объект с общей информацией об ошибке.
     // Он может быть устаревшим, поэтому его не обновляем напрямую,
     // а используем updateInTransaction
-    const receivers = await generalInfoMailing.getUnsentReceiversStream(
-      this.config.server.receiverBatchSize
-    );
 
-    const startedAt = moment();
     const mailingId = generalInfoMailing.id;
-    for await (const receiver of receivers) {
-      if (!this.checkReceiver(generalInfoMailing, receiver, startedAt)) {
-        continue;
-      }
-
+    for await (const receiver of actualReceiverStream) {
       const email = this.createEmail(generalInfoMailing, receiver);
       if (this.isStopping(mailingId)) {
         this.logger.debug(`#${mailingId}: execution was stopped, exiting`);
