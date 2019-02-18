@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Receiver } from '../reducers/mailings';
 import '../styles/ReceiverList';
+import { ConfirmationButton } from './elements/ConfirmationButton';
 
 
 export const MAX_RECEIVERS = 100;
@@ -21,6 +22,7 @@ export interface ReceiverListProps {
   buttons?: ReceiverListButton[];
   loading?: boolean;
   onChange?: (receivers: Receiver[]) => void;
+  onRemove?: (receiver: Receiver) => void;
   receivers: Receiver[];
   receiversCount?: number;
   title?: string;
@@ -57,20 +59,29 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
       if (receiver.periodicDate) {
         receiverInfo += ', расписание рассылки: ' + receiver.periodicDate;
       }
+      const removeButton = this.props.onRemove ? (
+        <React.Fragment>
+          <div className='spacer' />
+          <ConfirmationButton onClick={this.removeReceiver(receiver)}>
+            ✗
+          </ConfirmationButton>
+        </React.Fragment>
+      ) : null;
       if (this.state.selected === receiver.email) {
         return <li key={index} className='selected'>
           <b>{receiverInfo}</b>: {receiver.diagnosticCode}
+          {removeButton}
         </li>;
       } else if (receiver.status) {
         const comment = receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`;
         return (
           <li key={index} onClick={this.showDetails(receiver.email)}>
-            {receiverInfo} ({comment})
+            {receiverInfo} ({comment}) {removeButton}
           </li>
         );
       }
       return (
-        <li key={index}>{receiverInfo}</li>
+        <li key={index}>{receiverInfo} {removeButton}</li>
       );
     });
     const overflow = (
@@ -127,6 +138,14 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
       reader.onerror = reject;
       reader.readAsText(file);
     });
+  }
+
+  private removeReceiver (receiver: Receiver) {
+    return () => {
+      if (this.props.onRemove) {
+        this.props.onRemove(receiver);
+      }
+    };
   }
 
   private renderActions () {

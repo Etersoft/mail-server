@@ -70,6 +70,10 @@ export function deleteMailing (id: number): Promise<void> {
   return apiRequest('/mailings/' + id, 'DELETE');
 }
 
+export function deleteReceiver (mailingId: number, receiver: string): Promise<void> {
+  return apiRequest('/mailings/' + mailingId + '/receivers/' + receiver, 'DELETE');
+}
+
 export async function getMailingById (id: number): Promise<Mailing> {
   const mailing = await apiRequest(`/mailings/${id}`);
   if (mailing.creationDate) {

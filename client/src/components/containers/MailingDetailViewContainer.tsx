@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Mailing } from '../../reducers/mailings';
+import { Mailing, Receiver } from '../../reducers/mailings';
 import { MailingDetailView, MailingEditData } from '../MailingDetailView';
 import { connect } from 'react-redux';
 import { RootState } from '../../reducers';
@@ -14,6 +14,7 @@ import { updateMailingOnServer } from '../../actions/updateMailingOnServer';
 import { reloadFailedReceivers } from '../../actions/reloadFailedReceivers';
 import { createRetryMailing } from '../../actions/createRetryMailing';
 import { loadReceivers } from '../../actions/loadReceivers';
+import { removeReceiver } from '../../actions/removeReceiver';
 
 
 function mapStateToProps (state: RootState) {
@@ -36,6 +37,9 @@ function mapDispatchToProps (dispatch: Dispatch<RootState>) {
     ),
     onRefreshReceiversList: (mailing: Mailing) => dispatch(
       loadReceivers(mailing.id)
+    ),
+    onRemoveReceiver: (mailing: Mailing, receiver: Receiver) => dispatch(
+      removeReceiver(mailing, receiver)
     ),
     onSendTestEmail: (mailing: Mailing, email: string) => dispatch(
       sendTestEmail(mailing, email)

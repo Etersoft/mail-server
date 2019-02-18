@@ -81,6 +81,20 @@ function deleteMailing (state: MailingListState, idToDelete: number) {
   return createMailingListState(objects, selected);
 }
 
+function deleteReceiver (
+  state: MailingListState, mailingId: number, receiverToDelete: string
+): MailingListState {
+  if (!state.byId[mailingId]) {
+    return state;
+  }
+
+  const receiverList = state.byId[mailingId].receivers || [];
+
+  return updateMailing(state, mailingId, {
+    receivers: receiverList.filter(r => r.email !== receiverToDelete)
+  });
+}
+
 function getAllMailings (state: MailingListState): Mailing[] {
   return state.ids.map(id => state.byId[id]);
 }
@@ -122,6 +136,8 @@ export function mailings (state: MailingListState = initialState, action: Action
       return createMailingListState(mailingsList);
     case ActionTypes.UPDATE_MAILING:
       return updateMailing(state, action.data.id, action.data.fields);
+    case ActionTypes.REMOVE_RECEIVER:
+      return deleteReceiver(state, action.data.id, action.data.email);
     default:
       return state;
   }

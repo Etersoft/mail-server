@@ -1,3 +1,10 @@
-.receiver-list + .receiver-list {
-  margin-left: 8px;
+.receiver-list {
+  & + .receiver-list {
+    margin-left: 8px;
+  }
+
+  &.list-block .list li {
+    align-items: center;
+    display: flex;
+  }
 }

@@ -30,6 +30,7 @@ import { RedisSubscriptionRequestRepository } from './RedisSubscriptionRequestRe
 import { readHandlebarsTemplate } from './templates/readTemplate';
 import { subscribe } from './controllers/subscribe';
 import { unsubscribe } from './controllers/unsubscribe';
+import { deleteReceiver } from './controllers/deleteReceiver';
 
 
 // Поддержка for await (... of asyncIterator) { ... }
@@ -116,6 +117,9 @@ function setupRoutes (
   ));
   app.post('/mailings/:mailingId/unsubscribe', unsubscribe(
     subscriptionRepository, repository, logger
+  ));
+  app.delete('/mailings/:mailingId/receivers/:receiverId', deleteReceiver(
+    repository, logger
   ));
 }
 

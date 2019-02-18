@@ -47,6 +47,7 @@ export interface MailingDetailViewProps {
   onRefresh?: (mailing: Mailing) => void;
   onRefreshReceiversList?: (mailing: Mailing) => void;
   onRefreshFailedReceivers?: (mailing: Mailing) => Promise<void>;
+  onRemoveReceiver?: (mailing: Mailing, receiver: Receiver) => void;
   onSendTestEmail?: (mailing: Mailing, address: string) => void;
   onStart?: (mailing: Mailing) => void;
   onStop?: (mailing: Mailing) => void;
@@ -124,6 +125,7 @@ export class MailingDetailView extends React.Component<
         content: (
           <ReceiverList receivers={this.state.fields.receivers}
                         receiversCount={this.state.fields.receiversCount}
+                        onRemove={this.removeReceiver}
                         buttons={[ downloadButton, refreshButton ]}
                         onChange={this.handlers.receivers} key='1' />
         ),
@@ -320,6 +322,19 @@ export class MailingDetailView extends React.Component<
   private refreshFailedReceivers = () => {
     if (this.props.onRefreshFailedReceivers) {
       this.props.onRefreshFailedReceivers(this.props.mailing);
+    }
+  }
+
+  private removeReceiver = (receiver: Receiver) => {
+    if (this.props.onRemoveReceiver) {
+      this.props.onRemoveReceiver(this.props.mailing, receiver);
+      this.setState({
+        fields: {
+          ...this.state.fields,
+          receivers: this.state.fields.receivers.filter(r => r.email !== receiver.email),
+          receiversCount: this.state.fields.receiversCount - 1
+        }
+      });
     }
   }
 

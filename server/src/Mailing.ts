@@ -89,6 +89,15 @@ export class Mailing implements MailingProperties {
     });
   }
 
+  async getReceiverByEmail (email: string): Promise<Receiver | null> {
+    for await (const receiver of this.getReceiversStream()) {
+      if (receiver.email === email) {
+        return receiver;
+      }
+    }
+    return null;
+  }
+
   async getReceivers (): Promise<ReadonlyArray<Receiver>> {
     if (this.receivers) {
       return this.receivers;
