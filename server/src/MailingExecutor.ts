@@ -51,6 +51,13 @@ export class MailingExecutor extends EventEmitter {
   async startExecution (mailing: Mailing): Promise<void> {
     if (mailing.state === MailingState.RUNNING) { return; }
 
+    if (mailing.state === MailingState.FINISHED) {
+      this.logger.verbose(`#${mailing.id}: reset sentCount`);
+      mailing = await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+        mailingToUpdate.sentCount = 0;
+      }) || mailing;
+    }
+
     const { value: receiver } = await this.getActualReceiverStream(mailing).next();
     if (!receiver) {
       this.logger.debug(`#${mailing.id}: no receivers to send emails to, ignoring start request`);
@@ -60,13 +67,6 @@ export class MailingExecutor extends EventEmitter {
     }
 
     this.logger.debug(`#${mailing.id}: starting execution`);
-
-    if (mailing.state === MailingState.FINISHED) {
-      this.logger.verbose(`#${mailing.id}: reset sentCount`);
-      mailing = await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
-        mailingToUpdate.sentCount = 0;
-      }) || mailing;
-    }
 
     this.executionStates.set(mailing.id, { stopping: false });
     this.emit(MailingExecutorEvents.MAILING_STARTED, mailing.id);
