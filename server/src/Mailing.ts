@@ -1,8 +1,8 @@
 import { Receiver } from './Receiver';
 import { MailingRepository } from './MailingRepository';
 import * as moment from 'moment';
-import { Template } from './templates/Template';
-import { HandlebarsTemplate } from './templates/HandlebarsTemplate';
+import { AsyncTemplate } from './templates/AsyncTemplate';
+import { HandlebarsAsyncTemplate } from './templates/HandlebarsAsyncTemplate';
 import { MailingState } from './MailingState';
 
 
@@ -41,7 +41,7 @@ export class Mailing implements MailingProperties {
   public subject: string;
   public undeliveredCount: number;
   // tslint:disable-next-line
-  public _template?: Template<MailingTemplateContext>;
+  public _template?: AsyncTemplate<MailingTemplateContext>;
   private savedCreationDate?: moment.Moment;
 
   constructor (
@@ -82,11 +82,12 @@ export class Mailing implements MailingProperties {
     return moment(this.name.slice(matchIndex), 'DD.MM.YYYY HH:mm:ss');
   }
 
-  getHtmlForReceiver (receiver: Receiver): string {
-    return this.template.render({
+  async getHtmlForReceiver (receiver: Receiver): Promise<string> {
+    const html = await this.template.render({
       mailing: this,
       receiver
     });
+    return html;
   }
 
   async getReceiverByEmail (email: string): Promise<Receiver | null> {
@@ -158,7 +159,7 @@ export class Mailing implements MailingProperties {
 
   private get template () {
     if (!this._template) {
-      this._template = new HandlebarsTemplate(this.html);
+      this._template = new HandlebarsAsyncTemplate(this.html);
     }
     return this._template;
   }
