@@ -43,7 +43,7 @@ export class MailingExecutor extends EventEmitter {
   }
 
   async sendTestEmail (mailing: Mailing, address: string) {
-    const email = this.createEmail(mailing, new Receiver(address));
+    const email = await this.createEmail(mailing, new Receiver(address));
     await this.mailer.sendEmail(email);
     this.logger.verbose(`#${mailing.id}: sent test email to ${address}`);
   }
@@ -94,7 +94,7 @@ export class MailingExecutor extends EventEmitter {
     return receiver.shouldSendAt(startedAt);
   }
 
-  private createEmail (mailing: Mailing, receiver: Receiver) {
+  private async createEmail (mailing: Mailing, receiver: Receiver) {
     const headers: Headers = {};
     if (mailing.listId) {
       headers['List-Id'] = mailing.listId;
@@ -103,10 +103,10 @@ export class MailingExecutor extends EventEmitter {
       headers['List-Unsubscribe'] = this.config.server.mail.listUnsubscribe;
     }
     headers.Precedence = 'bulk';
-
+    const html = await mailing.getHtmlForReceiver(receiver);
     return new Email({
       headers,
-      html: mailing.getHtmlForReceiver(receiver),
+      html: html,
       receivers: [receiver],
       replyTo: mailing.replyTo,
       subject: mailing.subject
@@ -127,7 +127,7 @@ export class MailingExecutor extends EventEmitter {
 
     const mailingId = generalInfoMailing.id;
     for await (const receiver of actualReceiverStream) {
-      const email = this.createEmail(generalInfoMailing, receiver);
+      const email = await this.createEmail(generalInfoMailing, receiver);
       if (this.isStopping(mailingId)) {
         this.logger.debug(`#${mailingId}: execution was stopped, exiting`);
         this.executionStates.delete(mailingId);
