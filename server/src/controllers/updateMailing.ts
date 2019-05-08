@@ -106,6 +106,9 @@ const requestBodyJsonSchema = {
         properties: {
           email: {
             type: 'string'
+          },
+          name: {
+            type: 'string'
           }
         },
         required: ['email']

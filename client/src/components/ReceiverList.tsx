@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as parser from 'papaparse';
 import { Receiver } from '../reducers/mailings';
 import '../styles/ReceiverList';
 import { ConfirmationButton } from './elements/ConfirmationButton';
@@ -110,14 +111,14 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
   private changeFile = async (event: React.FormEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files && event.currentTarget.files[0];
     if (file) {
-      const fileString = await this.readFile(file);
-      const receivers: Receiver[] = fileString
-        .split('\n')
-        .map(line => line.trim())
+      const receiversData: Array<[string]> = await this.readFile(file);
+      const receivers: Receiver[] = receiversData
+        .map(line => line.map(str => str.trim()).filter(str => str.length))
         .filter(line => line.length)
-        .map(email => ({
-          email
-        }));
+        .map(line => ({
+          email: line[0],
+          name: line[1] || ''
+      }));
       if (this.props.onChange) {
         this.props.onChange(receivers);
       }
@@ -131,12 +132,16 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
     }
   }
 
-  private readFile (file: File): Promise<string> {
+  private readFile (file: File): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsText(file);
+      parser.parse(file, {
+        complete: result => {
+          resolve(result.data);
+        },
+        error: error => {
+          reject(error);
+        }
+      });
     });
   }
 
