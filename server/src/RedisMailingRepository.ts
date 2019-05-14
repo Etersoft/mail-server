@@ -188,6 +188,7 @@ implements MailingRepository {
   protected serializeEntity (properties: MailingProperties): string {
     return JSON.stringify({
       creationDate: properties.creationDate ? properties.creationDate.unix() : undefined,
+      extraData: properties.extraData,
       html: properties.html,
       listId: properties.listId,
       name: properties.name,

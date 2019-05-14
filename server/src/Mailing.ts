@@ -8,6 +8,7 @@ import { MailingState } from './MailingState';
 
 export interface MailingProperties {
   creationDate?: moment.Moment;
+  extraData?: { [field: string]: any };
   html: string;
   listId?: string;
   name: string;
@@ -32,6 +33,7 @@ const DEFAULT_STREAM_BATCH_SIZE = 100;
 export class Mailing implements MailingProperties {
   // tslint:disable-next-line
   public _html: string;
+  public extraData?: { [field: string]: any };
   public listId?: string;
   public name: string;
   public openForSubscription: boolean;
@@ -53,6 +55,7 @@ export class Mailing implements MailingProperties {
     private receivers?: Receiver[]
   ) {
     this.savedCreationDate = properties.creationDate;
+    this.extraData = properties.extraData;
     this.html = properties.html;
     this.listId = properties.listId;
     this.name = properties.name;

@@ -32,6 +32,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
 
     const properties = {
       creationDate: moment(),
+      extraData: source.extraData,
       html: source.html,
       name: source.name + (isClone ? ' (копия)' : ''),
       openForSubscription: source.openForSubscription,
@@ -71,6 +72,9 @@ const requestBodyJsonSchema = {
       $schema: 'http://json-schema.org/draft-07/schema#',
       additionalProperties: false,
       properties: {
+        extraData: {
+          type: 'object'
+        },
         html: {
           type: 'string',
           minLength: 1
