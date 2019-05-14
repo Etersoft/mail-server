@@ -104,12 +104,13 @@ export class MailingExecutor extends EventEmitter {
     }
     headers.Precedence = 'bulk';
     const html = await mailing.getHtmlForReceiver(receiver);
+    const subject = await mailing.getSubjectForReceiver(receiver);
     return new Email({
       headers,
       html: html,
       receivers: [receiver],
       replyTo: mailing.replyTo,
-      subject: mailing.subject
+      subject
     });
   }
 

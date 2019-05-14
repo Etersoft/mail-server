@@ -41,7 +41,9 @@ export class Mailing implements MailingProperties {
   public subject: string;
   public undeliveredCount: number;
   // tslint:disable-next-line
-  public _template?: AsyncTemplate<MailingTemplateContext>;
+  private _htmlTemplate?: AsyncTemplate<MailingTemplateContext>;
+  // tslint:disable-next-line
+  private _subjectTemplate?: AsyncTemplate<MailingTemplateContext>;
   private savedCreationDate?: moment.Moment;
 
   constructor (
@@ -82,12 +84,8 @@ export class Mailing implements MailingProperties {
     return moment(this.name.slice(matchIndex), 'DD.MM.YYYY HH:mm:ss');
   }
 
-  async getHtmlForReceiver (receiver: Receiver): Promise<string> {
-    const html = await this.template.render({
-      mailing: this,
-      receiver
-    });
-    return html;
+  getHtmlForReceiver (receiver: Receiver): Promise<string> {
+    return this.renderTemplate(this.htmlTemplate, receiver);
   }
 
   async getReceiverByEmail (email: string): Promise<Receiver | null> {
@@ -121,6 +119,10 @@ export class Mailing implements MailingProperties {
     } while (result.length === batchSize);
   }
 
+  getSubjectForReceiver (receiver: Receiver): Promise<string> {
+    return this.renderTemplate(this.subjectTemplate, receiver);
+  }
+
   async getUnsentReceivers () {
     const receivers = await this.getReceivers();
     const unsentReceivers = receivers.slice(this.sentCount);
@@ -149,7 +151,7 @@ export class Mailing implements MailingProperties {
   }
 
   set html (value: string) {
-    this._template = undefined;
+    this._htmlTemplate = undefined;
     this._html = value;
   }
 
@@ -157,10 +159,24 @@ export class Mailing implements MailingProperties {
     return this.repository.removeReceiver(this.id, receiver);
   }
 
-  private get template () {
-    if (!this._template) {
-      this._template = new HandlebarsAsyncTemplate(this.html);
+  private renderTemplate (template: AsyncTemplate<MailingTemplateContext>, receiver: Receiver) {
+    return template.render({
+      mailing: this,
+      receiver
+    });
+  }
+
+  private get htmlTemplate () {
+    if (!this._htmlTemplate) {
+      this._htmlTemplate = new HandlebarsAsyncTemplate(this.html);
     }
-    return this._template;
+    return this._htmlTemplate;
+  }
+
+  private get subjectTemplate () {
+    if (!this._subjectTemplate) {
+      this._subjectTemplate = new HandlebarsAsyncTemplate(this.subject);
+    }
+    return this._subjectTemplate;
   }
 }
