@@ -11,7 +11,8 @@ export function createFakeLogger () {
     error: sinon.spy(),
     info: sinon.spy(),
     silly: sinon.spy(),
-    warning: sinon.spy()
+    warn: sinon.spy(),
+    verbose: sinon.spy()
   } as any;
 }
 
