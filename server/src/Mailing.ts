@@ -166,7 +166,8 @@ export class Mailing implements MailingProperties {
     return template.render({
       mailing: this,
       receiver
-    });
+    },
+    receiver);
   }
 
   private get htmlTemplate () {

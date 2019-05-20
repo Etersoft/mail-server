@@ -117,7 +117,8 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
         .filter(line => line.length)
         .map(line => ({
           email: line[0],
-          name: line[1] || ''
+          name: line[1] || '',
+          extraData: JSON.parse(line[2] || "{}")
       }));
       if (this.props.onChange) {
         this.props.onChange(receivers);

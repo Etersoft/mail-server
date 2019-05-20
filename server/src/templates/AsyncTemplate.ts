@@ -1,3 +1,5 @@
+import { Receiver } from 'src/Receiver';
+
 export interface AsyncTemplate<Context> {
-  render (context: Context): Promise<string>;
+  render (context: Context, receiver: Receiver): Promise<string>;
 }

@@ -48,7 +48,7 @@ export function subscribe (
     }
 
     await mailing.addReceiver(new Receiver(
-      request.email, request.name, request.code, request.periodicDate
+      request.email, request.name, request.code, request.periodicDate, request.extraData
     ));
     await subscriptionRepository.remove(request);
 

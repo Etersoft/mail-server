@@ -117,7 +117,7 @@ implements MailingRepository {
 
       return data.map(jsonString => {
         const object = JSON.parse(jsonString);
-        return new Receiver(object.email, object.name, object.code, object.periodicDate);
+        return new Receiver(object.email, object.name, object.code, object.periodicDate, object.extraData);
       });
     });
   }
@@ -215,7 +215,8 @@ implements MailingRepository {
       code: receiver.code,
       email: receiver.email,
       name: receiver.name,
-      periodicDate: receiver.periodicDate
+      periodicDate: receiver.periodicDate,
+      extraData: receiver.extraData
     });
   }
 }

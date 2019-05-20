@@ -138,6 +138,9 @@ const requestBodyJsonSchema = {
           },
           name: {
             type: 'string'
+          },
+          extraData: {
+            type: 'object'
           }
         },
         required: ['email']

@@ -9,6 +9,8 @@ export interface SubscriptionRequestProperties {
   periodicDate?: string;
   // имя подписчика
   name?: string;
+  // роизвольные данные
+  extraData?: { [field: string]: any };
 }
 
 /**
@@ -20,6 +22,7 @@ export class SubscriptionRequest implements SubscriptionRequestProperties {
   code: string;
   periodicDate?: string;
   name?: string;
+  extraData?: { [field: string]: any };
 
   constructor (properties: SubscriptionRequestProperties) {
     this.email = properties.email;
@@ -27,5 +30,6 @@ export class SubscriptionRequest implements SubscriptionRequestProperties {
     this.code = properties.code;
     this.periodicDate = properties.periodicDate;
     this.name = properties.name;
+    this.extraData = properties.extraData;
   }
 }

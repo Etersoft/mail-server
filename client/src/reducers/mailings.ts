@@ -39,6 +39,7 @@ export interface Receiver {
   periodicDate?: string | number;
   spam?: boolean;
   status?: string;
+  extraData?: object
 }
 
 

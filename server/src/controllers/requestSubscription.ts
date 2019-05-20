@@ -80,7 +80,8 @@ export function requestSubscription (
       email: req.body.email,
       mailingId,
       name: req.body.name,
-      periodicDate: req.body.periodicDate
+      periodicDate: req.body.periodicDate,
+      extraData: JSON.parse(req.body.extraData)
     });
 
     const mailText = subscribeTemplate.render({
@@ -124,6 +125,9 @@ const requestBodyJsonSchema = {
       type: 'string'
     },
     periodicDate: {},
+    extraData: {
+      type: 'object'
+    },
     schedule: {
       type: 'string'
     }

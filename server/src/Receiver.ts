@@ -7,6 +7,7 @@ export interface ReceiverProperties {
   name?: string;
   code?: string;
   periodicDate?: string;
+  extraData?: { [field: string]: any };
 }
 
 
@@ -32,7 +33,8 @@ export class Receiver {
     public email: string,
     public name?: string,
     public code?: string,
-    public periodicDate?: string
+    public periodicDate?: string,
+    public extraData?: { [field: string]: any }
   ) {}
 
   getStringRepresentation () {
