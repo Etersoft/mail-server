@@ -5,13 +5,13 @@ import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { Logger } from '../Logger';
 import { SubscriptionRequestRepository } from '../SubscriptionRequestRepository';
-import * as uuid from 'uuid/v4';
 import { MailSender } from '../MailSender';
 import { Template } from '../templates/Template';
 import { Mailing } from '../Mailing';
 import { SubscriptionRequest } from '../SubscriptionRequest';
 import { Email } from '../Email';
 import { Receiver } from '../Receiver';
+import { generateUniqueCode } from '../utils/codes';
 
 
 export interface SubscribeTemplateContext {
@@ -56,7 +56,7 @@ export function requestSubscription (
 
     const alreadySubscribed = await mailing.hasReceiver(req.body.email);
 
-    let code = uuid();
+    let code = generateUniqueCode();
 
     logger.info(
       `Requested subscription: mailing #${mailingId}, ${req.body.email}, date: ${

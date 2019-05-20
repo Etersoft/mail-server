@@ -3,12 +3,13 @@ import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
-import { Mailing } from '../Mailing';
 import { MailingState } from '../MailingState';
 import { MailingStateManager } from 'src/MailingStateManager';
 import { Logger } from '../Logger';
 import { isEmail } from 'validator';
 import { Receiver } from '../Receiver';
+import { generateUniqueCode } from '../utils/codes';
+import { Mailing } from '../Mailing';
 
 
 export function updateMailing (
@@ -47,11 +48,21 @@ export function updateMailing (
       return;
     }
 
+    if (req.body.openForSubscription) {
+      await assignCodes(mailing);
+    }
+
     let rejectedReceivers;
     if (req.body.receivers) {
       const validReceivers = req.body.receivers.filter((receiver: Receiver) =>
         isEmail(receiver.email)
       );
+      // assign codes for unsubscribe links
+      if (mailing.openForSubscription) {
+        for (const receiver of validReceivers) {
+          receiver.code = generateUniqueCode();
+        }
+      }
       await mailingRepository.setReceivers(mailing.id, validReceivers);
       rejectedReceivers = req.body.receivers.filter((receiver: Receiver) =>
         !isEmail(receiver.email)
@@ -76,6 +87,16 @@ export function updateMailing (
     }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
+
+  async function assignCodes (mailing: Mailing) {
+    for await (const receiver of mailing.getReceiversStream()) {
+      if (!receiver.code) {
+        await mailingRepository.removeReceiver(mailing.id, receiver);
+        receiver.code = generateUniqueCode();
+        await mailingRepository.addReceiver(mailing.id, receiver);
+      }
+    }
+  }
 }
 
 // tslint:disable:object-literal-sort-keys
