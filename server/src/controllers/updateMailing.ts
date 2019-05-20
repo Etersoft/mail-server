@@ -89,12 +89,17 @@ export function updateMailing (
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 
   async function assignCodes (mailing: Mailing) {
+    const receiversToAdd = [];
     for await (const receiver of mailing.getReceiversStream()) {
       if (!receiver.code) {
-        await mailingRepository.removeReceiver(mailing.id, receiver);
-        receiver.code = generateUniqueCode();
-        await mailingRepository.addReceiver(mailing.id, receiver);
+        receiversToAdd.push(receiver);
       }
+    }
+    // do this in two steps to avoid problems with receiver stream
+    for (const receiver of receiversToAdd) {
+      await mailingRepository.removeReceiver(mailing.id, receiver);
+      receiver.code = generateUniqueCode();
+      await mailingRepository.addReceiver(mailing.id, receiver);
     }
   }
 }
