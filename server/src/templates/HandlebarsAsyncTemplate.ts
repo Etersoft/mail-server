@@ -33,7 +33,7 @@ export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> 
 
   private async getTemplateExternalContent (urls: Array<string>) {
     if(this.hasUrlsForRequest()) {
-      const requests = urls.map( url => request(url));
+      const requests = urls.map(url => request(url));
       const externalContent: Array<string> = await Promise.all(requests);
       urls.forEach((url, index) => {
         this.templateExternalContent.set(url, externalContent[index]);
@@ -46,9 +46,8 @@ export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> 
       return request({
         method: 'POST',
         uri,
-        body: {
-          payload: data || receiver.extraData
-        }
+        body: data || receiver.extraData,
+        json: true,
       });
     })
     const externalContent: Array<string> = await Promise.all(requests);
@@ -79,7 +78,10 @@ export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> 
           return new handlebars.SafeString(this.templateExternalContent.get(url) || '');
         }
       },
-      external_content_with_receiver_data: (url: string, receiver: any = null) => {
+      external_content_with_receiver_data: (url: string, receiver: any) => {
+        if(receiver.name && receiver.name === 'external_content_with_receiver_data' ) {
+          receiver = null;
+        }
         if(!this.readyForRender(url)) {
           this.hasExternalContetn = true;
           this.receiverExternalContent.push(new ReceiverData(url, receiver));
