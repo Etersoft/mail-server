@@ -66,7 +66,11 @@ export function unsubscribe (
 
     logger.info(`Unsubscribed: mailing #${mailing.id}, email ${req.body.email}`);
 
-    res.json(success());
+    const text = mailing.extraData ? mailing.extraData.textAfterUnsubscribe : null;
+
+    res.json(success({
+      text
+    }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }

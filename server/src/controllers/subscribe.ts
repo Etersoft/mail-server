@@ -53,8 +53,12 @@ export function subscribe (
     await subscriptionRepository.remove(request);
 
     logger.info(`Subscribed to mailing #${mailing.id}. Email ${request.email}`);
+    
+    const text = mailing.extraData ? mailing.extraData.textAfterSubscribe : null;
 
-    res.json(success());
+    res.json(success({
+      text
+    }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }

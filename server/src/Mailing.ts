@@ -8,7 +8,11 @@ import { MailingState } from './MailingState';
 
 export interface MailingProperties {
   creationDate?: moment.Moment;
-  extraData?: { [field: string]: any };
+  extraData?: {
+    textAfterSubscribe?: string,
+    textAfterUnsubscribe?: string,  
+    [field: string]: any 
+  };
   html: string;
   listId?: string;
   name: string;
@@ -33,7 +37,11 @@ const DEFAULT_STREAM_BATCH_SIZE = 100;
 export class Mailing implements MailingProperties {
   // tslint:disable-next-line
   public _html: string;
-  public extraData?: { [field: string]: any };
+  public extraData?: {
+    textAfterSubscribe?: string,
+    textAfterUnsubscribe?: string,  
+    [field: string]: any 
+  };
   public listId?: string;
   public name: string;
   public openForSubscription: boolean;
