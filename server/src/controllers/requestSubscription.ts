@@ -81,7 +81,7 @@ export function requestSubscription (
       mailingId,
       name: req.body.name,
       periodicDate: req.body.periodicDate,
-      extraData: JSON.parse(req.body.extraData)
+      extraData: req.body.extraData
     });
 
     const mailText = subscribeTemplate.render({
