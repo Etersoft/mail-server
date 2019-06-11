@@ -8,6 +8,7 @@
     "client:watch": "node_modules/.bin/webpack-dev-server --config client/webpack.config.js",
     "lint": "node_modules/.bin/tslint -c tslint.json 'client/src/**/*.ts' 'server/src/**/*.ts'",
     "lint-fix": "node_modules/.bin/tslint --fix -c tslint.json 'client/src/**/*.ts' 'server/src/**/*.ts'",
+    "prepare": "npm run server:build",
     "server:build": "node_modules/.bin/tsc -p server",
     "server:start": "node server/dist/index.js",
     "server:watch": "node_modules/.bin/tsc -w -p server",
