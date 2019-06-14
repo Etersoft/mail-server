@@ -6,14 +6,15 @@ import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { MailingState } from '../MailingState';
 import { MailingStateManager } from 'src/MailingStateManager';
 import { Logger } from '../Logger';
-import { isEmail } from 'validator';
 import { Receiver } from '../Receiver';
+import { ReceiverListFilter } from '../ReceiverListFilter';
 import { generateUniqueCode } from '../utils/codes';
 import { Mailing } from '../Mailing';
 
 
 export function updateMailing (
-  mailingRepository: MailingRepository, stateManager: MailingStateManager, logger: Logger
+  mailingRepository: MailingRepository, stateManager: MailingStateManager, logger: Logger,
+  receiverListFilter: ReceiverListFilter
 ) {
   const handler = async function (req: Request, res: Response) {
     const id = Number(req.params.id);
@@ -54,9 +55,7 @@ export function updateMailing (
 
     let rejectedReceivers;
     if (req.body.receivers) {
-      const validReceivers = req.body.receivers.filter((receiver: Receiver) =>
-        isEmail(receiver.email)
-      );
+      const validReceivers = await receiverListFilter.getValidReceivers(req.body.receivers);
       // assign codes for unsubscribe links
       if (mailing.openForSubscription) {
         for (const receiver of validReceivers) {
@@ -64,8 +63,8 @@ export function updateMailing (
         }
       }
       await mailingRepository.setReceivers(mailing.id, validReceivers);
-      rejectedReceivers = req.body.receivers.filter((receiver: Receiver) =>
-        !isEmail(receiver.email)
+      rejectedReceivers = req.body.receivers.filter((r: Receiver) => 
+        !validReceivers.find(vr => r.email === vr.email)
       );
       logger.verbose(`#${mailing.id}: updating receivers list`);
     }

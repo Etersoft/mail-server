@@ -18,6 +18,14 @@ export abstract class BaseRedisRepository<
     });
   }
 
+  mGet (keys: Key[]): Promise<(Entity | null)[]> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const statsKeys = keys.map(k => this.getRedisKey(k));
+      const data = await redisClient.mgetAsync(statsKeys);
+      return data.map(json => this.parseEntity(json));
+    });
+  }
+
   remove (entity: Entity): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const key = this.getRedisKey(this.extractKey(entity));

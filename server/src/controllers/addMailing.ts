@@ -6,12 +6,13 @@ import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { getListId } from '../getListId';
 import { Logger } from '../Logger';
-import { isEmail } from 'validator';
 import { Receiver } from '../Receiver';
+import { ReceiverListFilter } from '../ReceiverListFilter';
 import * as moment from 'moment';
 
 
-export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger) {
+export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger, 
+  receiverListFilter: ReceiverListFilter) {
   const handler = async function (req: Request, res: Response) {
     let receivers: Receiver[];
     let source;
@@ -42,9 +43,8 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       subject: source.subject,
       undeliveredCount: 0
     };
-    const validEmails = receivers.filter(receiver => isEmail(receiver.email));
-
-    const mailing = await mailingRepository.create(properties, validEmails);
+    const validReceivers = await receiverListFilter.getValidReceivers(receivers);
+    const mailing = await mailingRepository.create(properties, validReceivers);
     logger.info(`Created mailing ${properties.name} with ID #${mailing.id}`);
 
     const listId = getListId(config, mailing);
@@ -56,7 +56,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     res.json(success({
       id: mailing.id,
       listId,
-      rejectedReceivers: receivers.filter(receiver => !isEmail(receiver.email))
+      rejectedReceivers: receivers.filter(r => !validReceivers.find(vr => r.email === vr.email))
     }));
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];

@@ -8,6 +8,7 @@ import { AddressStatsProperties, AddressStats } from './AddressStats';
 export interface AddressStatsRepository {
   create (properties: AddressStatsProperties): Promise<AddressStats>;
   getByEmail (email: string): Promise<AddressStats | null>;
+  getBatchStats (emails: string[]): Promise<(AddressStats | null)[]>;
   update (mailing: AddressStats): Promise<void>;
   updateInTransaction (
     email: string, scenario: (stats: AddressStats) => Promise<void>

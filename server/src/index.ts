@@ -21,6 +21,7 @@ import { RedisConnectionPoolImpl } from './RedisConnectionPool';
 import { sendTestEmail } from './controllers/sendTestEmail';
 import { getFailedReceivers } from './controllers/getFailedReceivers';
 import { FailureCounter } from './FailureCounter';
+import { ReceiverListFilter } from './ReceiverListFilter';
 import { createRetryMailing } from './controllers/createRetryMailing';
 import { requestSubscription, SubscribeTemplateContext } from './controllers/requestSubscription';
 import { SubscriptionRequestRepository } from './SubscriptionRequestRepository';
@@ -56,6 +57,7 @@ async function main () {
     redisConnectionPool, config.server.subscription.requestTTL
   );
   const failureCounter = new FailureCounter(mailingRepository, addressStatsRepository);
+  const receiverListFilter = new ReceiverListFilter(addressStatsRepository);
   const logger = new Logger(config.server.logLevel);
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
     from: config.server.mail.from,
@@ -79,7 +81,8 @@ async function main () {
   const app = createExpressServer(config.server);
   setupRoutes(
     config, app, mailingRepository, stateManager, logger, executor, failureCounter,
-    subscriptionRepository, sender, readHandlebarsTemplate('confirm-subscription.hbs')
+    subscriptionRepository, sender, readHandlebarsTemplate('confirm-subscription.hbs'),
+    receiverListFilter
   );
   const port = config.server.port;
   app.listen(port, () => {
@@ -95,15 +98,15 @@ function setupRoutes (
   config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
   logger: Logger, executor: MailingExecutor, failureCounter: FailureCounter,
   subscriptionRepository: SubscriptionRequestRepository, sender: MailSender,
-  subscribeTemplate: Template<SubscribeTemplateContext>
+  subscribeTemplate: Template<SubscribeTemplateContext>, receiverListFilter: ReceiverListFilter
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
-  app.post('/mailings', addMailing(config, repository, logger));
+  app.post('/mailings', addMailing(config, repository, logger, receiverListFilter));
   app.post('/mailings/create-retry', createRetryMailing(
     config, repository, logger, failureCounter
   ));
-  app.put('/mailings/:id', updateMailing(repository, stateManager, logger));
+  app.put('/mailings/:id', updateMailing(repository, stateManager, logger, receiverListFilter));
   app.get('/mailings/:id/receivers', getReceivers(repository));
   app.get('/mailings/:id/failed-receivers', getFailedReceivers(repository, failureCounter));
   app.post('/mailings/:id/send-test-email', sendTestEmail(repository, executor, logger));

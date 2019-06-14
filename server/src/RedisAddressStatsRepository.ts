@@ -34,6 +34,10 @@ implements AddressStatsRepository {
     return this.get(email);
   }
 
+  getBatchStats (emails: string[]): Promise<(AddressStats | null)[]> {
+    return this.mGet(emails);
+  }
+
 
   protected extractKey (props: AddressStatsProperties): string {
     return props.email;
