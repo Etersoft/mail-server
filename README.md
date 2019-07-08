@@ -1,100 +1,102 @@
-# mail-server
+# Mail-server
 
-Состоит из двух частей: сервер на Node.js и клиент на TypeScript + react-redux. 
+[Читать readme на русском языке.](./README.ru.md)
 
-## Установка
+It consists of two parts: one is server on Node.js and a client on TypeScript + react-redux. 
+
+## Installation
 ```
 $ npm i
 $ npm run server:build
 ```
 
-Вероятнее всего, вы захотите изменить некоторые значения в конфигурации.  
-Создайте файл `config.json` и переопределите нужные значения из `config.default.json`.
+You most likely want to change some values ​​in the configuration.
+Create a file `config.json` and override the desired values ​​from `config.default.json`.
 
-**Пример конфигурации файла `config.json`:** 
+**Configuration example for `config.json`:** 
 
 
-```json
+```js
 }
-//конфигурация клиента
+//client configuration
   "client": {
     "apiUrl": "/api",
-    "imageServiceUrl": "/images", //URL сервера для загрузки вложений, см. https://gitlab.eterfund.ru/ipfs-images/ipfs-images
+    "imageServiceUrl": "/images", //URL of the server to download attachments, see: https://gitlab.eterfund.ru/ipfs-images/ipfs-images
     "webpack": {
       "port": 8080,
       "publicPath": "http://localhost:8080/"
     }
   },
-//конфигурация сервера  
+//server configuration  
   "server": {
-    "corsWhitelist": ["https://examplehost.com"], //массив URL-адресов для CORS
-    "fakeSender": false, //предназначен для отладки сервера, при установке значения true вместо отправки рассылки выводит информацию о ней в консоль
+    "corsWhitelist": ["https://examplehost.com"], //array of URLs for CORS
+    "fakeSender": false, //intended for server debugging, when set to true instead of sending a mailing, displays information about it to the console
     "logLevel": "silly", // error, warn, info, verbose, debug, silly
-    "mail": {//параметры письма рассылки
+    "mail": {//mailing options
       "from": "someuser@example.com",
       "listIdDomain": "some.domain"
     },
-    //параметры паузы в рассылке (для работы необходимо указать оба поля)
-    "maxEmailsWithoutPause": 3, //количество успешно отправленных писем перед паузой в рассылке
-    "pauseDuration": 10, //длительность паузы в секундах
+    //parameters of the pause in the mailing (for operation, you must specify both fields)
+    "maxEmailsWithoutPause": 3, //the number of successfully sent letters before the pause in the mailing 
+    "pauseDuration": 10, //pause duration in seconds
 
     "port": 8020,
     "redis": {
-      "db": 0,//номер БД Redis
-      "pool": {//конфигурация пула соединений Redis
-        "min": 1, //минимальное количество соединений
-        "max": 5 //максимальное количество соединений
+      "db": 0,//Redis database number
+      "pool": {//Redis connection pool configuration
+        "min": 1, //minimum number of connections
+        "max": 5 //maximum number of connections
       },
-      "testingDb": 1 //номер БД Redis для тестирования
+      "testingDb": 1 //Redis database number for tests
     },
-    "smtp": {//параметры smtp-сервера
+    "smtp": {//smtp-server settings
       "host": "localhost",
       "port": 9025
     },
-    "subscription": {//параметры подписок на расслыки
-      "requestTTL": 1209600, //время жизни запроса на подписку в redis
-      "subject": "Подписка на рассылку" //тема письма при запросе подписки на рассылку
+    "subscription": {//mailing subscription settings
+      "requestTTL": 1209600, //the lifetime of the subscription request in redis
+      "subject": "Subscription to mailing" //subject of the letter when subscribing to a mailing
     }
   }
 }
 
 ```
 
-После этого можно запускать сервер:
+After that you can start the server:
 ```
 $ npm run server:start
 ```
-или
+or
 ```
 $ node dist/server/index.js
 ```
 
-### Установка клиента
+### Client installation
 
-Если клиент тоже нужен - то перед его сборкой создайте файл email-template.html.
-Если шаблон письма не нужен, то просто оставьте его пустым.
+If you also need a client, create a file email-template.html before building it.
+If you don't need a letter template, just leave it blank.
 
-Далее запустите сборку:
+Next, run the build:
 ```
 $ npm run client:build
 ```
 
-И настройте ваш веб-сервер на раздачу содержимого каталога `client/public`.
+And configure your web server to distribute the contents of the `client/public` directory.
 
 
-### Принцип работы
+### Principles of operation
 
-Для хранения информации о рассылках используется [redis](https://redis.io/).
-Рассылка имеет следующие атрибуты:
+[Redis](https://redis.io/) is used as a database to store information about mailings.
+
+Mailing has attributes:
 - ID;
-- Название;
-- Состояние (NEW = 1, RUNNING = 2, PAUSED = 3, FINISHED = 4, ERROR = 5);
-- Заголовки (уникальным для каждой рассылки является заголовок `List-Id`. Он генерируется  
-  автоматически из времени создания рассылки в формате 'YYYYMMDD', id рассылки и параметра `listIdDomain`.  
-  Необходим для просмотра статистики по рассылкам.);
-- Список адресатов;
-- Количество уже обработанных адресатов.
+- Name;
+- State (NEW = 1, RUNNING = 2, PAUSED = 3, FINISHED = 4, ERROR = 5);
+- Headers (The header `List-Id`is unique for each mailing. It is generated  
+  automatically from the time the mailing was created in the format 'YYYYMMDD', mailing id and the parameter `list Id Domain`. Required to view mailing statistics.);
+- Receivers list;
+- The number of already processed receivers;
 
 
-##  ![AGPL](https://www.gnu.org/graphics/agplv3-88x31.png)Лицензия 
-См. файл LICENSE.
+##  ![AGPL](https://www.gnu.org/graphics/agplv3-88x31.png)License 
+Look through the file LICENSE.
