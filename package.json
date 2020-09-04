@@ -54,7 +54,7 @@
     "lodash-es": "^4.17.10",
     "moment": "^2.22.1",
     "nodemailer": "^4.6.3",
-    "papaparse": "^4.6.3",
+    "papaparse": "^5.2.0",
     "pell": "^1.0.4",
     "pretty": "^2.0.0",
     "query-string": "^6.0.0",
