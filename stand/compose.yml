@@ -1,0 +1,88 @@
+# Тестовый стенд mail-server + subscription-facade + mail-sorter
+# с локальным почтовым сервером GreenMail (SMTP/IMAP, принимает почту
+# на любые адреса, пользователи создаются при первом входе).
+# Запуск всего сценария: ./run.sh (см. README.md)
+#
+# subscription-facade и mail-sorter собираются по их собственным Dockerfile
+# из git-репозиториев; для локальных копий задайте каталоги:
+#   SUBSCRIPTION_FACADE_SRC=../../subscription-facade MAIL_SORTER_SRC=../../mail-sorter
+name: eterfund-stand
+
+services:
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      retries: 30
+
+  mail:
+    image: greenmail/standalone:2.1.3
+    environment:
+      GREENMAIL_OPTS: >-
+        -Dgreenmail.setup.test.all -Dgreenmail.hostname=0.0.0.0
+        -Dgreenmail.auth.disabled
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/3143 && </dev/tcp/127.0.0.1/3025"]
+      interval: 2s
+      retries: 60
+
+  mail-server:
+    build:
+      context: ..
+      target: server
+    volumes:
+      - ./config/mail-server.json:/app/config.json:ro
+    depends_on:
+      redis: { condition: service_healthy }
+      mail: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/mailings || exit 1"]
+      interval: 2s
+      retries: 30
+
+  # Веб-интерфейс mail-server: http://127.0.0.1:${STAND_UI_PORT:-18100}/
+  client:
+    build:
+      context: ..
+      target: client
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:${STAND_UI_PORT:-18100}:80"
+    depends_on:
+      mail-server: { condition: service_healthy }
+
+  # Страницы подписки: http://127.0.0.1:${STAND_FACADE_PORT:-18101}/subscribe?...
+  facade:
+    build: ${SUBSCRIPTION_FACADE_SRC:-https://github.com/Etersoft/subscription-facade.git#master}
+    volumes:
+      - ./config/facade.json:/app/config.json:ro
+    ports:
+      - "127.0.0.1:${STAND_FACADE_PORT:-18101}:8001"
+    depends_on:
+      mail-server: { condition: service_healthy }
+
+  # Разовый запуск: docker compose run --rm mail-sorter
+  mail-sorter:
+    build: ${MAIL_SORTER_SRC:-https://github.com/Etersoft/mail-sorter.git#master}
+    volumes:
+      - ./config/mail-sorter.json:/app/config.json:ro
+    depends_on:
+      redis: { condition: service_healthy }
+      mail: { condition: service_healthy }
+      mail-server: { condition: service_healthy }
+    profiles: ["tools"]
+
+  e2e:
+    build: ./e2e
+    environment:
+      MAIL_SERVER_URL: http://mail-server:8000
+      FACADE_URL: http://facade:8001
+      CLIENT_URL: http://client
+      MAIL_HOST: mail
+    depends_on:
+      mail-server: { condition: service_healthy }
+      facade: { condition: service_started }
+      client: { condition: service_started }
+    profiles: ["tools"]

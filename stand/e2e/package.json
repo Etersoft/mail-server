@@ -1,0 +1,13 @@
+{
+  "name": "eterfund-stand-e2e",
+  "private": true,
+  "description": "End-to-end tests for mail-server, subscription-facade and mail-sorter",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "imapflow": "^2.4.0",
+    "mailparser": "^3.9.38",
+    "nodemailer": "^10.1.0"
+  }
+}

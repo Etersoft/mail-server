@@ -49,8 +49,8 @@ How they fit together:
     temporary ones) and senders of unsubscribe letters are removed from all
     mailings via `POST /mailings/unsubscribe`;
   - `forwardTo` — where to forward letters from people.
-- All three projects have a `Dockerfile` and can be run as containers next to
-  each other; see their READMEs.
+- All three projects have a `Dockerfile`; the [test stand](#test-stand) runs
+  them together.
 
 ## Quick start with Docker
 
@@ -68,6 +68,19 @@ nginx with the built client; proxy `/api/` to the server, e.g.:
 ```nginx
 location /api/ { proxy_pass http://mail-server:8000/; }
 location / { try_files $uri /index.html; }
+```
+
+### Test stand
+
+[`stand/`](stand/README.md) runs all three projects in docker compose together
+with Redis and a local mail server (GreenMail) and checks the whole chain:
+sending, subscription through subscription-facade, bounce processing by
+mail-sorter. subscription-facade and mail-sorter are built from their git
+repositories by their own Dockerfiles; local copies can be used instead:
+
+```
+$ stand/run.sh
+$ SUBSCRIPTION_FACADE_SRC=../../subscription-facade MAIL_SORTER_SRC=../../mail-sorter stand/run.sh
 ```
 
 ## Installation without Docker

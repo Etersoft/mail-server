@@ -49,8 +49,8 @@ mail-server — основа небольшой системы, поверх н�
     `maxTemporaryFailures`) и отправители писем с просьбой отписаться
     исключаются из всех рассылок через `POST /mailings/unsubscribe`;
   - `forwardTo` — куда пересылать письма от людей.
-- У всех трёх проектов есть `Dockerfile`, их можно запускать контейнерами рядом
-  друг с другом; см. их README.
+- У всех трёх проектов есть `Dockerfile`; [тестовый стенд](#тестовый-стенд)
+  запускает их вместе.
 
 ## Быстрый запуск в Docker
 
@@ -68,6 +68,19 @@ $ docker run -d -v $PWD/config.json:/app/config.json -p 8000:8000 mail-server
 ```nginx
 location /api/ { proxy_pass http://mail-server:8000/; }
 location / { try_files $uri /index.html; }
+```
+
+### Тестовый стенд
+
+[`stand/`](stand/README.md) запускает все три проекта в docker compose вместе с
+Redis и локальным почтовым сервером (GreenMail) и проверяет всю цепочку:
+отправку, подписку через subscription-facade, обработку недоставок mail-sorter.
+subscription-facade и mail-sorter собираются по своим Dockerfile из их
+git-репозиториев; вместо них можно взять локальные копии:
+
+```
+$ stand/run.sh
+$ SUBSCRIPTION_FACADE_SRC=../../subscription-facade MAIL_SORTER_SRC=../../mail-sorter stand/run.sh
 ```
 
 ## Установка без Docker

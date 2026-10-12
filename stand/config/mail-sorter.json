@@ -1,0 +1,20 @@
+{
+  // Читает ответы почтовых серверов в ящике noreply@example.com
+  "actions": { "callHandler": true, "markAsRead": true, "delete": false },
+  "database": {
+    "type": "mail-server",
+    "options": { "backend": "http://mail-server:8000" }
+  },
+  "forwardTo": "admin@example.com",
+  "imapConnection": {
+    "host": "mail",
+    "password": "%{IMAP_PASSWORD|x}",
+    "port": 3143,
+    "tls": false,
+    "user": "noreply@example.com"
+  },
+  "logging": { "maxLogLevel": "verbose" },
+  "mailer": { "from": "noreply@example.com", "host": "mail", "port": 3025 },
+  "readonly": false,
+  "redis": { "host": "redis", "port": 6379, "db": 0 }
+}

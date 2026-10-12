@@ -1,0 +1,19 @@
+{
+  "server": {
+    "logLevel": "verbose",
+    "mail": {
+      "from": "noreply@example.com",
+      "listIdDomain": "stand.local"
+    },
+    "port": 8000,
+    "redis": {
+      "db": 0,
+      "host": "redis",
+      "port": 6379
+    },
+    "smtp": {
+      "host": "mail",
+      "port": 3025
+    }
+  }
+}
