@@ -77,6 +77,14 @@ or
 $ node server/dist/src/index.js
 ```
 
+### Docker
+
+```
+$ docker build --target server -t mail-server .
+$ docker run -v $PWD/config.json:/app/config.json -p 8000:8000 mail-server
+$ docker build --target client -t mail-server-client .   # static client for nginx
+```
+
 ### API for mail-sorter
 
 `POST /mailings/unsubscribe` with `{"email": "..."}` removes the address from all

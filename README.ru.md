@@ -77,6 +77,14 @@ $ npm run server:start
 $ node server/dist/src/index.js
 ```
 
+### Docker
+
+```
+$ docker build --target server -t mail-server .
+$ docker run -v $PWD/config.json:/app/config.json -p 8000:8000 mail-server
+$ docker build --target client -t mail-server-client .   # статический клиент для nginx
+```
+
 ### API для mail-sorter
 
 `POST /mailings/unsubscribe` с телом `{"email": "..."}` исключает адрес из всех рассылок
