@@ -69,7 +69,7 @@ export class Editor extends React.Component<EditorProps, EditorState> {
     if (this.props.onChange) {
       this.props.onChange(event.currentTarget.value);
     }
-  }
+  };
 
   private handleTabSwitch = (index: number) => {
     if (this.state.tabIndex === 0 && this.props.onChange) {
@@ -78,5 +78,5 @@ export class Editor extends React.Component<EditorProps, EditorState> {
     this.setState({
       tabIndex: index
     });
-  }
+  };
 }

@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 import { MailingList, MailingListProps } from '../MailingList';
-import { Dispatch } from 'redux';
 import { RootState } from '../../reducers/index';
 import { selectMailing } from '../../actions/selectMailing';
 import { Mailing } from '../../reducers/mailings';
 import { showAddForm } from '../../actions/showAddForm';
+import { AppDispatch } from '../../types';
 
 
 function mapStateToProps (state: RootState) {
@@ -14,7 +14,7 @@ function mapStateToProps (state: RootState) {
   };
 }
 
-function mapDispatchToProps (dispatch: Dispatch<RootState>) {
+function mapDispatchToProps (dispatch: AppDispatch) {
   return {
     onSelect (mailing: Mailing): void {
       dispatch(selectMailing(mailing.id));

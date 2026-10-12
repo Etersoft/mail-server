@@ -1,8 +1,7 @@
-import { MailingState } from 'server/src/MailingState';
+import { MailingState } from '../../../server/src/MailingState';
 import { Action } from '../types';
 import { ActionTypes } from '../ActionTypes';
 import { MailingCreateData } from '../components/AddForm';
-import * as moment from 'moment';
 
 
 export interface MailingListState {
@@ -12,7 +11,7 @@ export interface MailingListState {
 }
 
 export interface Mailing {
-  creationDate?: moment.Moment;
+  creationDate?: Date;
   failedReceivers?: Receiver[];
   failedReceiversCount?: number;
   html: string;
@@ -129,12 +128,13 @@ export function mailings (state: MailingListState = initialState, action: Action
       return Object.assign({}, state, {
         selected: action.data
       });
-    case ActionTypes.ADD_MAILING:
+    case ActionTypes.ADD_MAILING: {
       const mailingsList = getAllMailings(state);
       mailingsList.push(createMailing(
         action.data.mailing, action.data.id, action.data.listId
       ));
       return createMailingListState(mailingsList);
+    }
     case ActionTypes.UPDATE_MAILING:
       return updateMailing(state, action.data.id, action.data.fields);
     case ActionTypes.REMOVE_RECEIVER:

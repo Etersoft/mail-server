@@ -1,9 +1,7 @@
-import * as React from 'react';
 import { Mailing, Receiver } from '../../reducers/mailings';
 import { MailingDetailView, MailingEditData } from '../MailingDetailView';
 import { connect } from 'react-redux';
 import { RootState } from '../../reducers';
-import { Dispatch } from 'redux';
 import { startMailing } from '../../actions/startMailing';
 import { stopMailing } from '../../actions/stopMailing';
 import { reloadSingleMailing } from '../../actions/reloadSingleMailing';
@@ -15,6 +13,7 @@ import { reloadFailedReceivers } from '../../actions/reloadFailedReceivers';
 import { createRetryMailing } from '../../actions/createRetryMailing';
 import { loadReceivers } from '../../actions/loadReceivers';
 import { removeReceiver } from '../../actions/removeReceiver';
+import { AppDispatch } from '../../types';
 
 
 function mapStateToProps (state: RootState) {
@@ -26,7 +25,7 @@ function mapStateToProps (state: RootState) {
   };
 }
 
-function mapDispatchToProps (dispatch: Dispatch<RootState>) {
+function mapDispatchToProps (dispatch: AppDispatch) {
   return {
     onClone: (mailing: Mailing) => dispatch(cloneMailing(mailing)),
     onCreateRetry: (mailing: Mailing) => dispatch(createRetryMailing(mailing)),

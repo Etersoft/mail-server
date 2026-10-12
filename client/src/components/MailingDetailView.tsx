@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Mailing, Receiver } from '../reducers/mailings';
 import '../styles/MailingDetailView';
 import { MailingStateView } from './MailingStateView';
-import { MailingState } from 'server/src/MailingState';
+import { MailingState } from '../../../server/src/MailingState';
 import { Button, ButtonType } from './elements/Button';
 import { ConfirmationButton } from './elements/ConfirmationButton';
 import { FormGroup } from './elements/FormGroup';
@@ -15,6 +15,13 @@ import { Checkbox } from './elements/Checkbox';
 
 
 const REFRESH_INTERVAL = 1000;
+
+// DD.MM.YYYY HH:mm:ss
+function formatDate (date: Date) {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
 
 const editableFields = {
   html: 'Текст рассылки',
@@ -142,7 +149,7 @@ export class MailingDetailView extends React.Component<
       <React.Fragment>
         <h5 className='field-name'>Дата создания: </h5>
         <span className='field-value'>
-          {mailing.creationDate.format('DD.MM.YYYY HH:mm:ss')}
+          {formatDate(mailing.creationDate)}
         </span><br />
       </React.Fragment>
     ) : null;
@@ -255,23 +262,23 @@ export class MailingDetailView extends React.Component<
     this.setState({
       testEmail: value
     });
-  }
+  };
 
   private handleClone = () => {
     if (this.props.onClone) {
       this.props.onClone(this.props.mailing);
     }
-  }
+  };
 
   private handleCreateRetry = () => {
     if (this.props.onCreateRetry) {
       this.props.onCreateRetry(this.props.mailing);
     }
-  }
+  };
 
   private handleDelete = () => {
     this.props.onDelete(this.props.mailing);
-  }
+  };
 
   private handleSave = () => {
     if (this.props.onUpdate) {
@@ -280,31 +287,31 @@ export class MailingDetailView extends React.Component<
         changed: false
       });
     }
-  }
+  };
 
   private handleSendTestEmail = () => {
     if (this.props.onSendTestEmail) {
       this.props.onSendTestEmail(this.props.mailing, this.state.testEmail);
     }
-  }
+  };
 
   private handleStart = () => {
     if (this.props.onStart) {
       this.props.onStart(this.props.mailing);
     }
-  }
+  };
 
   private handleStop = () => {
     if (this.props.onStop) {
       this.props.onStop(this.props.mailing);
     }
-  }
+  };
 
   private refresh = () => {
     if (this.props.onRefresh) {
       this.props.onRefresh(this.props.mailing);
     }
-  }
+  };
 
   private refreshReceiversList = async () => {
     if (this.props.onRefreshReceiversList) {
@@ -317,13 +324,13 @@ export class MailingDetailView extends React.Component<
         }
       });
     }
-  }
+  };
 
   private refreshFailedReceivers = () => {
     if (this.props.onRefreshFailedReceivers) {
       this.props.onRefreshFailedReceivers(this.props.mailing);
     }
-  }
+  };
 
   private removeReceiver = (receiver: Receiver) => {
     if (this.props.onRemoveReceiver) {
@@ -336,7 +343,7 @@ export class MailingDetailView extends React.Component<
         }
       });
     }
-  }
+  };
 
   private renderFirstButton () {
     if (this.state.changed) {

@@ -1,3 +1,5 @@
+@use 'sass:meta';
+
 body, html, #root, .root-view, .content {
   height: 100%;
   margin: 0;
@@ -8,7 +10,7 @@ body, html, #root, .root-view, .content {
 .root-view {
   font-family: Verdana, Arial, Helvetica, sans-serif;
 
-  @import 'global';
+  @include meta.load-css('global');
 }
 
 .content {

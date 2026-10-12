@@ -118,20 +118,20 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
         .map(line => ({
           email: line[0],
           name: line[1] || '',
-          extraData: JSON.parse(line[2] || "{}")
+          extraData: JSON.parse(line[2] || '{}')
       }));
       if (this.props.onChange) {
         this.props.onChange(receivers);
       }
     }
-  }
+  };
 
   private loadFromFile = () => {
     if (this.fileInput) {
       this.fileInput.value = '';
       this.fileInput.click();
     }
-  }
+  };
 
   private readFile (file: File): Promise<any[]> {
     return new Promise((resolve, reject) => {
@@ -196,7 +196,7 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
     if (this.props.onChange) {
       this.props.onChange([]);
     }
-  }
+  };
 
   private showDetails = (email: string) => {
     return () => {
@@ -204,5 +204,5 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
         selected: email
       });
     };
-  }
+  };
 }

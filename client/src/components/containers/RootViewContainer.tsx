@@ -1,23 +1,24 @@
 import * as React from 'react';
 import '../../styles/RootView';
 import { MailingListContainer } from './MailingListContainer';
-import { RootState } from 'client/src/reducers';
+import { RootState } from '../../reducers';
 import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
 import {
   MailingDetailViewContainer
 } from './MailingDetailViewContainer';
-import { Mailing } from 'client/src/reducers/mailings';
 import { createMailing } from '../../actions/createMailing';
 import { hideAddForm } from '../../actions/hideAddForm';
 import { AddForm, MailingCreateData } from '../AddForm';
 import { Animator } from '../Animator';
-import * as Notifications from 'react-notification-system-redux';
-import { Notification } from 'react-notification-system';
+import { Notifications } from '../Notifications';
+import { NotificationItem } from '../../reducers/notifications';
+import { hideNotification } from '../../actions/notify';
+import { AppDispatch } from '../../types';
 
 
 export interface RootViewProps {
-  notifications: Notification[];
+  notifications: NotificationItem[];
+  onDismissNotification: (id: number) => void;
   onAdd: (mailing: MailingCreateData) => void;
   onHideAddForm: () => void;
   selectedMailing?: number;
@@ -43,9 +44,13 @@ class RootView extends React.Component<RootViewProps> {
           {rightColumn}
         </div>
         <Animator show={this.props.showAddForm}>
-          <AddForm onAdd={this.props.onAdd} onClose={this.props.onHideAddForm} />
+          {nodeRef => (
+            <AddForm containerRef={nodeRef} onAdd={this.props.onAdd}
+                     onClose={this.props.onHideAddForm} />
+          )}
         </Animator>
-        <Notifications notifications={this.props.notifications} />
+        <Notifications notifications={this.props.notifications}
+                       onDismiss={this.props.onDismissNotification} />
       </div>
     );
   }
@@ -59,9 +64,10 @@ function mapStateToProps (state: RootState) {
   };
 }
 
-function mapDispatchToProps (dispatch: Dispatch<RootState>) {
+function mapDispatchToProps (dispatch: AppDispatch) {
   return {
     onAdd: (data: MailingCreateData) => dispatch(createMailing(data)),
+    onDismissNotification: (id: number) => dispatch(hideNotification(id)),
     onHideAddForm: () => dispatch(hideAddForm())
   };
 }

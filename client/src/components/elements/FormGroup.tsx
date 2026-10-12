@@ -3,6 +3,7 @@ import '../../styles/FormGroup';
 
 
 export interface FormGroupProps {
+  children?: React.ReactNode;
   fraction?: number;
   horizontal?: boolean;
   inline?: boolean;

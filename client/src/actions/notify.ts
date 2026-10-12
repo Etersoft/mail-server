@@ -1,26 +1,26 @@
 import { ActionTypes } from '../ActionTypes';
-import { show } from 'react-notification-system-redux';
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers';
+import { NotificationItem, NotificationLevel } from '../reducers/notifications';
+import { AppDispatch } from '../types';
 
 
-export function notifyAboutError (text: string) {
-  return async function (dispatch: Dispatch<RootState>) {
-    dispatch(show({
-      autoDismiss: 10,
-      message: text,
-      position: 'bc',
-      title: 'Ошибка!'
-    }, 'error'));
+let lastId = 0;
+
+export function hideNotification (id: number) {
+  return { id, type: ActionTypes.HIDE_NOTIFICATION };
+}
+
+function show (level: NotificationLevel, message: string, autoDismiss: number, title?: string) {
+  return async function (dispatch: AppDispatch) {
+    const notification: NotificationItem = { id: ++lastId, level, message, title };
+    dispatch({ notification, type: ActionTypes.SHOW_NOTIFICATION });
+    setTimeout(() => dispatch(hideNotification(notification.id)), autoDismiss * 1000);
   };
 }
 
+export function notifyAboutError (text: string) {
+  return show('error', text, 10, 'Ошибка!');
+}
+
 export function notifySuccess (text: string) {
-  return async function (dispatch: Dispatch<RootState>) {
-    dispatch(show({
-      autoDismiss: 3.5,
-      message: text,
-      position: 'bc'
-    }, 'success'));
-  };
+  return show('success', text, 3.5);
 }

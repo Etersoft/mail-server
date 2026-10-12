@@ -1,11 +1,10 @@
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
 import { getFailedReceivers } from '../api';
 import { updateMailing } from './updateMailing';
+import { AppDispatch } from '../types';
 
 
 export function reloadFailedReceivers (id: number) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       dispatch(updateMailing(id, {
         loadingFailedReceivers: true

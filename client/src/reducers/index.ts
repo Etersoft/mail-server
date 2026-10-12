@@ -1,11 +1,10 @@
 import { combineReducers } from 'redux';
 import { mailings, MailingListState } from './mailings';
 import { ui, UiState } from './ui';
-import { reducer as notifications } from 'react-notification-system-redux';
-import { Notification } from 'react-notification-system';
+import { notifications, NotificationItem } from './notifications';
 
 
-export default combineReducers<RootState>({
+export default combineReducers({
   mailings,
   notifications,
   ui
@@ -13,6 +12,6 @@ export default combineReducers<RootState>({
 
 export interface RootState {
   mailings: MailingListState;
-  notifications: Notification[];
+  notifications: NotificationItem[];
   ui: UiState;
 }

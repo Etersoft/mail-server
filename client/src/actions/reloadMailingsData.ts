@@ -1,12 +1,12 @@
 import { getMailings } from '../api';
-import { Dispatch } from 'redux';
 import { RootState } from '../reducers';
 import { updateMailing } from './updateMailing';
 import { addMailing } from './addMailing';
+import { AppDispatch } from '../types';
 
 
 export function reloadMailingsData () {
-  return async function (dispatch: Dispatch<RootState>, getState: () => RootState) {
+  return async function (dispatch: AppDispatch, getState: () => RootState) {
     const mailings = await getMailings();
     const state = getState();
     mailings.forEach(mailing => {

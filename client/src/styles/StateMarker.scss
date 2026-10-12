@@ -1,7 +1,9 @@
+@use 'sass:math';
+
 $marker-size: 10px;
 
 .state-marker {
-  border-radius: $marker-size / 2;
+  border-radius: math.div($marker-size, 2);
   display: inline-block;
   height: $marker-size;
   position: relative;

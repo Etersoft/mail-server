@@ -1,12 +1,11 @@
 import { getMailings } from '../api';
 import { ActionTypes } from '../ActionTypes';
-import { Dispatch } from 'redux';
-import { RootState } from 'client/src/reducers';
 import { notifyAboutError } from './notify';
+import { AppDispatch } from '../types';
 
 
 export function loadMailings () {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       const mailings = await getMailings();
       dispatch({

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MailingState } from 'server/src/MailingState';
+import { MailingState } from '../../../server/src/MailingState';
 import '../styles/StateMarker';
 
 

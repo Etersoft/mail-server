@@ -1,8 +1,7 @@
-import { stringify } from 'query-string';
+import queryString from 'query-string';
 import { Mailing, Receiver } from './reducers/mailings';
 import { MailingCreateData } from './components/AddForm';
 import { MAX_RECEIVERS } from './components/ReceiverList';
-import * as moment from 'moment';
 
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -19,19 +18,14 @@ export async function apiRequest (
   };
 
   if (queryParams !== undefined && queryParams !== null) {
-    endpoint += '?' + stringify(queryParams);
+    endpoint += '?' + queryString.stringify(queryParams);
   }
 
   if (data !== undefined) {
     requestConfig.body = JSON.stringify(data);
   }
 
-  let response;
-  try {
-    response = await fetch(API_URL + endpoint, requestConfig);
-  } catch (error) {
-    throw error;
-  }
+  const response = await fetch(API_URL + endpoint, requestConfig);
 
   const jsonResponse = await response.json();
 
@@ -77,7 +71,7 @@ export function deleteReceiver (mailingId: number, receiver: string): Promise<vo
 export async function getMailingById (id: number): Promise<Mailing> {
   const mailing = await apiRequest(`/mailings/${id}`);
   if (mailing.creationDate) {
-    mailing.creationDate = moment.unix(mailing.creationDate);
+    mailing.creationDate = new Date(mailing.creationDate * 1000);
   }
   return mailing;
 }

@@ -1,0 +1,40 @@
+.notifications {
+  bottom: 10px;
+  left: 50%;
+  position: fixed;
+  transform: translateX(-50%);
+  width: 320px;
+  z-index: 9998;
+
+  .notification {
+    background-color: #f4f4f4;
+    border-radius: 2px;
+    border-top: 2px solid;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+    padding: 10px;
+  }
+
+  .notification-error {
+    background-color: #f4e9e9;
+    border-color: #ec3d3d;
+    color: #412f2f;
+
+    .notification-title {
+      color: #ec3d3d;
+    }
+  }
+
+  .notification-success {
+    background-color: #f0f5ea;
+    border-color: #5ea400;
+    color: #4b583a;
+  }
+
+  .notification-title {
+    font-size: 14px;
+    margin: 0 0 5px;
+  }
+}

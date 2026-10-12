@@ -17,5 +17,5 @@ export class Checkbox extends React.Component<CheckboxProps> {
     if (this.props.onChange) {
       this.props.onChange(event.target.checked);
     }
-  }
+  };
 }

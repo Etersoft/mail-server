@@ -3,8 +3,7 @@ import { Receiver } from '../reducers/mailings';
 import '../styles/AddForm';
 import { ReceiverList } from './ReceiverList';
 import { Editor } from './Editor';
-// tslint:disable-next-line
-const template = require('email-template.html');
+import template from '../email-template.html';
 
 
 export interface MailingCreateData {
@@ -16,6 +15,7 @@ export interface MailingCreateData {
 }
 
 export interface AddFormProps {
+  containerRef?: React.Ref<HTMLDivElement>;
   onAdd: (mailing: MailingCreateData) => void;
   onClose: () => void;
 }
@@ -44,7 +44,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
 
   render () {
     return (
-      <div className='add-form-container'>
+      <div className='add-form-container' ref={this.props.containerRef}>
         <div className='add-form'>
           <h2 className='block-header'>
             Добавить рассылку
@@ -98,7 +98,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
       subject: this.state.subject
     };
     this.props.onAdd(mailing);
-  }
+  };
 
   private canAdd () {
     return this.state.name.trim().length && this.state.receivers.length;
@@ -108,29 +108,29 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
     this.setState({
       html: value
     });
-  }
+  };
 
   private changeName = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({
       name: event.currentTarget.value
     });
-  }
+  };
 
   private changeSubject = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({
       subject: event.currentTarget.value
     });
-  }
+  };
 
   private changeReceivers = (receivers: Receiver[]) => {
     this.setState({
       receivers
     });
-  }
+  };
 
   private changeReplyTo = (event: React.FormEvent<HTMLInputElement>) => {
     this.setState({
       replyTo: event.currentTarget.value
     });
-  }
+  };
 }

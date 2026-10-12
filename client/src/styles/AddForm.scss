@@ -1,9 +1,9 @@
-@import 'animations/fade';
-@import 'animations/scale';
-@import 'Editor';
-@import 'Form';
-@import 'FormGroup';
-@import 'inputs';
+@use 'animations/fade' as *;
+@use 'animations/scale' as *;
+@use 'Editor';
+@use 'Form';
+@use 'FormGroup';
+@use 'inputs';
 
 
 $transition: 0.3s ease;

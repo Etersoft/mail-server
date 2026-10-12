@@ -1,5 +1,3 @@
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
 import { updateMailing as updateMailingApi } from '../api';
 import { notifyAboutError, notifySuccess } from './notify';
 import { Mailing } from '../reducers/mailings';
@@ -7,10 +5,11 @@ import { MailingEditData } from '../components/MailingDetailView';
 import { lockMailing } from './lockMailing';
 import { updateMailing } from './updateMailing';
 import pick from 'lodash-es/pick';
+import { AppDispatch } from '../types';
 
 
 export function updateMailingOnServer (mailing: Mailing, editData: MailingEditData) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       dispatch(lockMailing(mailing.id, true));
       await updateMailingApi(mailing.id, pick(editData, [

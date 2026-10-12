@@ -1,14 +1,13 @@
-import { getMailingById, deleteReceiver } from '../api';
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers';
+import { deleteReceiver } from '../api';
 import { notifyAboutError, notifySuccess } from './notify';
 import { Mailing, Receiver } from '../reducers/mailings';
 import { ActionTypes } from '../ActionTypes';
 import { loadReceivers } from './loadReceivers';
+import { AppDispatch } from '../types';
 
 
 export function removeReceiver (mailing: Mailing, receiver: Receiver) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       dispatch({
         data: {

@@ -1,5 +1,5 @@
 import { Action } from '../types';
-import { ActionTypes } from 'client/src/ActionTypes';
+import { ActionTypes } from '../ActionTypes';
 
 
 export interface UiState {

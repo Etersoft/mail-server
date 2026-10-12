@@ -1,13 +1,12 @@
 import { ActionTypes } from '../ActionTypes';
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
 import { deleteMailing as deleteMailingFromServer } from '../api';
 import { lockMailing } from './lockMailing';
 import { notifyAboutError, notifySuccess } from './notify';
+import { AppDispatch } from '../types';
 
 
 export function deleteMailing (id: number) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     dispatch(lockMailing(id, true));
     try {
       await deleteMailingFromServer(id);

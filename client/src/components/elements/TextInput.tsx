@@ -21,5 +21,5 @@ export class TextInput extends React.Component<TextInputProps> {
     if (this.props.onChange) {
       this.props.onChange(event.currentTarget.value);
     }
-  }
+  };
 }

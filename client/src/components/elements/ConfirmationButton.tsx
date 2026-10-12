@@ -4,6 +4,7 @@ import { Button, ButtonType } from './Button';
 
 
 export interface ConfirmationButtonProps {
+  children?: React.ReactNode;
   disabled?: boolean;
   onClick?: () => void;
   type?: ButtonType;
@@ -53,17 +54,17 @@ export class ConfirmationButton extends React.Component<
     if (this.props.onClick) {
       this.props.onClick();
     }
-  }
+  };
 
   private handleInitialClick = () => {
     this.setState({
       active: true
     });
-  }
+  };
 
   private handleReject = () => {
     this.setState({
       active: false
     });
-  }
+  };
 }

@@ -1,14 +1,11 @@
 import { Mailing } from '../reducers/mailings';
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
-import { ActionTypes } from '../ActionTypes';
-import { loadReceivers } from './loadReceivers';
 import { sendTestEmail as sendTestEmailApi } from '../api';
 import { notifyAboutError, notifySuccess } from './notify';
+import { AppDispatch } from '../types';
 
 
 export function sendTestEmail (mailing: Mailing, email: string) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       await sendTestEmailApi(mailing.id, email);
       dispatch(notifySuccess('Тестовое письмо отправлено.'));

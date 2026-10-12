@@ -46,5 +46,5 @@ export class FailureList extends React.Component<FailureListProps> {
     }
 
     await this.props.onReload();
-  }
+  };
 }

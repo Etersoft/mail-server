@@ -1,13 +1,12 @@
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
 import { createRetryMailing as createRetryMailingOnServer } from '../api';
 import { notifyAboutError, notifySuccess } from './notify';
 import { Mailing } from '../reducers/mailings';
 import { cloneWithApi } from './cloneWithApi';
+import { AppDispatch } from '../types';
 
 
 export function createRetryMailing (mailing: Mailing) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       if (!mailing.failedReceiversCount) {
         dispatch(notifyAboutError('По этой рассылке нет ошибок доставки.'));

@@ -1,13 +1,12 @@
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
 import { cloneMailing as cloneMailingOnServer } from '../api';
 import { notifyAboutError, notifySuccess } from './notify';
 import { Mailing } from '../reducers/mailings';
 import { cloneWithApi } from './cloneWithApi';
+import { AppDispatch } from '../types';
 
 
 export function cloneMailing (mailing: Mailing) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       if (!mailing.receivers || !mailing.receivers.length) {
         dispatch(notifyAboutError('Нельзя создать рассылку без получателей.'));

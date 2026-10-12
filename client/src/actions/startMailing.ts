@@ -1,14 +1,12 @@
-import { Mailing } from '../reducers/mailings';
-import { Dispatch } from 'redux';
-import { RootState } from '../reducers/index';
 import { updateMailing as updateMailingOnServer } from '../api';
 import { MailingState } from '../../../server/src/MailingState';
 import { updateMailing } from './updateMailing';
 import { notifyAboutError } from './notify';
+import { AppDispatch } from '../types';
 
 
 export function startMailing (id: number) {
-  return async function (dispatch: Dispatch<RootState>) {
+  return async function (dispatch: AppDispatch) {
     try {
       dispatch(updateMailing(id, {
         locked: true

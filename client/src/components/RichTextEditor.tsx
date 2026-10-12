@@ -28,7 +28,7 @@ export class RichTextEditor extends React.Component<
     if (this.props.onChange) {
       this.props.onChange(html);
     }
-  }
+  };
 
   private insertImage = () => {
     const fileInput = document.createElement('input');
@@ -47,12 +47,11 @@ export class RichTextEditor extends React.Component<
         }
       } catch (error) {
         alert('Не удалось загрузить картинку.');
-        // tslint:disable-next-line no-console
         console.error(error);
       }
     });
     fileInput.click();
-  }
+  };
 
   private mountEditor = (ref: HTMLDivElement | null) => {
     if (ref) {
@@ -105,7 +104,7 @@ export class RichTextEditor extends React.Component<
       });
       this.editor.content.innerHTML = this.props.html;
     }
-  }
+  };
 
   private async uploadFile (file: File) {
     const form = new FormData();
