@@ -31,6 +31,7 @@ import { readHandlebarsTemplate } from './templates/readTemplate';
 import { subscribe } from './controllers/subscribe';
 import { unsubscribe } from './controllers/unsubscribe';
 import { deleteReceiver } from './controllers/deleteReceiver';
+import { unsubscribeFromAll } from './controllers/unsubscribeFromAll';
 
 
 async function main () {
@@ -94,6 +95,7 @@ function setupRoutes (
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(config, repository, logger, receiverListFilter));
+  app.post('/mailings/unsubscribe', unsubscribeFromAll(repository, logger));
   app.post('/mailings/create-retry', createRetryMailing(
     config, repository, logger, failureCounter
   ));
