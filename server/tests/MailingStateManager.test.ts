@@ -1,13 +1,13 @@
-import 'mocha';
-import { assert } from 'chai';
-import { getTestingRedisConnectionPool } from './testing-utils';
+import { after, afterEach, before, beforeEach, describe, it, mock } from 'node:test';
+import assert from 'node:assert/strict';
+import { createFakeLogger, getTestingRedisConnectionPool, redisSkip } from './testing-utils';
+import { RedisConnectionPool } from '../src/RedisConnectionPool';
 import { RedisMailingRepository } from '../src/RedisMailingRepository';
 import { RedisAddressStatsRepository } from '../src/RedisAddressStatsRepository';
 import { MailingExecutor } from '../src/MailingExecutor';
-import { MailingStateManager } from '../src/MailingStateManager'
-import { createFakeLogger } from './testing-utils';
+import { MailingStateManager } from '../src/MailingStateManager';
 import { MailingState } from '../src/MailingState';
-import * as sinon from 'sinon';
+import { Mailing } from '../src/Mailing';
 
 
 const testHtml = '<h1>Test</h1>';
@@ -15,9 +15,9 @@ const testName = 'test';
 const testReceiver = 'non-existent-address@etersoft.ru';
 const testSubject = 'test';
 
-describe('MailingStateManager', () => {
-  let redisConnectionPool;
-  let mailing;
+describe('MailingStateManager', { skip: redisSkip }, () => {
+  let redisConnectionPool: RedisConnectionPool;
+  let mailing: Mailing;
   let mailingRepository: RedisMailingRepository;
   let addressStatsRepository: RedisAddressStatsRepository;
   let executor: MailingExecutor;
@@ -25,11 +25,11 @@ describe('MailingStateManager', () => {
   const fakeConfig = {
     server: {
       maxEmailsWithoutPause: 5,
-      pauseDuration: 10,
+      pauseDuration: 10
     }
   };
   const mailer = {
-    sendEmail: sinon.stub()
+    sendEmail: mock.fn(async () => {})
   };
   const logger = createFakeLogger();
 
@@ -46,13 +46,18 @@ describe('MailingStateManager', () => {
       logger,
       fakeConfig
     );
-    stateManager  = new MailingStateManager(
+    stateManager = new MailingStateManager(
       executor,
       logger,
       mailingRepository,
       fakeConfig
     );
   });
+
+  after(async () => {
+    await redisConnectionPool.close();
+  });
+
   beforeEach(async () => {
     mailing = await mailingRepository.create({
       html: testHtml,
@@ -66,15 +71,10 @@ describe('MailingStateManager', () => {
       code: '123'
     }]);
   });
-  describe('#changeState',  () => {
-    let fakeExecutor: sinon.SinonMock;
 
-    beforeEach(() => {
-      fakeExecutor = sinon.mock(executor);
-    });
-
+  describe('#changeState', () => {
     afterEach(() => {
-      fakeExecutor.restore();
+      mock.restoreAll();
     });
 
     it('should return false when changing to the same state', async () => {
@@ -83,45 +83,48 @@ describe('MailingStateManager', () => {
     });
 
     it('should start execution when the state changes to RUNNING', async () => {
-      fakeExecutor.expects('startExecution').withArgs(mailing).once();
+      const startExecution = mock.method(executor, 'startExecution', async () => {});
       const result = await stateManager.changeState(mailing, MailingState.RUNNING);
-      fakeExecutor.verify();
+      assert.equal(startExecution.mock.callCount(), 1);
+      assert.equal(startExecution.mock.calls[0].arguments[0], mailing);
       assert.equal(result, true);
     });
 
     it('should paused execution when the state changes to PAUSED', async () => {
       mailing.state = MailingState.RUNNING;
-      fakeExecutor.expects('pauseExecution').withArgs(mailing).once();
+      const pauseExecution = mock.method(executor, 'pauseExecution', async () => {});
       const result = await stateManager.changeState(mailing, MailingState.PAUSED);
-      fakeExecutor.verify();
+      assert.equal(pauseExecution.mock.callCount(), 1);
+      assert.equal(pauseExecution.mock.calls[0].arguments[0], mailing);
       assert.equal(result, true);
     });
   });
 
   describe('#initialize', () => {
-    let fakeMailingRepository: sinon.SinonMock;
-
-    beforeEach(() => {
-      fakeMailingRepository = sinon.mock(mailingRepository);
-    });
-
     afterEach(() => {
-      fakeMailingRepository.restore();
+      mock.restoreAll();
     });
-    
+
     it('should paused all running mailing', async () => {
       mailing.state = MailingState.RUNNING;
-      fakeMailingRepository.expects('getAll').once().resolves([mailing]);
-      fakeMailingRepository.expects('updateInTransaction').withArgs(mailing.id).once();
+      const getAll = mock.method(mailingRepository, 'getAll', async () => [mailing]);
+      const updateInTransaction = mock.method(
+        mailingRepository, 'updateInTransaction', async () => null
+      );
       await stateManager.initialize();
-      fakeMailingRepository.verify();
+      assert.equal(getAll.mock.callCount(), 1);
+      assert.equal(updateInTransaction.mock.callCount(), 1);
+      assert.equal(updateInTransaction.mock.calls[0].arguments[0], mailing.id);
     });
-    
+
     it('should not work if no mailings is running', async () => {
-      fakeMailingRepository.expects('getAll').once().resolves([mailing]);
-      fakeMailingRepository.expects('updateInTransaction').never();
+      const getAll = mock.method(mailingRepository, 'getAll', async () => [mailing]);
+      const updateInTransaction = mock.method(
+        mailingRepository, 'updateInTransaction', async () => null
+      );
       await stateManager.initialize();
-      fakeMailingRepository.verify();
+      assert.equal(getAll.mock.callCount(), 1);
+      assert.equal(updateInTransaction.mock.callCount(), 0);
     });
   });
 });

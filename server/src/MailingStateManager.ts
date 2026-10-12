@@ -96,27 +96,27 @@ export class MailingStateManager {
       this.autoPauseIds.delete(mailing.id);
     } else {
       this.logger.info(`#${mailing.id} has been auto-paused but its state has been changed`);
-      this.logger.info(`    by someone after that. It will not be automatically started.`);
+      this.logger.info('    by someone after that. It will not be automatically started.');
     }
   }
 
   private handleMailingError = async (mailingId: number, error: Error) => {
     this.logger.error(error);
     this.setState(mailingId, MailingState.ERROR);
-  }
+  };
 
   private handleMailingFinish = async (mailingId: number) => {
     await this.setState(mailingId, MailingState.FINISHED);
     this.logger.info(`#${mailingId}: finished`);
-  }
+  };
 
   private handleMailingPause = async (mailingId: number) => {
     this.setState(mailingId, MailingState.PAUSED);
-  }
+  };
 
   private handleMailingStart = async (mailingId: number) => {
     this.setState(mailingId, MailingState.RUNNING);
-  }
+  };
 
   private handleSentEmail = async (mailing: Mailing) => {
     if (!this.maxEmailsWithoutPause || !this.pauseDuration) {
@@ -133,7 +133,7 @@ export class MailingStateManager {
       const updatedMailing = await this.mailingRepository.getById(mailing.id);
       await this.autoPause(updatedMailing!);
     }
-  }
+  };
 
   private incrementAutoPauseId (mailingId: number) {
     const pauseId = (this.autoPauseIds.get(mailingId) || 0) + 1;

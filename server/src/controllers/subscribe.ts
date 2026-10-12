@@ -13,7 +13,7 @@ export function subscribe (
   mailingRepository: MailingRepository, logger: Logger
 ) {
   const handler = async function (req: Request, res: Response) {
-    const mailingId = req.params.mailingId;
+    const mailingId = Number(req.params.mailingId);
     const mailing = await mailingRepository.getById(mailingId);
 
     if (!mailing) {
@@ -63,12 +63,8 @@ export function subscribe (
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
-// tslint:disable:object-literal-sort-keys
 const requestBodyJsonSchema = {
-  $id: 'http://example.com/example.json',
   type: 'object',
-  definitions: {},
-  $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
     email: {

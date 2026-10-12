@@ -4,7 +4,7 @@ import { success, error } from '../utils/response';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { Logger } from '../Logger';
-import { MailingExecutor } from 'src/MailingExecutor';
+import { MailingExecutor } from '../MailingExecutor';
 
 
 export function sendTestEmail (
@@ -32,12 +32,8 @@ export function sendTestEmail (
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
-// tslint:disable:object-literal-sort-keys
 const requestBodyJsonSchema = {
-  $id: 'http://example.com/example.json',
   type: 'object',
-  definitions: {},
-  $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
     email: {

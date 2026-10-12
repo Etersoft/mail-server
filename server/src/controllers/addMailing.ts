@@ -8,7 +8,6 @@ import { getListId } from '../getListId';
 import { Logger } from '../Logger';
 import { Receiver } from '../Receiver';
 import { ReceiverListFilter } from '../ReceiverListFilter';
-import * as moment from 'moment';
 
 
 export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger, 
@@ -32,7 +31,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
     }
 
     const properties = {
-      creationDate: moment(),
+      creationDate: new Date(),
       extraData: source.extraData,
       html: source.html,
       name: source.name + (isClone ? ' (копия)' : ''),
@@ -62,14 +61,10 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
-// tslint:disable:object-literal-sort-keys
 const requestBodyJsonSchema = {
   oneOf: [
     {
-      $id: 'http://example.com/example.json',
       type: 'object',
-      definitions: {},
-      $schema: 'http://json-schema.org/draft-07/schema#',
       additionalProperties: false,
       properties: {
         extraData: {
@@ -125,10 +120,7 @@ const requestBodyJsonSchema = {
       ]
     },
     {
-      $id: 'http://example.com/example.json',
       type: 'object',
-      definitions: {},
-      $schema: 'http://json-schema.org/draft-07/schema#',
       additionalProperties: false,
       properties: {
         sourceId: {

@@ -1,6 +1,6 @@
-import * as uuid from 'uuid/v4';
+import { randomUUID } from 'node:crypto';
 
 
 export function generateUniqueCode (): string {
-  return uuid();
+  return randomUUID();
 }

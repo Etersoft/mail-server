@@ -30,7 +30,8 @@ export class FailureCounter {
         continue;
       }
       // Если есть дата создания рассылки и рассылка создана позже записи - то не учитываем
-      if (mailing.creationDate && mailing.creationDate!.isAfter(stats!.lastStatusDate)) {
+      if (mailing.creationDate && stats.lastStatusDate &&
+          mailing.creationDate > stats.lastStatusDate) {
         continue;
       }
       statsList.push({

@@ -9,7 +9,7 @@ import { Logger } from '../Logger';
 export function deleteReceiver (mailingRepository: MailingRepository, logger: Logger) {
   return catchPromise(async function (req: Request, res: Response) {
     const mailingId = Number(req.params.mailingId);
-    const receiverId = req.params.receiverId;
+    const receiverId = String(req.params.receiverId);
 
     if (!(mailingId > 0)) {
       res.status(400).json(error('Invalid mailing ID'));

@@ -12,20 +12,25 @@ const defaultConfig: RedisAddressStatsRepositoryConfig = {
   addressStatsKeyPrefix: 'ADDRESS_STATS_'
 };
 
+// Формат ключей и данных используется также в mail-sorter
+// (src/services/RedisRepositories.js): при изменении поправить и там
 export class RedisAddressStatsRepository
 extends BaseRedisRepository<AddressStats, AddressStatsProperties, string>
 implements AddressStatsRepository {
   constructor (
     redisConnectionPool: RedisConnectionPool,
-    protected readonly config: RedisAddressStatsRepositoryConfig = defaultConfig
+    config: Partial<RedisAddressStatsRepositoryConfig> = {}
   ) {
     super(redisConnectionPool);
+    this.config = { ...defaultConfig, ...config };
   }
+
+  protected readonly config: RedisAddressStatsRepositoryConfig;
 
   create (properties: AddressStatsProperties): Promise<AddressStats> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const jsonString = this.serializeEntity(properties);
-      await redisClient.setAsync(this.getRedisKey(this.extractKey(properties)), jsonString);
+      await redisClient.set(this.getRedisKey(this.extractKey(properties)), jsonString);
       return new AddressStats(properties);
     });
   }

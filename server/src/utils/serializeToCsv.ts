@@ -1,14 +1,6 @@
-import * as stringify from 'csv-stringify';
+import { stringify } from 'csv-stringify/sync';
 
 
-export function serializeToCsv (data: string[][]) {
-  return new Promise((resolve, reject) => {
-    stringify(data, (error, output) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(output);
-      }
-    });
-  });
+export async function serializeToCsv (data: string[][]): Promise<string> {
+  return stringify(data);
 }

@@ -1,13 +1,12 @@
 import { Receiver } from './Receiver';
 import { MailingRepository } from './MailingRepository';
-import * as moment from 'moment';
 import { AsyncTemplate } from './templates/AsyncTemplate';
 import { HandlebarsAsyncTemplate } from './templates/HandlebarsAsyncTemplate';
 import { MailingState } from './MailingState';
 
 
 export interface MailingProperties {
-  creationDate?: moment.Moment;
+  creationDate?: Date;
   extraData?: {
     textAfterSubscribe?: string,
     textAfterUnsubscribe?: string,  
@@ -35,7 +34,6 @@ const DEFAULT_STREAM_BATCH_SIZE = 100;
  * Класс рассылки
  */
 export class Mailing implements MailingProperties {
-  // tslint:disable-next-line
   public _html: string;
   public extraData?: {
     textAfterSubscribe?: string,
@@ -50,11 +48,9 @@ export class Mailing implements MailingProperties {
   public sentCount: number;
   public subject: string;
   public undeliveredCount: number;
-  // tslint:disable-next-line
   private _htmlTemplate?: AsyncTemplate<MailingTemplateContext>;
-  // tslint:disable-next-line
   private _subjectTemplate?: AsyncTemplate<MailingTemplateContext>;
-  private savedCreationDate?: moment.Moment;
+  private savedCreationDate?: Date;
 
   constructor (
     public id: number,
@@ -82,17 +78,19 @@ export class Mailing implements MailingProperties {
   /**
    * Хак: если дата не определена, то пытаемся вынуть её из названия
    */
-  get creationDate (): moment.Moment | undefined {
+  get creationDate (): Date | undefined {
     if (this.savedCreationDate) {
       return this.savedCreationDate;
     }
 
-    const matchIndex = this.name.search(/\d{2}\.\d{2}\.\d{4} \d{2}\:\d{2}\:\d{2}/g);
-    if (matchIndex === -1) {
+    // Дата в формате DD.MM.YYYY HH:mm:ss, местное время
+    const match = /(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2}):(\d{2})/.exec(this.name);
+    if (!match) {
       return undefined;
     }
 
-    return moment(this.name.slice(matchIndex), 'DD.MM.YYYY HH:mm:ss');
+    const [day, month, year, hours, minutes, seconds] = match.slice(1).map(Number);
+    return new Date(year, month - 1, day, hours, minutes, seconds);
   }
 
   getHtmlForReceiver (receiver: Receiver): Promise<string> {

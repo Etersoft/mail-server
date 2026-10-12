@@ -11,7 +11,7 @@ export function getFailedReceivers (
 ) {
   return catchPromise(async function (req: Request, res: Response) {
     const id = Number(req.params.id);
-    const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+    const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit, 10) : null;
     const csv = req.query.format === 'csv';
 
     if (!(id > 0)) {

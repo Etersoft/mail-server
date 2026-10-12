@@ -1,23 +1,21 @@
-// tslint:disable:no-shadowed-variable
-import { assert, use } from 'chai';
-import * as chaiAsPromised from 'chai-as-promised';
-import 'mocha';
-import { getTestingRedisConnectionPool } from './testing-utils';
+import { after, before, beforeEach, describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { getTestingRedisConnectionPool, redisSkip } from './testing-utils';
+import { RedisConnectionPool } from '../src/RedisConnectionPool';
 import { RedisMailingRepository } from '../src/RedisMailingRepository';
 import { MailingState } from '../src/MailingState';
 import { Receiver } from '../src/Receiver';
 
-
-use(chaiAsPromised);
 
 const testHtml = '<h1>Test</h1>';
 const testName = 'test';
 const testReceiver = 'non-existent-address@etersoft.ru';
 const testSubject = 'test';
 
-describe('RedisMailingRepository', () => {
+describe('RedisMailingRepository', { skip: redisSkip }, () => {
   let mailingId: number;
-  let redisConnectionPoolOne, redisConnectionPoolTwo;
+  let redisConnectionPoolOne: RedisConnectionPool;
+  let redisConnectionPoolTwo: RedisConnectionPool;
   let repositoryOne: RedisMailingRepository, repositoryTwo: RedisMailingRepository;
   after(async () => {
     await redisConnectionPoolOne.close();
@@ -70,8 +68,8 @@ describe('RedisMailingRepository', () => {
 
       const mailing = await repositoryOne.getById(mailingId);
 
-      assert.equal(mailing.sentCount, iterations);
-      assert.equal(mailing.undeliveredCount, iterations);
+      assert.equal(mailing?.sentCount, iterations);
+      assert.equal(mailing?.undeliveredCount, iterations);
     });
   });
 

@@ -1,4 +1,3 @@
-// tslint:disable:no-console
 import { Express } from 'express';
 import { readConfig } from './readConfig';
 import { validateConfig } from './validateConfig';
@@ -33,11 +32,6 @@ import { subscribe } from './controllers/subscribe';
 import { unsubscribe } from './controllers/unsubscribe';
 import { deleteReceiver } from './controllers/deleteReceiver';
 
-
-// Поддержка for await (... of asyncIterator) { ... }
-if (!('asyncIterator' in Symbol as any)) {
-  (Symbol as any).asyncIterator = Symbol.for('Symbol.asyncIterator');
-}
 
 async function main () {
   const config = readConfig();
@@ -85,13 +79,10 @@ async function main () {
     receiverListFilter
   );
   const port = config.server.port;
-  app.listen(port, () => {
-    logger.info(`Listening on port ${port}`);
+  await new Promise<void>((resolve, reject) => {
+    app.listen(port, error => error ? reject(error) : resolve());
   });
-  app.on('error', (error: any) => {
-    console.error(error);
-    process.exit(1);
-  });
+  logger.info(`Listening on port ${port}`);
 }
 
 function setupRoutes (

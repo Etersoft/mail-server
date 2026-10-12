@@ -1,5 +1,4 @@
-import * as moment from 'moment';
-import Cron = require('cron-converter');
+import { stringToArray } from 'cron-converter';
 
 
 export interface ReceiverProperties {
@@ -21,8 +20,7 @@ export class Receiver {
       return true;
     }
     try {
-      const cron = new Cron();
-      cron.fromString('* * ' + schedule);
+      stringToArray('* * ' + schedule);
       return true;
     } catch (error) {
       return false;
@@ -45,7 +43,7 @@ export class Receiver {
     }
   }
 
-  shouldSendAt (date: moment.Moment) {
+  shouldSendAt (date: Date) {
     if (!this.periodicDate) {
       // нет даты - шлём каждый раз
       return true;
@@ -62,34 +60,33 @@ export class Receiver {
     return !isNaN(Number(this.periodicDate));
   }
 
-  private isLastDayOfMonth (date: moment.Moment) {
-    return date.clone().endOf('month').startOf('day').date() === date.date();
+  private isLastDayOfMonth (date: Date) {
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    return lastDay === date.getDate();
   }
 
-  private matchCronSchedule (date: moment.Moment) {
-    const schedule = new Cron();
-    schedule.fromString('* * ' + this.periodicDate);
-    const [ , , dates, months, days ] = schedule.toArray();
+  private matchCronSchedule (date: Date) {
+    const [ , , dates, months, days ] = stringToArray('* * ' + this.periodicDate);
 
-    const dateOk = dates.indexOf(date.date()) !== -1;
-    const monthOk = months.indexOf(date.month() + 1) !== -1;
-    const dayOk = days.indexOf(date.day()) !== -1;
+    const dateOk = dates.includes(date.getDate());
+    const monthOk = months.includes(date.getMonth() + 1);
+    const dayOk = days.includes(date.getDay());
     return (
       (
         dateOk && monthOk && dayOk // дата, месяц и день недели просто есть в расписании cron
       ) ||
       ( // это последний день месяца, а в расписании есть числа больше
         monthOk && dayOk &&
-        this.isLastDayOfMonth(date) && dates.some(d => d > date.date())
+        this.isLastDayOfMonth(date) && dates.some(d => d > date.getDate())
       )
     );
   }
 
-  private matchPlainDate (date: moment.Moment) {
+  private matchPlainDate (date: Date) {
     const periodicDate = Number(this.periodicDate);
     return (
-      periodicDate === date.date() || // число совпадает
-      this.isLastDayOfMonth(date) && periodicDate > date.date() // такого числа нет в этом месяце
+      periodicDate === date.getDate() || // число совпадает
+      this.isLastDayOfMonth(date) && periodicDate > date.getDate() // такого числа нет в этом месяце
     );
   }
 }

@@ -1,53 +1,69 @@
-import { PromiseRedisClient, createRedisClient } from './createRedisClient';
-import { createPool, Pool, Options } from 'generic-pool';
+import { createClient, createClientPool } from 'redis';
 
+
+export type RedisClient = ReturnType<typeof createClient>;
+
+export interface RedisConfig {
+  db?: number;
+  host?: string;
+  password?: string;
+  path?: string;
+  port?: number;
+  url?: string;
+}
+
+export interface RedisPoolConfig {
+  max?: number;
+  min?: number;
+}
 
 export interface RedisConnectionPool {
   close (): Promise<void>;
-  runWithConnection<T> (
-    scenario: (client: PromiseRedisClient) => Promise<T>
-  ): Promise<T>;
+  /**
+   * Выполняет сценарий на отдельном соединении из пула: пока сценарий
+   * не завершится, соединение никто больше не использует (это нужно для WATCH)
+   */
+  runWithConnection<T> (scenario: (client: RedisClient) => Promise<T>): Promise<T>;
+}
+
+/**
+ * Переводит параметры клиента redis 2.x (формат конфига mail-server)
+ * в параметры node-redis 4+
+ */
+export function toClientOptions (config: RedisConfig) {
+  if (config.url) {
+    return { database: config.db, password: config.password, url: config.url };
+  }
+  return {
+    database: config.db,
+    password: config.password,
+    socket: { host: config.host, path: config.path, port: config.port }
+  };
 }
 
 export class RedisConnectionPoolImpl implements RedisConnectionPool {
-  private pool: Pool<PromiseRedisClient>;
+  private pool: ReturnType<typeof createClientPool>;
+  private connected?: Promise<unknown>;
 
-  constructor (
-    redisConfig: any,
-    poolOptions: Options
-  ) {
-    this.pool = createPool({
-      create () {
-        return createRedisClient(redisConfig);
-      },
-      destroy (client) {
-        return new Promise(resolve => {
-          client.once('end', resolve);
-          client.quit();
-        });
-      }
-    }, poolOptions);
-  }
-
-  async acquire (): Promise<PromiseRedisClient> {
-    return this.pool.acquire();
+  constructor (redisConfig: RedisConfig, poolOptions: RedisPoolConfig = {}) {
+    this.pool = createClientPool(toClientOptions(redisConfig), {
+      maximum: poolOptions.max,
+      minimum: poolOptions.min
+    });
   }
 
   async close () {
-    await this.pool.drain();
-    await this.pool.clear();
+    if (this.connected) {
+      await this.connected;
+      await this.pool.close();
+    }
   }
 
-  async release (client: PromiseRedisClient): Promise<void> {
-    await this.pool.release(client);
-  }
-
-  async runWithConnection<T> (
-    scenario: (client: PromiseRedisClient) => Promise<T>
-  ): Promise<T> {
-    const client = await this.pool.acquire();
-    const result = await scenario(client);
-    await this.pool.release(client);
-    return result;
+  async runWithConnection<T> (scenario: (client: RedisClient) => Promise<T>): Promise<T> {
+    if (!this.connected) {
+      this.connected = this.pool.connect();
+    }
+    await this.connected;
+    return this.pool.execute(client => scenario(client as unknown as RedisClient));
   }
 }

@@ -20,9 +20,8 @@ implements SubscriptionRequestRepository {
   create (properties: SubscriptionRequestProperties): Promise<SubscriptionRequest> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const jsonString = this.serializeEntity(properties);
-      await redisClient.setAsync(
-        this.getRedisKey(this.extractKey(properties)), jsonString,
-        'EX', this.ttl
+      await redisClient.set(
+        this.getRedisKey(this.extractKey(properties)), jsonString, { EX: this.ttl }
       );
       return new SubscriptionRequest(properties);
     });

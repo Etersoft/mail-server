@@ -1,7 +1,5 @@
-// tslint:disable:no-shadowed-variable
-import { assert, use } from 'chai';
-import 'mocha';
-import { useFakeTimers } from 'sinon';
+import { describe, it, mock } from 'node:test';
+import assert from 'node:assert/strict';
 import { getListId } from '../src/getListId';
 import { Mailing } from '../src/Mailing';
 
@@ -24,12 +22,12 @@ describe('getListId', () => {
 
   it('should use current date', () => {
     const now = new Date(2018, 3, 1);
-    const timers = useFakeTimers(now);
+    mock.timers.enable({ apis: ['Date'], now });
     try {
       const listId = getListId(fakeConfig, fakeMailing as Mailing).replace(/^<|>$/g, '');
-      assert.equal(listId.split('-')[0], `20180401`);
+      assert.equal(listId.split('-')[0], '20180401');
     } finally {
-      timers.restore();
+      mock.timers.reset();
     }
   });
 

@@ -1,14 +1,13 @@
 import { Mailing } from './Mailing';
 import { MailingState } from './MailingState';
 import { MailSender } from './MailSender';
-import { Receiver } from './/Receiver';
+import { Receiver } from './Receiver';
 import { Email, Headers } from './Email';
 import { EventEmitter } from 'events';
-import { MailingRepository } from 'src/MailingRepository';
+import { MailingRepository } from './MailingRepository';
 import { Logger } from './Logger';
 import { AddressStatsRepository } from './AddressStatsRepository';
 import { isEmail } from 'validator';
-import * as moment from 'moment';
 
 
 export class MailingExecutor extends EventEmitter {
@@ -62,8 +61,6 @@ export class MailingExecutor extends EventEmitter {
     if (!receiver) {
       this.logger.debug(`#${mailing.id}: no receivers to send emails to, ignoring start request`);
       return;
-    } else {
-      this.logger.debug(`#${mailing.id}: 123123123`, receiver);
     }
 
     this.logger.debug(`#${mailing.id}: starting execution`);
@@ -77,7 +74,7 @@ export class MailingExecutor extends EventEmitter {
   }
 
   private async *getActualReceiverStream (mailing: Mailing) {
-    const startedAt = moment();
+    const startedAt = new Date();
     for await (const receiver of mailing.getUnsentReceiversStream()) {
       if (this.checkReceiver(mailing, receiver, startedAt)) {
         yield receiver;
@@ -85,7 +82,7 @@ export class MailingExecutor extends EventEmitter {
     }
   }
 
-  private checkReceiver (mailing: Mailing, receiver: Receiver, startedAt: moment.Moment) {
+  private checkReceiver (mailing: Mailing, receiver: Receiver, startedAt: Date) {
     if (!isEmail(receiver.email) || receiver.email[0] === '-') {
       this.logger.warn(`#${mailing.id}: dropping non-email ${receiver.email}`);
       return false;

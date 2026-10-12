@@ -1,17 +1,19 @@
-// tslint:disable:no-shadowed-variable
-import { assert, use } from 'chai';
-import 'mocha';
-import { spy } from 'sinon';
-import { sleep, getTestingRedisConnectionPool, lock } from './testing-utils';
+import { after, before, beforeEach, describe, it, mock } from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  createFakeLogger, getTestingRedisConnectionPool, redisSkip, sleep
+} from './testing-utils';
+import { RedisConnectionPool } from '../src/RedisConnectionPool';
 import { RedisMailingRepository } from '../src/RedisMailingRepository';
 import { RedisSubscriptionRequestRepository } from '../src/RedisSubscriptionRequestRepository';
 import { MailingState } from '../src/MailingState';
-import { Receiver } from '../src/Receiver';
-import { requestSubscription, SubscribeTemplateContext } from '../src/controllers/requestSubscription';
+import { Email } from '../src/Email';
+import { SubscriptionRequest } from '../src/SubscriptionRequest';
+import {
+  requestSubscription, SubscribeTemplateContext
+} from '../src/controllers/requestSubscription';
 import { subscribe } from '../src/controllers/subscribe';
 import { unsubscribe } from '../src/controllers/unsubscribe';
-import { createFakeLogger } from './testing-utils';
-import { mockReq, mockRes } from 'sinon-express-mock';
 
 
 const testHtml = '<h1>Test</h1>';
@@ -21,18 +23,52 @@ const testReceiver2 = 'non-existent-address2@etersoft.ru';
 const testSubject = 'test';
 const ttl = 1; // seconds
 
-describe('subscription', () => {
-  let redisConnectionPool;
+interface FakeRequest {
+  body: Record<string, unknown>;
+  params: Record<string, unknown>;
+}
+
+type Controller = (req: FakeRequest, res: FakeResponse) => Promise<void>;
+
+function createFakeResponse () {
+  const res = {
+    status: mock.fn((code: number): FakeResponse => {
+      void code;
+      return res;
+    }),
+    json: mock.fn((body: any): FakeResponse => {
+      void body;
+      return res;
+    })
+  };
+  return res;
+}
+
+type FakeResponse = ReturnType<typeof createFakeResponse>;
+
+function createFakeRequest (properties: FakeRequest): FakeRequest {
+  return properties;
+}
+
+function toController (handlers: unknown[]): Controller {
+  return handlers[1] as Controller;
+}
+
+describe('subscription', { skip: redisSkip }, () => {
+  let redisConnectionPool: RedisConnectionPool;
   let mailingRepository: RedisMailingRepository;
   let subscriptionRepository: RedisSubscriptionRequestRepository;
-  let requestSubscriptionController;
-  let subscribeController;
-  let unsubscribeController;
-  let logger = createFakeLogger();
-  let mailingId;
-  let res;
-  let sender;
-  let template;
+  let requestSubscriptionController: Controller;
+  let subscribeController: Controller;
+  // Не используется в тестах, но создаётся, как и раньше
+  let unsubscribeController: Controller;
+  const logger = createFakeLogger();
+  let mailingId: number;
+  let res: FakeResponse;
+  let sender: { sendEmail: ReturnType<typeof mock.fn<(email: Email) => Promise<void>>> };
+  let template: {
+    render: ReturnType<typeof mock.fn<(context: SubscribeTemplateContext) => string>>
+  };
   const subscribeConfig = { replyTo: 'test@etersoft.ru', subject: '123' };
   after(async () => {
     await redisConnectionPool.close();
@@ -58,21 +94,28 @@ describe('subscription', () => {
       code: '123'
     }]);
     sender = {
-      sendEmail: spy()
+      sendEmail: mock.fn(async (email: Email) => {
+        void email;
+      })
     };
     template = {
-      render: spy((context: SubscribeTemplateContext) =>
+      render: mock.fn((context: SubscribeTemplateContext) =>
         context.mailing.name + ':' + context.name + ':' + context.subscriptionRequest.code
       )
     };
     mailingId = mailing.id;
-    res = mockRes();
-    requestSubscriptionController = requestSubscription(
+    res = createFakeResponse();
+    requestSubscriptionController = toController(requestSubscription(
       subscriptionRepository, mailingRepository, logger,
       sender, template, subscribeConfig
-    )[1];
-    subscribeController = subscribe(subscriptionRepository, mailingRepository, logger)[1];
-    unsubscribeController = unsubscribe(subscriptionRepository, mailingRepository, logger)[1];
+    ));
+    subscribeController = toController(
+      subscribe(subscriptionRepository, mailingRepository, logger)
+    );
+    unsubscribeController = toController(
+      unsubscribe(subscriptionRepository, mailingRepository, logger)
+    );
+    void unsubscribeController;
   });
 
   describe('#requestSubscription', () => {
@@ -83,7 +126,7 @@ describe('subscription', () => {
     };
 
     it('should add an entry to SubscriptionRequestRepository', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
@@ -92,22 +135,22 @@ describe('subscription', () => {
         email: testReceiver2,
         mailingId
       });
-      assert.isOk(res.json.getCall(0).args[0].success);
-      assert.equal(request.email, defaultBody.email);
-      assert.equal(request.periodicDate, defaultBody.periodicDate);
+      assert.ok(res.json.mock.calls[0].arguments[0].success);
+      assert.equal(request?.email, defaultBody.email);
+      assert.equal(request?.periodicDate, defaultBody.periodicDate);
     });
 
     it('should send an email on successful creation of subscription request', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
       await requestSubscriptionController(req, res);
-      assert.isOk(sender.sendEmail.calledOnce);
+      assert.equal(sender.sendEmail.mock.callCount(), 1);
     });
 
     it('should support cron schedules', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: {
           ...defaultBody,
           schedule: '* * *'
@@ -115,11 +158,11 @@ describe('subscription', () => {
         params: { mailingId }
       });
       await requestSubscriptionController(req, res);
-      assert.isOk(res.json.getCall(0).args[0].success);
+      assert.ok(res.json.mock.calls[0].arguments[0].success);
     });
 
     it('should return error on invalid cron schedules', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: {
           ...defaultBody,
           schedule: '* * * *'
@@ -127,13 +170,13 @@ describe('subscription', () => {
         params: { mailingId }
       });
       await requestSubscriptionController(req, res);
-      assert.equal(res.status.getCall(0).args[0], 400);
-      assert.equal(res.json.getCall(0).args[0].code, 'INVALID_SCHEDULE');
-      assert.isOk(res.json.getCall(0).args[0].error);
+      assert.equal(res.status.mock.calls[0].arguments[0], 400);
+      assert.equal(res.json.mock.calls[0].arguments[0].code, 'INVALID_SCHEDULE');
+      assert.ok(res.json.mock.calls[0].arguments[0].error);
     });
 
     it('should correctly render email template', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
@@ -143,18 +186,18 @@ describe('subscription', () => {
         mailingId
       });
       assert.equal(
-        sender.sendEmail.getCall(0).args[0].html,
-        `${testName}:${defaultBody.name}:${request.code}`
+        sender.sendEmail.mock.calls[0].arguments[0].html,
+        `${testName}:${defaultBody.name}:${request?.code}`
       );
     });
 
     it('should not send an email on missing mailing', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId: -1 }
       });
       await requestSubscriptionController(req, res);
-      assert.isNotOk(sender.sendEmail.called);
+      assert.equal(sender.sendEmail.mock.callCount(), 0);
     });
 
     it('should not send an email on failed creation of subscription request', async () => {
@@ -163,34 +206,35 @@ describe('subscription', () => {
         throw new Error('TEST ERROR. THIS IS OK IF YOU SEE IT');
       };
 
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
       try {
         await requestSubscriptionController(req, res);
-      } catch (e) {
+      } catch {
+        // ошибка здесь ожидаема
       } finally {
         subscriptionRepository.create = old;
-        assert.isNotOk(sender.sendEmail.called);
+        assert.equal(sender.sendEmail.mock.callCount(), 0);
       }
     });
 
     it('should return 404 for non-existent mailing', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: {
           mailingId: -1
         }
       });
       await requestSubscriptionController(req, res);
-      assert.isOk(res.status.calledWith(404));
-      assert.equal(res.json.getCall(0).args[0].code, 'NOT_FOUND');
-      assert.isNotOk(res.json.getCall(0).args[0].success);
+      assert.ok(res.status.mock.calls.some(call => call.arguments[0] === 404));
+      assert.equal(res.json.mock.calls[0].arguments[0].code, 'NOT_FOUND');
+      assert.ok(!res.json.mock.calls[0].arguments[0].success);
     });
 
     it('should expire subscription requests after TTL', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
@@ -200,11 +244,11 @@ describe('subscription', () => {
         email: testReceiver2,
         mailingId
       });
-      assert.isNotOk(request);
+      assert.ok(!request);
     });
 
     it('should save names', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: {
           ...defaultBody,
           name: 'test'
@@ -216,7 +260,7 @@ describe('subscription', () => {
         email: testReceiver2,
         mailingId
       });
-      assert.equal(request.name, 'test');
+      assert.equal(request?.name, 'test');
     });
   });
 
@@ -225,7 +269,7 @@ describe('subscription', () => {
       email: testReceiver2,
       code: '123'
     };
-    let subscriptionRequest;
+    let subscriptionRequest: SubscriptionRequest;
 
     beforeEach(async () => {
       subscriptionRequest = await subscriptionRepository.create({
@@ -238,16 +282,16 @@ describe('subscription', () => {
     });
 
     it('should return success on subscription', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
       await subscribeController(req, res);
-      assert.isOk(res.json.getCall(0).args[0].success);
+      assert.ok(res.json.mock.calls[0].arguments[0].success);
     });
 
     it('should remove entry from SubscriptionRequestRepository on subscription', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
@@ -256,36 +300,36 @@ describe('subscription', () => {
         email: testReceiver2,
         mailingId
       });
-      assert.isNotOk(request);
+      assert.ok(!request);
     });
 
     it('should add user to mailing on subscription', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
       let receivers = await mailingRepository.getReceivers(mailingId);
-      assert.notInclude(receivers.map(r => r.email), testReceiver2);
+      assert.ok(!receivers.map(r => r.email).includes(testReceiver2));
       await subscribeController(req, res);
       receivers = await mailingRepository.getReceivers(mailingId);
-      assert.include(receivers.map(r => r.email), testReceiver2);
+      assert.ok(receivers.map(r => r.email).includes(testReceiver2));
     });
 
     it('should not subscribe with missing subscription request', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
       await subscriptionRepository.remove(subscriptionRequest);
       await subscribeController(req, res);
       const receivers = await mailingRepository.getReceivers(mailingId);
-      assert.notInclude(receivers.map(r => r.email), testReceiver2);
-      assert.isOk(res.status.calledWith(400));
-      assert.isNotOk(res.json.getCall(0).args[0].success);
+      assert.ok(!receivers.map(r => r.email).includes(testReceiver2));
+      assert.ok(res.status.mock.calls.some(call => call.arguments[0] === 400));
+      assert.ok(!res.json.mock.calls[0].arguments[0].success);
     });
 
     it('should not subscribe with code mismatch', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: {
           ...defaultBody,
           code: '123456'
@@ -294,19 +338,18 @@ describe('subscription', () => {
       });
       await subscribeController(req, res);
       const receivers = await mailingRepository.getReceivers(mailingId);
-      assert.notInclude(receivers.map(r => r.email), testReceiver2);
-      assert.isOk(res.status.calledWith(400));
-      assert.isNotOk(res.json.getCall(0).args[0].success);
+      assert.ok(!receivers.map(r => r.email).includes(testReceiver2));
+      assert.ok(res.status.mock.calls.some(call => call.arguments[0] === 400));
+      assert.ok(!res.json.mock.calls[0].arguments[0].success);
     });
 
     it('should preserve names from request', async () => {
-      const req = mockReq({
+      const req = createFakeRequest({
         body: defaultBody,
         params: { mailingId }
       });
-      let receivers = await mailingRepository.getReceivers(mailingId);
       await subscribeController(req, res);
-      receivers = await mailingRepository.getReceivers(mailingId);
+      const receivers = await mailingRepository.getReceivers(mailingId);
       assert.equal(receivers.filter(r => r.email === testReceiver2)[0].name, 'test');
     });
   });
@@ -320,7 +363,7 @@ describe('subscription', () => {
         name: 'test',
         periodicDate: '1'
       });
-      let req = mockReq({
+      let req = createFakeRequest({
         body: {
           code: '123',
           email: testReceiver2
@@ -336,7 +379,7 @@ describe('subscription', () => {
         name: 'test 2',
         periodicDate: '2'
       });
-      req = mockReq({
+      req = createFakeRequest({
         body: {
           code: '123',
           email: testReceiver2
@@ -346,6 +389,7 @@ describe('subscription', () => {
       await subscribeController(req, res);
 
       const mailing = await mailingRepository.getById(mailingId);
+      assert.ok(mailing);
       for (const receiver of await mailing.getReceivers()) {
         if (receiver.email === testReceiver2) {
           assert.equal(receiver.periodicDate, '2');

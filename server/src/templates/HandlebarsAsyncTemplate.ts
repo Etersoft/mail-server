@@ -1,7 +1,6 @@
-import * as handlebars from 'handlebars';
+import handlebars from 'handlebars';
 import { AsyncTemplate } from './AsyncTemplate';
-import * as request from 'request-promise';
-import { Receiver } from 'src/Receiver';
+import { Receiver } from '../Receiver';
 
 
 export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> {
@@ -33,7 +32,7 @@ export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> 
 
   private async getTemplateExternalContent (urls: Array<string>) {
     if(this.hasUrlsForRequest()) {
-      const requests = urls.map(url => request(url));
+      const requests = urls.map(url => fetchText(url));
       const externalContent: Array<string> = await Promise.all(requests);
       urls.forEach((url, index) => {
         this.templateExternalContent.set(url, externalContent[index]);
@@ -43,13 +42,8 @@ export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> 
   private async getReceiverExternalContent (dataForRequest: ReceiverData[], receiver: Receiver) {
     if(dataForRequest.length) {
       const requests = dataForRequest.map(({uri, data}) => {
-      return request({
-        method: 'POST',
-        uri,
-        body: data || receiver.extraData,
-        json: true,
-      });
-    })
+      return fetchJson(uri, data || receiver.extraData);
+    });
     const externalContent: Array<string> = await Promise.all(requests);
     externalContent.forEach((content, index) => {
       this.receiverExternalContent[index].content = content;
@@ -90,7 +84,35 @@ export class HandlebarsAsyncTemplate<Context> implements AsyncTemplate<Context> 
           return new handlebars.SafeString(this.readyForRender(url) || '');
         }
       }  
-    }
+    };
+  }
+}
+
+// Замена request-promise: ошибка при статусе не 2xx, как было там
+async function fetchText (url: string): Promise<string> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`External content ${url}: HTTP ${response.status}`);
+  }
+  return response.text();
+}
+
+// POST с JSON-телом; ответ разбирается как JSON, если это возможно
+// (как request с json: true), иначе возвращается текст
+async function fetchJson (url: string, body: unknown): Promise<string> {
+  const response = await fetch(url, {
+    body: JSON.stringify(body),
+    headers: { 'Content-Type': 'application/json' },
+    method: 'POST'
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(`External content ${url}: HTTP ${response.status}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
   }
 }
 

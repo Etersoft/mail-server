@@ -1,31 +1,37 @@
-import { readConfig } from '../src/readConfig';
+import { mock } from 'node:test';
+import { Logger } from '../src/Logger';
 import { RedisConnectionPoolImpl } from '../src/RedisConnectionPool';
-import * as sinon from 'sinon';
 
 
-const config = readConfig();
+// Тестовая база Redis задаётся только явно: тесты очищают её (FLUSHDB).
+// Например: TEST_REDIS_URL=redis://127.0.0.1:16379/1 npm test
+export const TEST_REDIS_URL = process.env.TEST_REDIS_URL;
+
+// Для describe(..., { skip: redisSkip }): пропуск тестов без TEST_REDIS_URL
+export const redisSkip = TEST_REDIS_URL ? false : 'TEST_REDIS_URL is not set';
 
 export function createFakeLogger () {
   return {
-    debug: sinon.spy(),
-    error: sinon.spy(),
-    info: sinon.spy(),
-    silly: sinon.spy(),
-    warn: sinon.spy(),
-    verbose: sinon.spy()
-  } as any;
+    debug: mock.fn(),
+    error: mock.fn(),
+    info: mock.fn(),
+    silly: mock.fn(),
+    verbose: mock.fn(),
+    warn: mock.fn()
+  } as unknown as Logger;
 }
 
 export async function getTestingRedisConnectionPool () {
-  const pool = new RedisConnectionPoolImpl(Object.assign({}, config.server.redis, {
-    db: config.server.redis.testingDb
-  }), config.server.redis.pool);
-  await pool.runWithConnection(client => client.flushdbAsync());
+  if (!TEST_REDIS_URL) {
+    throw new Error('TEST_REDIS_URL is not set');
+  }
+  const pool = new RedisConnectionPoolImpl({ url: TEST_REDIS_URL }, { max: 5, min: 1 });
+  await pool.runWithConnection(client => client.flushDb());
   return pool;
 }
 
 export interface LockObject {
-  unlock ();
+  unlock (): void;
   waitForUnlock (): Promise<void>;
 }
 

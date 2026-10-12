@@ -1,7 +1,7 @@
-import { AddressStats } from './AddressStats';
-import { RedisConnectionPool } from './RedisConnectionPool';
-import { PromiseRedisClient } from 'src/createRedisClient';
-import { Multi } from 'redis';
+import { WatchError } from 'redis';
+import { RedisClient, RedisConnectionPool } from './RedisConnectionPool';
+
+type Multi = ReturnType<RedisClient['multi']>;
 
 
 export abstract class BaseRedisRepository<
@@ -13,7 +13,7 @@ export abstract class BaseRedisRepository<
 
   get (key: Key): Promise<Entity | null> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
-      const json = await redisClient.getAsync(this.getRedisKey(key));
+      const json = await redisClient.get(this.getRedisKey(key));
       return this.parseEntity(json);
     });
   }
@@ -21,22 +21,22 @@ export abstract class BaseRedisRepository<
   mGet (keys: Key[]): Promise<(Entity | null)[]> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const statsKeys = keys.map(k => this.getRedisKey(k));
-      const data = await redisClient.mgetAsync(statsKeys);
-      return data.map(json => this.parseEntity(json));
+      const data = await redisClient.mGet(statsKeys);
+      return data.map(json => this.parseEntity(json as string | null));
     });
   }
 
   remove (entity: Entity): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const key = this.getRedisKey(this.extractKey(entity));
-      await redisClient.delAsync(key);
+      await redisClient.del(key);
     });
   }
 
   update (entity: Entity): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const jsonString = this.serializeEntity(entity);
-      await redisClient.setAsync(this.getRedisKey(this.extractKey(entity)), jsonString);
+      await redisClient.set(this.getRedisKey(this.extractKey(entity)), jsonString);
     });
   }
 
@@ -89,20 +89,20 @@ export abstract class BaseRedisRepository<
    */
   protected genericTransaction<Result> (
     keysToWatch: string[],
-    beforeTransaction: (client: PromiseRedisClient) => Promise<boolean>,
+    beforeTransaction: (client: RedisClient) => Promise<boolean>,
     transaction: (multi: Multi) => Promise<Result> | Result
   ): Promise<Result | null> {
-    async function scenario (redisClient: PromiseRedisClient) {
+    async function scenario (redisClient: RedisClient) {
       // Реализуем optimistic locking, чтобы бороться с параллельными обновлениями
       // одного и того же объекта
       while (true) {
         // Отслеживаем изменения ключа. Если он изменится с момента вызова
         // watch, всё выполнится заново.
-        await redisClient.watchAsync(keysToWatch);
+        await redisClient.watch(keysToWatch);
         const shouldContinue = await beforeTransaction(redisClient);
         if (!shouldContinue) {
           // Очистим соединение, если решили не продолжать
-          await redisClient.unwatchAsync();
+          await redisClient.unwatch();
           return null;
         }
         // Пробуем обновить...
@@ -110,16 +110,22 @@ export abstract class BaseRedisRepository<
         const result = await transaction(multi);
         // Если exec завершился успешно, то выходим.
         // Если нет, то начинаем заново...
-        if (await multi.execAsync()) {
-          return result;
+        try {
+          if (await multi.exec()) {
+            return result;
+          }
+        } catch (error) {
+          if (!(error instanceof WatchError)) {
+            throw error;
+          }
         }
       }
     }
     return this.redisConnectionPool.runWithConnection<Result | null>(scenario);
   }
 
-  protected async getByKey (key: Key, client: PromiseRedisClient): Promise<Entity | null> {
-    const json = await client.getAsync(this.getRedisKey(key));
+  protected async getByKey (key: Key, client: RedisClient): Promise<Entity | null> {
+    const json = await client.get(this.getRedisKey(key));
     return this.parseEntity(json);
   }
 }

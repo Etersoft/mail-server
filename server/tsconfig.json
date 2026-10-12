@@ -1,24 +1,20 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "lib": ["dom", "es2015", "esnext.asynciterable"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "lib": ["es2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "outDir": "dist",
     "removeComments": true,
+    "rootDir": ".",
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "target": "es6"
+    "target": "es2023",
+    "types": ["node"]
   },
-  "files": [
-    "src/globals.d.ts"
-  ],
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "tests/**/*"
   ]
 }

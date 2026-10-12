@@ -4,7 +4,7 @@ import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
 import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { MailingState } from '../MailingState';
-import { MailingStateManager } from 'src/MailingStateManager';
+import { MailingStateManager } from '../MailingStateManager';
 import { Logger } from '../Logger';
 import { Receiver } from '../Receiver';
 import { ReceiverListFilter } from '../ReceiverListFilter';
@@ -103,12 +103,8 @@ export function updateMailing (
   }
 }
 
-// tslint:disable:object-literal-sort-keys
 const requestBodyJsonSchema = {
-  $id: 'http://example.com/example.json',
   type: 'object',
-  definitions: {},
-  $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
     extraData: {

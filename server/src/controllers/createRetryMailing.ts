@@ -6,7 +6,6 @@ import { jsonSchemaMiddleware } from '../middleware/jsonSchemaMiddleware';
 import { catchPromise } from '../utils/catchPromise';
 import { getListId } from '../getListId';
 import { Logger } from '../Logger';
-import { isEmail } from 'validator';
 import { FailureCounter } from '../FailureCounter';
 
 
@@ -54,12 +53,8 @@ export function createRetryMailing (
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
-// tslint:disable:object-literal-sort-keys
 const requestBodyJsonSchema = {
-  $id: 'http://example.com/example.json',
   type: 'object',
-  definitions: {},
-  $schema: 'http://json-schema.org/draft-07/schema#',
   additionalProperties: false,
   properties: {
     sourceId: {

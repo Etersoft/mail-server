@@ -1,11 +1,13 @@
-import * as bodyParserLib from 'body-parser';
-import { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { error } from '../utils/response';
 
 
+/**
+ * Тело запроса разбирается как JSON независимо от Content-Type
+ */
 export function bodyParser () {
   return [
-    bodyParserLib.text({
+    express.text({
       limit: '50mb',
       type: '*/*'
     }),
@@ -18,7 +20,7 @@ function jsonParser () {
     try {
       req.body = JSON.parse(req.body);
       next();
-    } catch (err) {
+    } catch {
       res.status(400).json(error('JSON parse error'));
     }
   };

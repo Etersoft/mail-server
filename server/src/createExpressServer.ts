@@ -1,7 +1,5 @@
-import * as express from 'express';
-import { Express } from 'express';
-import * as cors from 'cors';
-import { getMailings } from './controllers/getMailings';
+import express, { Express } from 'express';
+import cors from 'cors';
 import { bodyParser } from './middleware/bodyParser';
 
 
@@ -14,7 +12,7 @@ export function createExpressServer (config: any): Express {
     origin: whitelist
   };
   app.use(cors(corsOptions));
-  app.post('*', parserMiddleware);
-  app.put('*', parserMiddleware);
+  app.post('/{*path}', parserMiddleware);
+  app.put('/{*path}', parserMiddleware);
   return app;
 }
