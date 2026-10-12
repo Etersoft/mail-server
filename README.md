@@ -119,6 +119,7 @@ comments below are for explanation only):
   },
   "server": {
     "port": 8000,
+    "host": "127.0.0.1",               // optional: listen address (all interfaces by default)
     "logLevel": "verbose",             // error, warn, info, verbose, debug
     "corsWhitelist": ["https://admin.example.com"],  // allowed origins for the API
     "fakeSender": false,               // true: print letters to the console instead of sending

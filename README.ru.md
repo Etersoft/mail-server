@@ -119,6 +119,7 @@ $ npm run client:build            # результат в client/public
   },
   "server": {
     "port": 8000,
+    "host": "127.0.0.1",               // необязательно: адрес для приёма соединений (по умолчанию все)
     "logLevel": "verbose",             // error, warn, info, verbose, debug
     "corsWhitelist": ["https://admin.example.com"],  // разрешённые Origin для API
     "fakeSender": false,               // true: печатать письма в консоль вместо отправки

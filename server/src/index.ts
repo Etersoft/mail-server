@@ -79,11 +79,12 @@ async function main () {
     subscriptionRepository, sender, readHandlebarsTemplate('confirm-subscription.hbs'),
     receiverListFilter
   );
-  const port = config.server.port;
+  const { host, port } = config.server;
   await new Promise<void>((resolve, reject) => {
-    app.listen(port, error => error ? reject(error) : resolve());
+    // host не задан — все интерфейсы
+    app.listen(port, host, error => error ? reject(error) : resolve());
   });
-  logger.info(`Listening on port ${port}`);
+  logger.info(`Listening on ${host || '*'}:${port}`);
 }
 
 function setupRoutes (
