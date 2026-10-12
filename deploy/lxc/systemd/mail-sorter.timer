@@ -1,0 +1,10 @@
+[Unit]
+Description=Run mail-sorter hourly
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5min
+Persistent=yes
+
+[Install]
+WantedBy=timers.target

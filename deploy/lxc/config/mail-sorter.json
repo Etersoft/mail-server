@@ -1,0 +1,20 @@
+{
+  // См. README mail-sorter. Пароль IMAP — в /etc/eterfund-mail/mail-sorter.env
+  "database": {
+    "type": "mail-server",
+    "options": { "backend": "http://127.0.0.1:8000" }
+  },
+  "forwardTo": "support@example.com",
+  "imapConnection": {
+    "host": "imap.example.com",
+    "port": 993,
+    "tls": true,
+    "user": "noreply@example.com",
+    "password": "%{IMAP_PASSWORD}"
+  },
+  "logging": { "maxLogLevel": "info" },
+  "mailer": { "from": "noreply@example.com", "host": "127.0.0.1", "port": 25 },
+  // Начать с true (ничего не меняется), проверить журнал, затем false
+  "readonly": true,
+  "redis": { "host": "127.0.0.1", "port": 6379, "db": 0 }
+}

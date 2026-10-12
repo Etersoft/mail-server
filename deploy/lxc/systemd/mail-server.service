@@ -1,0 +1,23 @@
+[Unit]
+Description=mail-server: bulk mailing API
+Documentation=https://github.com/Etersoft/mail-server
+After=network-online.target redis.service postfix.service
+Wants=network-online.target
+Requires=redis.service
+
+[Service]
+Type=simple
+User=mailing
+Group=mailing
+WorkingDirectory=/opt/eterfund-mail/mail-server
+ExecStart=/usr/bin/node server/dist/src/index.js
+Environment=NODE_ENV=production
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

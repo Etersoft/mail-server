@@ -1,0 +1,28 @@
+{
+  "client": {
+    "apiUrl": "/api",
+    "imageServiceUrl": "/images",
+    "staticUrl": "/"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "logLevel": "info",
+    "mail": {
+      "from": "noreply@example.com",
+      "listIdDomain": "example.com"
+    },
+    "redis": {
+      "host": "127.0.0.1",
+      "port": 6379,
+      "db": 0
+    },
+    "smtp": {
+      "host": "127.0.0.1",
+      "port": 25
+    },
+    "subscription": {
+      "subject": "Подписка на рассылку"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+[Unit]
+Description=mail-sorter: process bounces and replies in the noreply mailbox
+Documentation=https://github.com/Etersoft/mail-sorter
+After=network-online.target redis.service mail-server.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=mailing
+Group=mailing
+WorkingDirectory=/opt/eterfund-mail/mail-sorter
+# IMAP_PASSWORD и другие переменные для %{...} в конфиге
+EnvironmentFile=-/etc/eterfund-mail/mail-sorter.env
+ExecStart=/usr/bin/node src/runCli.js -c config.json
+Environment=NODE_ENV=production
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes

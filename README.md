@@ -103,6 +103,13 @@ $ npm run client:build            # the result is in client/public
 Serve `client/public` with a web server and proxy `client.apiUrl` (`/api` by
 default) to mail-server.
 
+### Deployment without Docker
+
+[`deploy/lxc/`](deploy/lxc/README.md) installs all three projects into an LXC
+container or a VM with ALT Linux: systemd services, an hourly timer for
+mail-sorter, nginx for the web client and the public subscription pages, local
+Redis and postfix (`deploy/lxc/install.sh`; the guide is in Russian).
+
 ## Configuration
 
 Create `config.json` in the project root; it is merged over
