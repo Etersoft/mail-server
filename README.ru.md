@@ -5,9 +5,13 @@
 Состоит из двух частей: сервер на Node.js и клиент на TypeScript + react-redux. 
 
 ## Установка
+
+Нужны Node.js 22.12 или новее и Redis.
+
 ```
-$ npm i
+$ npm ci
 $ npm run server:build
+$ cp templates/confirm-subscription.hbs.example templates/confirm-subscription.hbs
 ```
 
 Вероятнее всего, вы захотите изменить некоторые значения в конфигурации.  
@@ -47,7 +51,9 @@ $ npm run server:build
         "min": 1, //минимальное количество соединений
         "max": 5 //максимальное количество соединений
       },
-      "testingDb": 1 //номер БД Redis для тестирования
+      "host": "localhost", // или "url": "redis://user:password@host:6379/0"
+      "port": 6379,
+      "password": "..." // необязательно
     },
     "smtp": {//параметры smtp-сервера
       "host": "localhost",
@@ -68,13 +74,29 @@ $ npm run server:start
 ```
 или
 ```
-$ node dist/server/index.js
+$ node server/dist/src/index.js
 ```
+
+### API для mail-sorter
+
+`POST /mailings/unsubscribe` с телом `{"email": "..."}` исключает адрес из всех рассылок
+без кода подтверждения и возвращает `{"removed": <число рассылок>}`. Используется драйвером
+базы `mail-server` в [mail-sorter](https://github.com/Etersoft/mail-sorter). Как и остальной
+API, работает без аутентификации: сервер не должен быть доступен снаружи.
+
+### Разработка
+
+- `npm run typecheck`, `npm run lint`;
+- `npm test` — сборка и тесты сервера (`node:test`). Тесты, которым нужен Redis, запускаются
+  только при заданном `TEST_REDIS_URL`; эта база очищается, поэтому нужен отдельный экземпляр,
+  например `docker run -d -p 127.0.0.1:16379:6379 redis:7-alpine` и
+  `TEST_REDIS_URL=redis://127.0.0.1:16379/1 npm test`;
+- `npm run client:watch` — webpack dev server для клиента.
 
 ### Установка клиента
 
-Если клиент тоже нужен - то перед его сборкой создайте файл email-template.html.
-Если шаблон письма не нужен, то просто оставьте его пустым.
+Если клиент тоже нужен — при необходимости измените шаблон письма по умолчанию
+`client/src/email-template.html` перед сборкой.
 
 Далее запустите сборку:
 ```

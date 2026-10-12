@@ -5,9 +5,13 @@
 It consists of two parts: one is server on Node.js and a client on TypeScript + react-redux. 
 
 ## Installation
+
+Node.js 22.12 or newer and Redis are required.
+
 ```
-$ npm i
+$ npm ci
 $ npm run server:build
+$ cp templates/confirm-subscription.hbs.example templates/confirm-subscription.hbs
 ```
 
 You most likely want to change some values ​​in the configuration.
@@ -47,7 +51,9 @@ Create a file `config.json` and override the desired values ​​from `config.d
         "min": 1, //minimum number of connections
         "max": 5 //maximum number of connections
       },
-      "testingDb": 1 //Redis database number for tests
+      "host": "localhost", // or "url": "redis://user:password@host:6379/0"
+      "port": 6379,
+      "password": "..." // optional
     },
     "smtp": {//smtp-server settings
       "host": "localhost",
@@ -68,13 +74,30 @@ $ npm run server:start
 ```
 or
 ```
-$ node dist/server/index.js
+$ node server/dist/src/index.js
 ```
+
+### API for mail-sorter
+
+`POST /mailings/unsubscribe` with `{"email": "..."}` removes the address from all
+mailings without a confirmation code and returns `{"removed": <number of mailings>}`.
+It is used by the `mail-server` database driver of
+[mail-sorter](https://github.com/Etersoft/mail-sorter). Like the rest of the API, it has no
+authentication: the server must not be reachable from the outside.
+
+### Development
+
+- `npm run typecheck`, `npm run lint`;
+- `npm test` — build and run server tests (`node:test`). Tests that need Redis run only when
+  `TEST_REDIS_URL` is set; that database is flushed, so use a separate instance, e.g.
+  `docker run -d -p 127.0.0.1:16379:6379 redis:7-alpine` and
+  `TEST_REDIS_URL=redis://127.0.0.1:16379/1 npm test`;
+- `npm run client:watch` — webpack dev server for the client.
 
 ### Client installation
 
-If you also need a client, create a file email-template.html before building it.
-If you don't need a letter template, just leave it blank.
+If you also need a client, edit the default letter template
+`client/src/email-template.html` before building it, if needed.
 
 Next, run the build:
 ```
