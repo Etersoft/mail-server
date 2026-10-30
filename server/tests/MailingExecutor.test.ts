@@ -29,7 +29,8 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
     server: {
       mail: {
         listUnsubscribe: ''
-      }
+      },
+      sendRetryDelays: [0.01, 0.01]
     }
   };
 
@@ -226,6 +227,97 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
       assert.deepEqual(sentTo, ['y@example.com', 'z@example.com']);
       updated = await mailingRepository.getById(testMailing.id);
       assert.equal(updated!.sentCount, 2);
+    });
+
+    describe('SMTP errors', () => {
+      const emails = ['a@example.com', 'b@example.com', 'c@example.com'];
+
+      function smtpError (responseCode: number | undefined, command: string, response = '') {
+        return Object.assign(new Error(response || 'Connection closed'), {
+          command, response, responseCode
+        });
+      }
+
+      // Ждёт завершения рассылки: 'finished' или 'error' (тогда возвращает ошибку)
+      async function run (testMailing: Mailing) {
+        const ended = new Promise<Error | null>(resolve => {
+          const onFinished = () => done(null);
+          const onError = (id: number, error: Error) => done(error);
+          function done (error: Error | null) {
+            executor.off('finished', onFinished);
+            executor.off('error', onError);
+            resolve(error);
+          }
+          executor.on('finished', onFinished);
+          executor.on('error', onError);
+        });
+        await executor.startExecution(testMailing);
+        return ended;
+      }
+
+      it('should record a rejected receiver and go on', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        onSend(email => {
+          if (email === 'b@example.com') {
+            throw smtpError(550, 'RCPT TO', '550 5.1.1 <b@example.com>: User unknown');
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        assert.deepEqual(sentTo, emails);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.sentCount, 2);
+        assert.equal(updated!.position, 3);
+        assert.equal(updated!.undeliveredCount, 1);
+        const stats = await addressStatsRepository.getByEmail('b@example.com');
+        assert.equal(stats!.lastStatus, '5.1.1');
+        assert.match(stats!.diagnosticCode!, /User unknown/);
+      });
+
+      it('should retry a temporary error', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        let failures = 2;
+        onSend(email => {
+          if (email === 'a@example.com' && failures-- > 0) {
+            throw smtpError(451, 'RCPT TO', '451 4.7.1 Greylisted');
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        assert.deepEqual(sentTo, ['a@example.com', 'a@example.com', ...emails]);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.sentCount, 3);
+      });
+
+      it('should stop when temporary errors persist', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        onSend(() => {
+          throw smtpError(undefined, 'CONN');
+        });
+        const error = await run(testMailing);
+        assert.ok(error);
+
+        // Первая попытка и два повтора
+        assert.equal(sentTo.length, 3);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.position, 0);
+      });
+
+      it('should stop without blaming the receiver when the letter is rejected', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        onSend(() => {
+          throw smtpError(554, 'DATA', '554 5.7.1 Message rejected as spam');
+        });
+        const error = await run(testMailing);
+        assert.ok(error);
+
+        assert.deepEqual(sentTo, ['a@example.com']);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.position, 0);
+        assert.equal(updated!.undeliveredCount, 0);
+        const stats = await addressStatsRepository.getByEmail('a@example.com');
+        assert.equal(stats?.lastStatus, undefined);
+      });
     });
   });
 });

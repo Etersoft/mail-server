@@ -137,6 +137,7 @@ comments below are for explanation only):
     },
     "maxEmailsWithoutPause": 1000,     // optional: pause the mailing after this many letters...
     "pauseDuration": 600,              // ...for this many seconds (both must be set)
+    "sendRetryDelays": [10, 60, 300],  // optional: pauses (s) before retrying a temporary SMTP error
     "redis": {
       "host": "localhost",             // or "url": "redis://user:password@host:6379/0"
       "port": 6379,
@@ -222,6 +223,13 @@ mailing.
 recorded by mail-sorter after the mailing was created
 (`GET /mailings/:id/failed-receivers`, also as CSV). "Retry" creates a new
 mailing with the same text for these addresses only.
+
+SMTP errors while sending: a receiver rejected with 5xx at `RCPT TO` gets a
+delivery status in its statistics (it appears among delivery errors and is
+filtered out of new mailings) and the mailing goes on. Temporary errors (4xx,
+connection failures) are retried after the `sendRetryDelays` pauses. Any other
+error (e.g. the letter rejected at `DATA`) or retries exhausted put the mailing
+into ERROR; started again, it continues with the same receiver.
 
 ## Subscribe and unsubscribe
 

@@ -7,7 +7,14 @@ import { EventEmitter } from 'events';
 import { MailingRepository } from './MailingRepository';
 import { Logger } from './Logger';
 import { AddressStatsRepository } from './AddressStatsRepository';
+import { AddressStatsProperties } from './AddressStats';
 import { isEmail } from 'validator';
+import { sleep } from './utils/sleep';
+
+
+// Паузы перед повторами при временной ошибке SMTP (секунды), если не заданы
+// в server.sendRetryDelays
+const DEFAULT_SEND_RETRY_DELAYS = [10, 60, 300];
 
 
 export class MailingExecutor extends EventEmitter {
@@ -148,7 +155,14 @@ export class MailingExecutor extends EventEmitter {
       const email = await this.createEmail(generalInfoMailing, receiver);
       this.logger.debug(`#${mailingId}: sending email to ${email.receivers.join(',')}`);
       this.logger.debug(`${receiver.email}: periodicDate = ${receiver.periodicDate}`);
-      await this.mailer.sendEmail(email);
+      const result = await this.sendWithRetry(mailingId, email);
+      if (result === SendResult.STOPPED) {
+        continue;
+      }
+      if (result === SendResult.REJECTED) {
+        await this.mailingRepository.advancePosition(mailingId, receiver, false);
+        continue;
+      }
       this.logger.verbose(`#${mailingId}: sent to ${email.receivers.join(',')}`);
       await this.mailingRepository.advancePosition(mailingId, receiver, true);
 
@@ -163,6 +177,78 @@ export class MailingExecutor extends EventEmitter {
 
     this.executionStates.delete(mailingId);
     this.emit(MailingExecutorEvents.MAILING_FINISHED, mailingId);
+  }
+
+  /**
+   * Отправляет письмо. Временные ошибки (4xx, сбои соединения) повторяются с
+   * паузами. Постоянный отказ сервера принять получателя (5xx на RCPT TO)
+   * записывается в статистику адреса, и рассылка идёт дальше. Остальные
+   * ошибки (5xx на MAIL FROM или DATA касаются всего письма, а не адреса)
+   * выбрасываются и останавливают рассылку: позиция не сдвигается, и после
+   * повторного запуска отправка продолжится с этого получателя.
+   */
+  private async sendWithRetry (mailingId: number, email: Email): Promise<SendResult> {
+    const delays: number[] = this.config.server.sendRetryDelays || DEFAULT_SEND_RETRY_DELAYS;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await this.mailer.sendEmail(email);
+        return SendResult.SENT;
+      } catch (error: any) {
+        const code = error && error.responseCode;
+        if (code >= 500 && error.command === 'RCPT TO') {
+          await this.recordRejection(mailingId, email, error);
+          return SendResult.REJECTED;
+        }
+        if (code >= 500 || attempt >= delays.length) {
+          throw error;
+        }
+        this.logger.warn(
+          `#${mailingId}: temporary error sending to ${email.receivers.join(',')}, ` +
+          `retry in ${delays[attempt]} s: ${error && error.message}`
+        );
+        if (!await this.waitUnlessStopping(mailingId, delays[attempt] * 1000)) {
+          return SendResult.STOPPED;
+        }
+      }
+    }
+  }
+
+  private async recordRejection (mailingId: number, email: Email, error: any) {
+    const response = String(error.response || error.message);
+    // Расширенный код из ответа (550 5.1.1 ...), иначе — класс кода ответа
+    const match = /\b([245]\.\d{1,3}\.\d{1,3})\b/.exec(response);
+    const status = match ? match[1] : `${Math.floor(error.responseCode / 100)}.0.0`;
+    this.logger.warn(`#${mailingId}: ${email.receivers.join(',')} rejected: ${response}`);
+    for (const { email: address } of email.receivers) {
+      const update = (stats: AddressStatsProperties) => {
+        stats.diagnosticCode = response;
+        stats.lastStatus = status;
+        stats.lastStatusDate = new Date();
+      };
+      const existingStats = await this.addressStatsRepository.updateInTransaction(
+        address, async stats => update(stats)
+      );
+      if (!existingStats) {
+        const stats: AddressStatsProperties = { email: address };
+        update(stats);
+        await this.addressStatsRepository.create(stats);
+      }
+    }
+    await this.mailingRepository.updateInTransaction(mailingId, mailing => {
+      mailing.undeliveredCount++;
+    });
+  }
+
+  // false, если за время ожидания запросили остановку рассылки
+  private async waitUnlessStopping (mailingId: number, ms: number): Promise<boolean> {
+    const deadline = Date.now() + ms;
+    while (Date.now() < deadline) {
+      if (this.isStopping(mailingId)) {
+        return false;
+      }
+      await sleep(Math.min(1000, deadline - Date.now()));
+    }
+    return !this.isStopping(mailingId);
   }
 
   private async updateAddressStats (email: string) {
@@ -189,6 +275,12 @@ export enum MailingExecutorEvents {
   MAILING_PAUSED = 'paused',
   MAILING_STARTED = 'started',
   EMAIL_SENT = 'sent'
+}
+
+enum SendResult {
+  SENT,
+  REJECTED,
+  STOPPED
 }
 
 interface MailingExecutionState {
