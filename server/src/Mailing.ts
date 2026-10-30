@@ -6,6 +6,11 @@ import { MailingState } from './MailingState';
 
 
 export interface MailingProperties {
+  /**
+   * Когда продолжить рассылку после автоматической паузы (мс с начала эпохи).
+   * Хранится, чтобы рассылка продолжилась и после перезапуска сервера
+   */
+  autoResumeAt?: number;
   creationDate?: Date;
   extraData?: {
     textAfterSubscribe?: string,
@@ -46,6 +51,7 @@ const DEFAULT_STREAM_BATCH_SIZE = 100;
  */
 export class Mailing implements MailingProperties {
   public _html: string;
+  public autoResumeAt?: number;
   public extraData?: {
     textAfterSubscribe?: string,
     textAfterUnsubscribe?: string,  
@@ -72,6 +78,7 @@ export class Mailing implements MailingProperties {
     public repository: MailingRepository,
     private receivers?: Receiver[]
   ) {
+    this.autoResumeAt = properties.autoResumeAt;
     this.savedCreationDate = properties.creationDate;
     this.extraData = properties.extraData;
     this.from = properties.from;

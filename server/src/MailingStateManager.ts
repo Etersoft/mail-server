@@ -61,22 +61,41 @@ export class MailingStateManager {
     }
     this.incrementAutoPauseId(mailing.id);
     this.sentWithoutPause.set(mailing.id, 0);
+    // Ручной запуск или пауза отменяют продолжение после автопаузы
+    if (mailing.autoResumeAt) {
+      await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+        mailingToUpdate.autoResumeAt = undefined;
+      });
+    }
     return true;
   }
 
   /**
-   * Инициализация - находит все рассылки, помеченные как RUNNING,
-   * и помечает их как PAUSED, на случай, если сервер перед остановкой
-   * не смог корректно остановить рассылку.
+   * Инициализация после запуска сервера: рассылки, которые выполнялись
+   * (остались RUNNING), продолжаются с того же получателя, а рассылкам на
+   * автоматической паузе назначается продолжение в сохранённое время.
    */
   async initialize () {
     const allMailings = await this.mailingRepository.getAll();
-    const running = allMailings.filter(mailing => mailing.state === MailingState.RUNNING);
-    await Promise.all(running.map(async mailing => {
-      await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
-        mailingToUpdate.state = MailingState.PAUSED;
-      });
-    }));
+    for (const mailing of allMailings) {
+      if (mailing.state === MailingState.RUNNING) {
+        // startExecution не запускает рассылку, уже помеченную RUNNING
+        const paused = await this.mailingRepository.updateInTransaction(
+          mailing.id, mailingToUpdate => {
+            mailingToUpdate.state = MailingState.PAUSED;
+          }
+        );
+        if (paused) {
+          this.logger.info(`#${mailing.id}: was running before restart, resuming`);
+          await this.changeState(paused, MailingState.RUNNING);
+        }
+      } else if (mailing.state === MailingState.PAUSED && mailing.autoResumeAt) {
+        const delay = Math.max(0, mailing.autoResumeAt - Date.now());
+        this.logger.info(`#${mailing.id}: auto-paused before restart, resuming in ${
+          Math.round(delay / 1000)} s`);
+        void this.resumeAfter(mailing.id, delay, this.incrementAutoPauseId(mailing.id));
+      }
+    }
   }
 
   private async autoPause (mailing: Mailing) {
@@ -84,18 +103,25 @@ export class MailingStateManager {
     await this.changeState(mailing, MailingState.PAUSED);
     const thisPauseId = this.incrementAutoPauseId(mailing.id);
     this.sentWithoutPause.set(mailing.id, 0);
+    await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+      mailingToUpdate.autoResumeAt = Date.now() + this.pauseDuration * 1000;
+    });
 
-    await sleep(this.pauseDuration * 1000);
+    await this.resumeAfter(mailing.id, this.pauseDuration * 1000, thisPauseId);
+  }
+
+  private async resumeAfter (mailingId: number, delay: number, thisPauseId: number) {
+    await sleep(delay);
 
     // Update mailing - it could have changed
-    const updatedMailing = await this.mailingRepository.getById(mailing.id);
+    const updatedMailing = await this.mailingRepository.getById(mailingId);
     if (updatedMailing && updatedMailing.state === MailingState.PAUSED &&
-        this.autoPauseIds.get(mailing.id) === thisPauseId) {
-      this.logger.info(`#${mailing.id} has been auto-paused and now should be started again`);
+        this.autoPauseIds.get(mailingId) === thisPauseId) {
+      this.logger.info(`#${mailingId} has been auto-paused and now should be started again`);
       await this.changeState(updatedMailing, MailingState.RUNNING);
-      this.autoPauseIds.delete(mailing.id);
+      this.autoPauseIds.delete(mailingId);
     } else {
-      this.logger.info(`#${mailing.id} has been auto-paused but its state has been changed`);
+      this.logger.info(`#${mailingId} has been auto-paused but its state has been changed`);
       this.logger.info('    by someone after that. It will not be automatically started.');
     }
   }

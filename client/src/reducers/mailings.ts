@@ -11,6 +11,7 @@ export interface MailingListState {
 }
 
 export interface Mailing {
+  autoResumeAt?: string;
   creationDate?: Date;
   failedReceivers?: Receiver[];
   failedReceiversCount?: number;

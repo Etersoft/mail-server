@@ -293,6 +293,7 @@ implements MailingRepository {
 
   protected serializeEntity (properties: MailingProperties): string {
     return JSON.stringify({
+      autoResumeAt: properties.autoResumeAt,
       creationDate: properties.creationDate ?
         Math.floor(properties.creationDate.getTime() / 1000) : undefined,
       extraData: properties.extraData,

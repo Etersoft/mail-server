@@ -171,7 +171,11 @@ export class MailingDetailView extends React.Component<
           {creationDateInfo}
 
           <h5 className='field-name'>Состояние: </h5>
-          <span className='field-value'><MailingStateView state={mailing.state} /></span><br />
+          <span className='field-value'>
+            <MailingStateView state={mailing.state} />
+            {mailing.state === MailingState.PAUSED && mailing.autoResumeAt ?
+              `, продолжится ${formatDate(new Date(mailing.autoResumeAt))}` : null}
+          </span><br />
 
           <h5 className='field-name'>Отправлено: </h5>
           <span className='field-value'>{mailing.sentCount}</span><br />

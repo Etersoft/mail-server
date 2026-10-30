@@ -26,6 +26,8 @@ export function getMailing (mailingRepository: MailingRepository) {
       extraData: mailing.extraData,
       html: mailing.html,
       id: mailing.id,
+      autoResumeAt: mailing.autoResumeAt ?
+        new Date(mailing.autoResumeAt).toISOString() : undefined,
       listId: mailing.listId,
       listUnsubscribe: mailing.listUnsubscribe,
       name: mailing.name,

@@ -366,6 +366,12 @@ export const openApiDocument = {
           listId: { type: 'string' },
           name: { type: 'string' },
           openForSubscription: { type: 'boolean' },
+          autoResumeAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Когда рассылка продолжится после автоматической паузы ' +
+              '(maxEmailsWithoutPause, pauseDuration)'
+          },
           listUnsubscribe: {
             type: 'boolean',
             description: 'Добавлять заголовок List-Unsubscribe (server.mail.listUnsubscribe): ' +

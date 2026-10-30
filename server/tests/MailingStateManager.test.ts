@@ -1,6 +1,8 @@
 import { after, afterEach, before, beforeEach, describe, it, mock } from 'node:test';
 import assert from 'node:assert/strict';
-import { createFakeLogger, getTestingRedisConnectionPool, redisSkip } from './testing-utils';
+import {
+  createFakeLogger, getTestingRedisConnectionPool, redisSkip, sleep
+} from './testing-utils';
 import { RedisConnectionPool } from '../src/RedisConnectionPool';
 import { RedisMailingRepository } from '../src/RedisMailingRepository';
 import { RedisAddressStatsRepository } from '../src/RedisAddressStatsRepository';
@@ -115,6 +117,44 @@ describe('MailingStateManager', { skip: redisSkip }, () => {
       assert.equal(getAll.mock.callCount(), 1);
       assert.equal(updateInTransaction.mock.callCount(), 1);
       assert.equal(updateInTransaction.mock.calls[0].arguments[0], mailing.id);
+    });
+
+    it('should resume running mailings', async () => {
+      await mailingRepository.updateInTransaction(mailing.id, m => {
+        m.state = MailingState.RUNNING;
+      });
+      const startExecution = mock.method(executor, 'startExecution', async () => {});
+      await stateManager.initialize();
+      const resumed = startExecution.mock.calls.map(call => (call.arguments[0] as Mailing).id);
+      assert.ok(resumed.includes(mailing.id));
+      assert.equal((await mailingRepository.getById(mailing.id))!.state, MailingState.PAUSED);
+    });
+
+    it('should resume auto-paused mailings at the saved time', async () => {
+      await mailingRepository.updateInTransaction(mailing.id, m => {
+        m.state = MailingState.PAUSED;
+        m.autoResumeAt = Date.now() + 200;
+      });
+      const startExecution = mock.method(executor, 'startExecution', async () => {});
+      const startedWith = () => startExecution.mock.calls
+        .map(call => (call.arguments[0] as Mailing).id)
+        .filter(id => id === mailing.id);
+      await stateManager.initialize();
+      assert.deepEqual(startedWith(), []);
+      await sleep(500);
+      assert.deepEqual(startedWith(), [mailing.id]);
+      assert.equal((await mailingRepository.getById(mailing.id))!.autoResumeAt, undefined);
+    });
+
+    it('should not resume mailings paused by hand', async () => {
+      await mailingRepository.updateInTransaction(mailing.id, m => {
+        m.state = MailingState.PAUSED;
+      });
+      const startExecution = mock.method(executor, 'startExecution', async () => {});
+      await stateManager.initialize();
+      await sleep(100);
+      const started = startExecution.mock.calls.map(call => (call.arguments[0] as Mailing).id);
+      assert.ok(!started.includes(mailing.id));
     });
 
     it('should not work if no mailings is running', async () => {

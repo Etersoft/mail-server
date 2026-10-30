@@ -170,8 +170,9 @@ at `<url>/dl/<id>/<name>`), for example
 A mailing has a name, subject, HTML text, optional From and Reply-To, a list of receivers
 and a state: NEW = 1, RUNNING = 2, PAUSED = 3, FINISHED = 4, ERROR = 5. A running
 mailing can be paused and continued; a finished one can be restarted from the
-beginning. If the server stops while a mailing is running, it is marked PAUSED on
-the next start.
+beginning. Mailings that were running when the server stopped continue on the
+next start; a mailing paused automatically (`maxEmailsWithoutPause`) continues
+at the saved time (`autoResumeAt`), even after a restart.
 
 Every mailing gets a unique `List-Id` header `<YYYYMMDD-<id>@<listIdDomain>>`;
 letters also have `Precedence: bulk`. mail-sorter uses `List-Id` to attribute

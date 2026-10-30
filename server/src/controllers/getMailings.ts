@@ -9,6 +9,8 @@ export function getMailings (mailingRepository: MailingRepository) {
     const mailings = await mailingRepository.getAll();
     const list = mailings.map(mailing => ({
       id: mailing.id,
+      autoResumeAt: mailing.autoResumeAt ?
+        new Date(mailing.autoResumeAt).toISOString() : undefined,
       listId: mailing.listId,
       listUnsubscribe: mailing.listUnsubscribe,
       name: mailing.name,
