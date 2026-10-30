@@ -141,7 +141,10 @@ deploy/lxc/update.sh --rollback mail-server   # на предыдущий рел
   удаляется.
 - `update.sh` не трогает пакеты, postfix, Redis, nginx и `/etc/eterfund-mail`.
   Новые шаблоны из примеров создаёт `install.sh`; юниты systemd тоже обновляет
-  он (`update.sh` их не меняет).
+  он (`update.sh` их не меняет). Если в новой версии появился шаблон, которого
+  нет в `/etc/eterfund-mail/templates/`, `update.sh` его не подключает и пишет
+  `NOTE: no ...`: скопируйте пример по указанному пути и запустите `update.sh`
+  ещё раз.
 
 Выполняющиеся рассылки при перезапуске mail-server не теряются. Перед
 перезапуском `update.sh` запоминает рассылки в состоянии RUNNING

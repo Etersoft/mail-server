@@ -95,6 +95,13 @@ link_config () {
             for example in "$ldir"/templates/*.hbs.example; do
                 [ -e "$example" ] || continue
                 base=$(basename "$example" .example)
+                # Новый шаблон, которого ещё нет в /etc: ссылка в никуда сломала бы
+                # загрузку всех шаблонов. Без него работает поведение по умолчанию
+                if [ ! -e "$ETC/templates/subscription-facade/$base" ]; then
+                    echo "NOTE: no $ETC/templates/subscription-facade/$base;" \
+                        "create it from $example" >&2
+                    continue
+                fi
                 ln -sfn "$ETC/templates/subscription-facade/$base" "$ldir/templates/$base"
             done
             ;;
