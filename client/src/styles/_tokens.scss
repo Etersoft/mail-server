@@ -1,0 +1,16 @@
+// Общие цвета интерфейса. Контраст текста с белым фоном не ниже 4.5:1
+$text: #1a1a1a;
+$muted: #595959;
+$border: #ccc;
+$accent: #0a66c2;
+$accent-active: #08559f;
+$danger: #b3261e;
+$danger-active: #8f1e18;
+$warning: #8a5300;
+$selected: #e7f0fa;
+$hover: #f2f2f2;
+
+@mixin focus-ring {
+  outline: 2px solid $accent;
+  outline-offset: 1px;
+}

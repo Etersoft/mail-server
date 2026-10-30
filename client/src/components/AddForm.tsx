@@ -6,6 +6,9 @@ import { Editor } from './Editor';
 import template from '../email-template.html';
 
 
+const RECEIVERS_HELP = 'Загрузите CSV-файл кнопкой «Из файла»: в каждой строке адрес, ' +
+  'имя и, если нужно, дополнительные данные в JSON — они доступны в шаблоне письма.';
+
 export interface MailingCreateData {
   from?: string;
   html: string;
@@ -47,10 +50,12 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
 
   render () {
     return (
-      <div className='add-form-container' ref={this.props.containerRef}>
-        <div className='add-form'>
-          <h2 className='block-header'>
-            Добавить рассылку
+      <div className='add-form-container' ref={this.props.containerRef}
+           onKeyDown={this.handleKeyDown}>
+        <div className='add-form' role='dialog' aria-modal='true'
+             aria-labelledby='add-form-title'>
+          <h2 className='block-header' id='add-form-title'>
+            Новая рассылка
             <div className='header-actions'>
               <button className='action' disabled={!this.canAdd()} onClick={this.add}>
                 Добавить
@@ -60,31 +65,38 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
               </button>
             </div>
           </h2>
+          {this.missing() ? <p className='add-hint'>{this.missing()}</p> : null}
           <div className='form'>
             <div className='form-group'>
-              <span className='input-name'>Название:</span>
-              <input className='input' value={this.state.name} onChange={this.changeName} />
+              <label className='input-name' htmlFor='add-name'>Название</label>
+              <input className='input' id='add-name' value={this.state.name}
+                     onChange={this.changeName} autoFocus />
             </div>
             <div className='form-group'>
-              <span className='input-name'>Тема письма:</span>
-              <input className='input' value={this.state.subject} onChange={this.changeSubject} />
+              <label className='input-name' htmlFor='add-subject'>Тема письма</label>
+              <input className='input' id='add-subject' value={this.state.subject}
+                     onChange={this.changeSubject} />
             </div>
             <div className='form-group'>
-              <span className='input-name'>Отправитель (From):</span>
-              <input className='input' value={this.state.from} onChange={this.changeFrom}
+              <label className='input-name' htmlFor='add-from'>Отправитель (From)</label>
+              <input className='input' id='add-from' value={this.state.from}
+                     onChange={this.changeFrom}
                      placeholder='по умолчанию — адрес сервиса' />
             </div>
             <div className='form-group'>
-              <span className='input-name'>Обратный адрес (Reply-To):</span>
-              <input className='input' value={this.state.replyTo} onChange={this.changeReplyTo} />
+              <label className='input-name' htmlFor='add-reply-to'>Ответы (Reply-To)</label>
+              <input className='input' id='add-reply-to' value={this.state.replyTo}
+                     onChange={this.changeReplyTo}
+                     placeholder='по умолчанию — на адрес отправителя' />
             </div>
             <div className='form-group stretch double'>
-              <span className='input-name'>Текст рассылки:</span>
+              <span className='input-name'>Текст письма</span>
               <Editor ref={(editor: Editor) => this.editor = editor} html={this.state.html}
                       onChange={this.changeHtml} />
             </div>
             <div className='form-group stretch horizontal'>
-              <ReceiverList onChange={this.changeReceivers} receivers={this.state.receivers} />
+              <ReceiverList onChange={this.changeReceivers} receivers={this.state.receivers}
+                            emptyText={RECEIVERS_HELP} />
             </div>
           </div>
         </div>
@@ -108,6 +120,23 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
     };
     this.props.onAdd(mailing);
   };
+
+  private handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      this.props.onClose();
+    }
+  };
+
+  // Чего не хватает, чтобы создать рассылку
+  private missing () {
+    if (!this.state.name.trim().length) {
+      return 'Чтобы создать рассылку, укажите название и загрузите получателей';
+    }
+    if (!this.state.receivers.length) {
+      return 'Чтобы создать рассылку, загрузите получателей';
+    }
+    return '';
+  }
 
   private canAdd () {
     return this.state.name.trim().length && this.state.receivers.length;

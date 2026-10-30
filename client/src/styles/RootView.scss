@@ -1,4 +1,5 @@
 @use 'sass:meta';
+@use 'tokens' as *;
 
 body, html, #root, .root-view, .content {
   height: 100%;
@@ -8,6 +9,7 @@ body, html, #root, .root-view, .content {
 }
 
 .root-view {
+  color: $text;
   font-family: Verdana, Arial, Helvetica, sans-serif;
 
   @include meta.load-css('global');
@@ -17,8 +19,9 @@ body, html, #root, .root-view, .content {
   display: flex;
 
   .left-column {
+    border-right: 1px solid black;
     display: flex;
-    flex: 1;
+    flex: 0 0 340px;
     flex-direction: column;
     min-width: 0;
 
@@ -30,8 +33,51 @@ body, html, #root, .root-view, .content {
   }
 
   .right-column {
-    border-left: 1px solid black;
-    flex: 1.5;
+    flex: 1;
+    min-width: 0;
     overflow-y: auto;
+
+    &.no-selection {
+      align-items: center;
+      color: $muted;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+  }
+
+  .back-to-list {
+    display: none;
+  }
+
+  // Телефон: одна колонка. Выбрана рассылка — видна она, иначе список
+  @media (max-width: 800px) {
+    .left-column {
+      border-right: none;
+      flex: 1;
+    }
+
+    .right-column.no-selection {
+      display: none;
+    }
+
+    &.has-selection .left-column {
+      display: none;
+    }
+
+    .back-to-list {
+      background: none;
+      border: none;
+      border-bottom: 1px solid $border;
+      color: $accent;
+      cursor: pointer;
+      display: block;
+      font: inherit;
+      min-height: 44px;
+      padding: 0 12px;
+      text-align: left;
+      width: 100%;
+    }
   }
 }

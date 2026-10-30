@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .sorter-status {
   border-top: 1px solid black;
 
@@ -8,11 +10,11 @@
   }
 
   .warning {
-    color: #a65e00;
+    color: $warning;
     font-weight: bold;
   }
 
   .error {
-    color: #c00;
+    color: $danger;
   }
 }

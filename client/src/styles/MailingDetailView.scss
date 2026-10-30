@@ -1,22 +1,92 @@
+@use 'tokens' as *;
+
 .mailing-detail-view {
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 700px;
 
-  .details, .test-email, .form {
+  .header {
+    overflow-wrap: anywhere;
+    padding: 12px 20px 4px;
+  }
+
+  .details, .options, .actions, .test-email, .form {
     padding: 8px 20px;
   }
 
-  .field-name, .field-value {
-    display: inline;
+  .details {
+    display: grid;
     font-size: 14px;
-    font-weight: normal;
+    gap: 4px 16px;
+    grid-template-columns: max-content 1fr;
     margin: 0;
+
+    dt {
+      color: $muted;
+    }
+
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .technical {
+      color: $muted;
+      font-family: monospace;
+    }
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  .test-email .horizontal-group {
+    flex: 1;
+    gap: 10px;
+
+    .input + .button {
+      margin-left: 0;
+    }
+  }
+
+  .hint {
+    color: $muted;
+    font-size: 14px;
+    margin: 8px 0 0;
   }
 
   .form {
     display: flex;
     flex: 1;
+    flex-direction: column;
+  }
+
+  // Подписи полей одной ширины, поля начинаются с одной линии
+  .form-group.inline .input-name {
+    flex: 0 0 170px;
+  }
+
+  @media (max-width: 800px) {
+    .details {
+      grid-template-columns: 1fr;
+
+      dd {
+        margin-bottom: 6px;
+      }
+    }
+
+    .form-group.inline {
+      flex-direction: column;
+
+      .input-name {
+        flex: none;
+        margin-bottom: 4px;
+        top: 0;
+      }
+    }
   }
 }

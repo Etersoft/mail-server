@@ -15,6 +15,7 @@ import { SorterStatusView } from '../SorterStatusView';
 import { NotificationItem } from '../../reducers/notifications';
 import { hideNotification } from '../../actions/notify';
 import { AppDispatch } from '../../types';
+import { ActionTypes } from '../../ActionTypes';
 
 
 export interface RootViewProps {
@@ -22,23 +23,33 @@ export interface RootViewProps {
   onDismissNotification: (id: number) => void;
   onAdd: (mailing: MailingCreateData) => void;
   onHideAddForm: () => void;
+  onShowList: () => void;
   selectedMailing?: number;
   showAddForm: boolean;
 }
 
 class RootView extends React.Component<RootViewProps> {
   render () {
-    const rightColumn = (typeof this.props.selectedMailing === 'number') ? (
+    const selected = typeof this.props.selectedMailing === 'number';
+    // На узком экране видна одна колонка: список или выбранная рассылка
+    const rightColumn = selected ? (
       <div className='right-column'>
+        <button className='back-to-list' onClick={this.props.onShowList}>
+          ← Все рассылки
+        </button>
         <MailingDetailViewContainer />
       </div>
-    ) : null;
+    ) : (
+      <div className='right-column no-selection'>
+        <p>Выберите рассылку в списке или добавьте новую.</p>
+      </div>
+    );
     const rootStyle = {
       filter: this.props.showAddForm ? 'blur(4px)' : ''
     };
     return (
       <div className='root-view'>
-        <div className='content' style={rootStyle}>
+        <div className={'content' + (selected ? ' has-selection' : '')} style={rootStyle}>
           <div className='left-column'>
             <MailingListContainer />
             <SorterStatusView />
@@ -70,7 +81,8 @@ function mapDispatchToProps (dispatch: AppDispatch) {
   return {
     onAdd: (data: MailingCreateData) => dispatch(createMailing(data)),
     onDismissNotification: (id: number) => dispatch(hideNotification(id)),
-    onHideAddForm: () => dispatch(hideAddForm())
+    onHideAddForm: () => dispatch(hideAddForm()),
+    onShowList: () => dispatch({ data: undefined, type: ActionTypes.SELECT_MAILING })
   };
 }
 

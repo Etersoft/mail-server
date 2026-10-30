@@ -110,11 +110,10 @@ export class MailingDetailView extends React.Component<
 
   render () {
     const { mailing } = this.props;
-    const firstButton = this.renderFirstButton();
-    const spacer = firstButton ? <div className='spacer'>&nbsp;</div> : null;
-    const retryButton = this.props.mailing.failedReceiversCount ? (
-      <Button disabled={!this.canEdit()} onClick={this.handleCreateRetry}>
-        Повтор рассылки по ошибочным адресам
+    const canEdit = this.canEdit();
+    const retryButton = mailing.failedReceiversCount ? (
+      <Button disabled={!canEdit} onClick={this.handleCreateRetry}>
+        Повторить для адресов с ошибками
       </Button>
     ) : null;
     const downloadButton = {
@@ -125,6 +124,7 @@ export class MailingDetailView extends React.Component<
       onClick: this.refreshReceiversList,
       text: 'Обновить'
     };
+    const count = (value?: number) => typeof value === 'number' ? ` (${value})` : '';
     const listTabs = [
       {
         content: (
@@ -134,88 +134,93 @@ export class MailingDetailView extends React.Component<
                         buttons={[ downloadButton, refreshButton ]}
                         onChange={this.handlers.receivers} key='1' />
         ),
-        name: 'Получатели'
+        name: 'Получатели' + count(this.state.fields.receiversCount)
       },
       {
         content: (
-          <FailureList mailing={this.props.mailing} onReload={this.refreshFailedReceivers} />
+          <FailureList mailing={mailing} onReload={this.refreshFailedReceivers} />
         ),
-        name: 'Ошибки доставки'
+        name: 'Ошибки доставки' + count(mailing.failedReceiversCount)
       }
     ];
-    const creationDateInfo = mailing.creationDate ? (
-      <React.Fragment>
-        <h5 className='field-name'>Дата создания: </h5>
-        <span className='field-value'>
-          {formatDate(mailing.creationDate)}
-        </span><br />
-      </React.Fragment>
-    ) : null;
     const from = typeof this.state.fields.from === 'string' ? this.state.fields.from : '';
     const replyTo = typeof this.state.fields.replyTo === 'string' ? this.state.fields.replyTo : '';
+    const id = (name: string) => `mailing-${mailing.id}-${name}`;
     return (
       <div className='mailing-detail-view'>
-        <h2 className='header'>
-          Рассылка: {mailing.name}
-        </h2>
-        <div className='details'>
-          <h5 className='field-name'>List-Id: </h5>
-          <span className='field-value'>{mailing.listId}</span><br />
-
-          {creationDateInfo}
-
-          <h5 className='field-name'>Состояние: </h5>
-          <span className='field-value'>
+        <h2 className='header'>{mailing.name}</h2>
+        <dl className='details'>
+          <dt>Состояние</dt>
+          <dd>
             <MailingStateView state={mailing.state} />
             {mailing.state === MailingState.PAUSED && mailing.autoResumeAt ?
               `, продолжится ${formatDate(new Date(mailing.autoResumeAt))}` : null}
-          </span><br />
+          </dd>
 
-          <h5 className='field-name'>Отправлено: </h5>
-          <span className='field-value'>{mailing.sentCount}</span><br />
+          <dt>Отправлено писем</dt>
+          <dd>{mailing.sentCount}</dd>
 
-          <h5 className='field-name'>Количество ошибок доставки (DSN status 4.* или 5.*): </h5>
-          <span className='field-value'>{mailing.undeliveredCount}</span><br />
+          <dt>Уведомлений о недоставке</dt>
+          <dd>{mailing.undeliveredCount}</dd>
 
-          <h5 className='field-name'>Возможность подписки через API:</h5>
-          <Checkbox
-            value={this.state.fields.openForSubscription}
-            onChange={this.handlers.openForSubscription}
-          /><br />
+          {mailing.creationDate ? <dt>Создана</dt> : null}
+          {mailing.creationDate ? <dd>{formatDate(mailing.creationDate)}</dd> : null}
 
-          <h5 className='field-name'>Кнопка «Отписаться» (заголовок List-Unsubscribe):</h5>
-          <Checkbox
-            value={this.state.fields.listUnsubscribe}
-            onChange={this.handlers.listUnsubscribe}
-          />
+          <dt>List-Id</dt>
+          <dd className='technical'>{mailing.listId}</dd>
+        </dl>
+
+        <div className='options'>
+          <Checkbox value={this.state.fields.listUnsubscribe}
+                    onChange={this.handlers.listUnsubscribe}>
+            Кнопка «Отписаться» в почтовых программах (заголовок List-Unsubscribe)
+          </Checkbox>
+          <Checkbox value={this.state.fields.openForSubscription}
+                    onChange={this.handlers.openForSubscription}>
+            Подписка через API открыта
+          </Checkbox>
         </div>
 
-        <div className='form'>
+        <div className='actions'>
           <div className='button-group'>
-            {firstButton}
-            {spacer}
-            <Button disabled={!this.canEdit()} onClick={this.handleClone}>
+            {this.renderFirstButton()}
+            {this.state.changed ? (
+              <Button onClick={this.handleRevert}>Отменить изменения</Button>
+            ) : null}
+            <Button disabled={!canEdit} onClick={this.handleClone}>
               Дублировать
             </Button>
             {retryButton}
+            <div className='spacer' />
             <ConfirmationButton
-              disabled={!this.canEdit()} onClick={this.handleDelete}
+              disabled={!canEdit} onClick={this.handleDelete}
               type={ButtonType.DANGER} typeYes={ButtonType.DANGER}>
               Удалить рассылку
             </ConfirmationButton>
           </div>
-          <br />
-          <FormGroup inline title='Название:'>
-            <TextInput value={this.state.fields.name} onChange={this.handlers.name} />
+          {mailing.state === MailingState.RUNNING ? (
+            <p className='hint'>
+              Пока рассылка выполняется, её нельзя менять: сначала приостановите её.
+            </p>
+          ) : null}
+        </div>
+
+        <div className='form'>
+          <FormGroup inline title='Название' htmlFor={id('name')}>
+            <TextInput id={id('name')} value={this.state.fields.name}
+                       onChange={this.handlers.name} />
           </FormGroup>
-          <FormGroup inline title='Тема письма:'>
-            <TextInput value={this.state.fields.subject} onChange={this.handlers.subject} />
+          <FormGroup inline title='Тема письма' htmlFor={id('subject')}>
+            <TextInput id={id('subject')} value={this.state.fields.subject}
+                       onChange={this.handlers.subject} />
           </FormGroup>
-          <FormGroup inline title='Отправитель (From):'>
-            <TextInput value={from} onChange={this.handlers.from} />
+          <FormGroup inline title='Отправитель (From)' htmlFor={id('from')}>
+            <TextInput id={id('from')} value={from} onChange={this.handlers.from}
+                       placeholder='по умолчанию — адрес сервиса' />
           </FormGroup>
-          <FormGroup inline title='Обратный адрес (Reply-To):'>
-            <TextInput value={replyTo} onChange={this.handlers.replyTo} />
+          <FormGroup inline title='Ответы (Reply-To)' htmlFor={id('reply-to')}>
+            <TextInput id={id('reply-to')} value={replyTo} onChange={this.handlers.replyTo}
+                       placeholder='по умолчанию — на адрес отправителя' />
           </FormGroup>
           <FormGroup stretch fraction={2}>
             <Editor onChange={this.handlers.html} html={this.state.fields.html}
@@ -224,13 +229,14 @@ export class MailingDetailView extends React.Component<
         </div>
 
         <div className='test-email'>
-          <FormGroup>
+          <FormGroup inline title='Пробное письмо на адрес' htmlFor={id('test-email')}>
             <div className='horizontal-group'>
-              <TextInput value={this.state.testEmail} onChange={this.handleChangeTestEmail}
-                         placeholder='Адрес...' />
-              <Button disabled={!this.state.testEmail.length || !this.canEdit()}
+              <TextInput id={id('test-email')} type='email' value={this.state.testEmail}
+                         onChange={this.handleChangeTestEmail}
+                         placeholder='например, свой адрес' />
+              <Button disabled={!this.state.testEmail.length || !canEdit}
                       onClick={this.handleSendTestEmail}>
-                Отправить пробное письмо
+                Отправить
               </Button>
             </div>
           </FormGroup>
@@ -290,6 +296,10 @@ export class MailingDetailView extends React.Component<
 
   private handleDelete = () => {
     this.props.onDelete(this.props.mailing);
+  };
+
+  private handleRevert = () => {
+    this.setState(initState(this.props.mailing));
   };
 
   private handleSave = () => {

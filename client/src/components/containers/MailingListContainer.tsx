@@ -9,6 +9,7 @@ import { AppDispatch } from '../../types';
 
 function mapStateToProps (state: RootState) {
   return {
+    loaded: state.mailings.loaded,
     mailings: state.mailings.ids.map(id => state.mailings.byId[id]),
     selectedMailing: state.mailings.selected
   };

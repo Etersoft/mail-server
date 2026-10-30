@@ -45,11 +45,12 @@ export class Editor extends React.Component<EditorProps, EditorState> {
       }
     ].concat(this.props.additionalTabs || []);
 
-    const tabElements = tabs.map(tab =>
-      <Tab key={tab.name}>{tab.name}</Tab>
+    // Ключ — номер вкладки: в названии может быть счётчик, он меняется
+    const tabElements = tabs.map((tab, index) =>
+      <Tab key={index}>{tab.name}</Tab>
     );
-    const tabPanels = tabs.map(tab =>
-      <TabPanel key={tab.name}>
+    const tabPanels = tabs.map((tab, index) =>
+      <TabPanel key={index}>
         <div className='editor-wrapper'>
           {tab.content}
         </div>

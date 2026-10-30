@@ -8,19 +8,20 @@ interface MailingStateViewProps {
   state: MailingState;
 }
 
+export const mailingStateNames: Record<MailingState, string> = {
+  [MailingState.NEW]: 'Новая',
+  [MailingState.RUNNING]: 'Выполняется',
+  [MailingState.PAUSED]: 'Приостановлена',
+  [MailingState.FINISHED]: 'Завершена',
+  [MailingState.ERROR]: 'Приостановлена из-за ошибки'
+};
+
 export class MailingStateView extends React.Component<MailingStateViewProps> {
   render () {
-    const stateString = {
-      [MailingState.NEW]: 'Новая',
-      [MailingState.RUNNING]: 'Выполняется',
-      [MailingState.PAUSED]: 'Приостановлена',
-      [MailingState.FINISHED]: 'Завершена',
-      [MailingState.ERROR]: 'Приостановлена из-за ошибки'
-    }[this.props.state];
     return (
       <span className='mailing-state'>
         <StateMarker state={this.props.state} />
-        {stateString}
+        {mailingStateNames[this.props.state]}
       </span>
     );
   }

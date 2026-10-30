@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .block-header {
   align-items: center;
   border-bottom: 1px solid black;
@@ -40,6 +42,20 @@ h3.block-header {
   height: 35px;
 }
 
+// Узкий экран: кнопки заголовка переносятся на следующую строку
+@media (max-width: 800px) {
+  .block-header, h2.block-header, h3.block-header {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 40px;
+
+    .header-actions {
+      flex: 1 0 auto;
+      height: 44px;
+    }
+  }
+}
+
 .header {
   align-items: center;
   margin: 0;
@@ -68,4 +84,20 @@ h3.block-header {
 
 .spacer {
   flex: 1;
+}
+
+.checkbox {
+  align-items: flex-start;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+
+  input {
+    margin: 2px 0 0;
+  }
+}
+
+input[type='checkbox']:focus-visible, a:focus-visible,
+.block-header .header-actions .action:focus-visible {
+  @include focus-ring;
 }

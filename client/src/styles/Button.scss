@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .button {
   border: none;
   border-radius: 3px;
@@ -5,7 +7,6 @@
   cursor: pointer;
   font-size: 16px;
   height: 32px;
-  outline: none !important;
   padding: 5px 12px;
   transition: box-shadow 0.25s ease;
 
@@ -17,22 +18,33 @@
     }
   }
 
+  // Опасное действие не должно спорить с основным: контур вместо заливки
   &.danger {
-    background-color: #f14441;
-    color: white;
+    background-color: white;
+    box-shadow: inset 0 0 0 1px $danger;
+    color: $danger;
+
+    &:not([disabled]):hover {
+      background-color: $danger;
+      color: white;
+    }
 
     &:not([disabled]):hover:active {
-      background-color: #d85049;
+      background-color: $danger-active;
     }
   }
 
   &.primary {
-    background-color: #3ab0ff;
+    background-color: $accent;
     color: white;
 
     &:not([disabled]):hover:active {
-      background-color: #309ce4;
+      background-color: $accent-active;
     }
+  }
+
+  &:focus-visible {
+    @include focus-ring;
   }
 
   &:not([disabled]):hover {
@@ -44,7 +56,9 @@
   }
 
   &[disabled] {
-    color: grey;
+    background-color: #f4f4f4;
+    box-shadow: none;
+    color: #767676;
     cursor: not-allowed;
   }
 
@@ -59,12 +73,17 @@
 }
 
 .button-group {
-  display: block;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 
+  // Всё, что после разделителя, прижато вправо
   .spacer {
-    border: 1px solid #bbb;
-    display: inline-block;
-    margin: 0 10px;
-    width: 0;
+    flex: 1;
+  }
+
+  .button + .button, .button + .confirmation-button, .confirmation-button + .button {
+    margin-left: 0;
   }
 }

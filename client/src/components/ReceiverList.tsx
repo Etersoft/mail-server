@@ -26,20 +26,28 @@ export interface ReceiverListProps {
   onRemove?: (receiver: Receiver) => void;
   receivers: Receiver[];
   receiversCount?: number;
+  emptyText?: string;
   title?: string;
   unlimited?: boolean;
 }
 
-interface ReceiverListState {
-  selected?: string;
+// Статус DSN: 5.x.x — постоянная ошибка (адреса нет, ящик закрыт),
+// 4.x.x — временная (ящик переполнен, сервер недоступен)
+function describeFailure (receiver: Receiver) {
+  if (receiver.spam) {
+    return 'отклонено как спам';
+  }
+  const kind = receiver.status && receiver.status.startsWith('5') ? 'постоянная ошибка' :
+    receiver.status && receiver.status.startsWith('4') ? 'временная ошибка' : 'ошибка';
+  return `${kind} ${receiver.status}`;
 }
 
-export class ReceiverList extends React.Component<ReceiverListProps, ReceiverListState> {
+export class ReceiverList extends React.Component<ReceiverListProps> {
   static defaultProps = {
+    emptyText: 'Список пуст',
     title: 'Получатели'
   };
 
-  public state: ReceiverListState = {};
   private fileInput: HTMLInputElement | null;
 
   render () {
@@ -50,42 +58,46 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
 
     const content = this.props.loading ? (
       <li className='overflow-item'>
-        (загрузка)
+        Загрузка…
       </li>
     ) : receivers.map((receiver, index) => {
-      let receiverInfo = receiver.email;
+      const removeButton = this.props.onRemove ? (
+        <ConfirmationButton onClick={this.removeReceiver(receiver)}
+                            label={'Удалить ' + receiver.email}>
+          ✗
+        </ConfirmationButton>
+      ) : null;
+      const details = [];
       if (receiver.name) {
-        receiverInfo += ', имя: ' + receiver.name;
+        details.push(receiver.name);
       }
       if (receiver.periodicDate) {
-        receiverInfo += ', расписание рассылки: ' + receiver.periodicDate;
+        details.push('расписание: ' + receiver.periodicDate);
       }
-      const removeButton = this.props.onRemove ? (
-        <React.Fragment>
-          <div className='spacer' />
-          <ConfirmationButton onClick={this.removeReceiver(receiver)}>
-            ✗
-          </ConfirmationButton>
-        </React.Fragment>
-      ) : null;
-      if (this.state.selected === receiver.email) {
-        return <li key={index} className='selected'>
-          <b>{receiverInfo}</b>: {receiver.diagnosticCode}
-          {removeButton}
-        </li>;
-      } else if (receiver.status) {
-        const comment = (receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`) +
-          (receiver.excluded ? ', исключён из рассылки' : '');
-        return (
-          <li key={index} onClick={this.showDetails(receiver.email)}>
-            {receiverInfo} ({comment}) {removeButton}
-          </li>
-        );
+      if (receiver.status || receiver.spam) {
+        details.push(describeFailure(receiver));
+      }
+      if (receiver.excluded) {
+        details.push('исключён из рассылки');
       }
       return (
-        <li key={index}>{receiverInfo} {removeButton}</li>
+        <li key={index}>
+          <div className='receiver'>
+            <span className='receiver-email'>{receiver.email}</span>
+            {details.length ? (
+              <span className='receiver-details'>{details.join(' · ')}</span>
+            ) : null}
+            {receiver.diagnosticCode ? (
+              <span className='receiver-diagnostic'>{receiver.diagnosticCode}</span>
+            ) : null}
+          </div>
+          {removeButton}
+        </li>
       );
     });
+    const empty = !this.props.loading && !receivers.length ? (
+      <li className='overflow-item'>{this.props.emptyText}</li>
+    ) : null;
     const overflow = (
       length > MAX_RECEIVERS && !this.props.unlimited && !this.props.loading
     ) ? (
@@ -101,6 +113,7 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
         </h4>
         <ul className='list'>
           {content}
+          {empty}
           {overflow}
         </ul>
         <input type='file' onChange={this.changeFile}
@@ -199,11 +212,4 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
     }
   };
 
-  private showDetails = (email: string) => {
-    return () => {
-      this.setState({
-        selected: email
-      });
-    };
-  };
 }

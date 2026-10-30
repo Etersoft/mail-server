@@ -6,6 +6,8 @@ export interface FormGroupProps {
   children?: React.ReactNode;
   fraction?: number;
   horizontal?: boolean;
+  // id поля ввода: подпись становится <label> и щелчок по ней ставит курсор в поле
+  htmlFor?: string;
   inline?: boolean;
   stretch?: boolean;
   title?: string;
@@ -18,7 +20,11 @@ export class FormGroup extends React.Component<FormGroupProps> {
       style.flex = this.props.fraction;
     }
     const title = this.props.title ? (
-      <span className='input-name'>{this.props.title}</span>
+      this.props.htmlFor ? (
+        <label className='input-name' htmlFor={this.props.htmlFor}>{this.props.title}</label>
+      ) : (
+        <span className='input-name'>{this.props.title}</span>
+      )
     ) : null;
     return (
       <div className={this.constructClassName()} style={style}>

@@ -6,6 +6,8 @@ import { Button, ButtonType } from './Button';
 export interface ConfirmationButtonProps {
   children?: React.ReactNode;
   disabled?: boolean;
+  // Подпись для экранного диктора, если на кнопке значок
+  label?: string;
   onClick?: () => void;
   type?: ButtonType;
   typeNo?: ButtonType;
@@ -39,7 +41,7 @@ export class ConfirmationButton extends React.Component<
       return (
         <div className='confirmation-button'>
           <Button disabled={this.props.disabled} type={this.props.type}
-                  onClick={this.handleInitialClick}>
+                  label={this.props.label} onClick={this.handleInitialClick}>
             {this.props.children}
           </Button>
         </div>

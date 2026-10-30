@@ -20,6 +20,7 @@ $transition: 0.3s ease;
   
   .add-form {
     height: 90%;
+    max-height: 100%;
     max-width: 1000px;
     width: 100%;
     z-index: 9001;
@@ -53,5 +54,12 @@ $transition: 0.3s ease;
 
   .form {
     flex: 1;
+    overflow-y: auto;
+  }
+
+  .add-hint {
+    color: #595959;
+    font-size: 14px;
+    margin: 8px 20px 0;
   }
 }

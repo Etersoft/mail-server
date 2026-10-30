@@ -7,6 +7,8 @@ import { MailingCreateData } from '../components/AddForm';
 export interface MailingListState {
   byId: { [id: number]: Mailing };
   ids: number[];
+  // Список уже получен с сервера: пустой список — это «рассылок нет», а не загрузка
+  loaded: boolean;
   selected?: number;
 }
 
@@ -68,7 +70,7 @@ function createMailing (data: MailingCreateData, id: number, listId: string): Ma
 }
 
 function createMailingListState (
-  mailingsList: Mailing[], selected?: number
+  mailingsList: Mailing[], selected?: number, loaded = true
 ): MailingListState {
   const byId: any = {};
   for (const mailing of mailingsList) {
@@ -77,6 +79,7 @@ function createMailingListState (
   return {
     byId,
     ids: mailingsList.map(mailing => mailing.id),
+    loaded,
     selected
   };
 }
@@ -118,11 +121,12 @@ function updateMailing (
   return {
     byId,
     ids: state.ids,
+    loaded: state.loaded,
     selected: state.selected
   };
 }
 
-const initialState = createMailingListState([]);
+const initialState = createMailingListState([], undefined, false);
 
 export function mailings (state: MailingListState = initialState, action: Action) {
   switch (action.type) {

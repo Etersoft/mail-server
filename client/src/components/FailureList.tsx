@@ -35,6 +35,7 @@ export class FailureList extends React.Component<FailureListProps> {
       <ReceiverList receivers={mailing.failedReceivers || []}
                     receiversCount={mailing.failedReceiversCount}
                     loading={mailing.loadingFailedReceivers}
+                    emptyText='Ошибок доставки нет'
                     title='Ошибки доставки' buttons={[ reloadFailuresButton, downloadButton ]} />
     );
   }

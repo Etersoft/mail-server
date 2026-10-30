@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .receiver-list {
   & + .receiver-list {
     margin-left: 8px;
@@ -6,5 +8,36 @@
   &.list-block .list li {
     align-items: center;
     display: flex;
+  }
+}
+
+.receiver-list .list {
+  .receiver {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .receiver-email {
+    overflow-wrap: anywhere;
+  }
+
+  .receiver-details, .receiver-diagnostic {
+    color: $muted;
+    display: block;
+    font-size: 13px;
+  }
+
+  .receiver-diagnostic {
+    font-family: monospace;
+    overflow-wrap: anywhere;
+  }
+
+  li {
+    cursor: default;
+    gap: 8px;
+  }
+
+  .overflow-item {
+    color: $muted;
   }
 }

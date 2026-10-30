@@ -3,9 +3,11 @@ import { Mailing } from '../reducers/mailings';
 import '../styles/List';
 import { StateMarker } from './StateMarker';
 import { Loading } from './elements/Loading';
+import { mailingStateNames } from './MailingStateView';
 
 
 export interface MailingListProps {
+  loaded?: boolean;
   mailings: Mailing[];
   onShowAddForm?: () => void;
   onSelect?: (mailing: Mailing) => void;
@@ -14,38 +16,55 @@ export interface MailingListProps {
 
 export class MailingList extends React.Component<MailingListProps> {
   render () {
-    const sorted = this.props.mailings.slice(0).sort((a, b) => {
-      return a.id > b.id ? 1 : -1;
-    });
+    // Новые сверху: обычно работают с последними рассылками
+    const sorted = this.props.mailings.slice(0).sort((a, b) => b.id - a.id);
     const items = sorted.map(mailing => {
-      const className = (mailing.id === this.props.selectedMailing) ? 'selected' : '';
+      const selected = mailing.id === this.props.selectedMailing;
       const onClick = (() => this.props.onSelect && this.props.onSelect(mailing));
-      const loadingMarker = mailing.locked ? (
-        <Loading>(загрузка)</Loading>
-      ) : null;
       return (
-        <li className={className} key={mailing.id} onClick={onClick}>
-          <StateMarker state={mailing.state} />
-          {mailing.name}
-          &nbsp;
-          {loadingMarker}
+        <li className={selected ? 'selected' : ''} key={mailing.id}>
+          <button className='mailing-item' onClick={onClick} aria-current={selected}>
+            <span className='mailing-name'>{mailing.name}</span>
+            <span className='mailing-meta'>
+              <StateMarker state={mailing.state} />
+              {mailingStateNames[mailing.state]}
+              {mailing.sentCount ? ` · отправлено ${mailing.sentCount}` : null}
+              {mailing.locked ? <Loading> · загрузка</Loading> : null}
+            </span>
+          </button>
         </li>
       );
     });
     return (
-      <div className='list-block'>
+      <div className='list-block mailing-list'>
         <h2 className='block-header'>
-          Список рассылок
+          Рассылки
           <div className='header-actions'>
             <button className='action' onClick={this.props.onShowAddForm}>
               Добавить
             </button>
           </div>
         </h2>
+        {this.renderEmpty()}
         <ul className='list'>
           {items}
         </ul>
       </div>
+    );
+  }
+
+  private renderEmpty () {
+    if (this.props.mailings.length) {
+      return null;
+    }
+    if (!this.props.loaded) {
+      return <p className='list-empty'><Loading>Загрузка…</Loading></p>;
+    }
+    return (
+      <p className='list-empty'>
+        Рассылок пока нет. Нажмите «Добавить», чтобы создать первую: понадобится
+        текст письма и список получателей в CSV.
+      </p>
     );
   }
 }
