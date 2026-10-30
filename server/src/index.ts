@@ -13,6 +13,7 @@ import { RedisConnectionPoolImpl } from './RedisConnectionPool';
 import { FailureCounter } from './FailureCounter';
 import { ReceiverListFilter } from './ReceiverListFilter';
 import { RedisSubscriptionRequestRepository } from './RedisSubscriptionRequestRepository';
+import { RedisSorterStatusRepository } from './RedisSorterStatusRepository';
 import { readHandlebarsTemplate } from './templates/readTemplate';
 
 
@@ -32,6 +33,9 @@ async function main () {
   );
   const subscriptionRepository = new RedisSubscriptionRequestRepository(
     redisConnectionPool, config.server.subscription.requestTTL
+  );
+  const sorterStatusRepository = new RedisSorterStatusRepository(
+    redisConnectionPool, config.server.redis.prefixes
   );
   const failureCounter = new FailureCounter(mailingRepository, addressStatsRepository);
   const receiverListFilter = new ReceiverListFilter(addressStatsRepository);
@@ -59,7 +63,7 @@ async function main () {
   setupRoutes(
     config, app, mailingRepository, stateManager, logger, executor, failureCounter,
     subscriptionRepository, sender, readHandlebarsTemplate('confirm-subscription.hbs'),
-    receiverListFilter
+    receiverListFilter, sorterStatusRepository
   );
   const { host, port } = config.server;
   await new Promise<void>((resolve, reject) => {

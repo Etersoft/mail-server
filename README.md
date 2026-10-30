@@ -49,6 +49,12 @@ How they fit together:
     temporary ones) are removed from all mailings via `POST /mailings/unsubscribe`,
     senders of unsubscribe letters only from mailings with `listUnsubscribe`;
   - `forwardTo` — where to forward letters from people.
+
+  mail-sorter writes the result of every run to Redis; the web client shows it
+  under the mailing list ("Разбор ответов": last run, letters per type, excluded
+  and unsubscribed addresses, errors) and warns when there was no successful run
+  for `server.sorterStatusMaxAge` seconds (2 hours by default). API:
+  `GET /sorter/status`.
 - All three projects have a `Dockerfile`; the [test stand](#test-stand) runs
   them together.
 
@@ -138,6 +144,7 @@ comments below are for explanation only):
     "maxEmailsWithoutPause": 1000,     // optional: pause the mailing after this many letters...
     "pauseDuration": 600,              // ...for this many seconds (both must be set)
     "sendRetryDelays": [10, 60, 300],  // optional: pauses (s) before retrying a temporary SMTP error
+    "sorterStatusMaxAge": 7200,        // optional: warn if mail-sorter had no successful run for this long (s)
     "redis": {
       "host": "localhost",             // or "url": "redis://user:password@host:6379/0"
       "port": 6379,

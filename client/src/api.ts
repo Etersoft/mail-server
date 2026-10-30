@@ -2,6 +2,7 @@ import queryString from 'query-string';
 import { Mailing, Receiver } from './reducers/mailings';
 import { MailingCreateData } from './components/AddForm';
 import { MAX_RECEIVERS } from './components/ReceiverList';
+import { SorterStatus } from '../../server/src/RedisSorterStatusRepository';
 
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -78,6 +79,12 @@ export async function getMailingById (id: number): Promise<Mailing> {
 
 export function getMailings (): Promise<Mailing[]> {
   return apiRequest('/mailings');
+}
+
+export type SorterStatusView = SorterStatus & { stale: boolean };
+
+export function getSorterStatus (): Promise<SorterStatusView | null> {
+  return apiRequest('/sorter/status');
 }
 
 export function getFailedReceivers (id: number): Promise<ReceiverList> {

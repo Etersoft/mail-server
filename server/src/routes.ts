@@ -23,6 +23,8 @@ import { subscribe } from './controllers/subscribe';
 import { unsubscribe } from './controllers/unsubscribe';
 import { deleteReceiver } from './controllers/deleteReceiver';
 import { unsubscribeFromAll } from './controllers/unsubscribeFromAll';
+import { getSorterStatus } from './controllers/getSorterStatus';
+import { RedisSorterStatusRepository } from './RedisSorterStatusRepository';
 import { openApiDocument, swaggerUiHtml, swaggerUiInit } from './openapi';
 
 
@@ -30,7 +32,8 @@ export function setupRoutes (
   config: any, app: Express, repository: MailingRepository, stateManager: MailingStateManager,
   logger: Logger, executor: MailingExecutor, failureCounter: FailureCounter,
   subscriptionRepository: SubscriptionRequestRepository, sender: MailSender,
-  subscribeTemplate: Template<SubscribeTemplateContext>, receiverListFilter: ReceiverListFilter
+  subscribeTemplate: Template<SubscribeTemplateContext>, receiverListFilter: ReceiverListFilter,
+  sorterStatusRepository: RedisSorterStatusRepository
 ) {
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
@@ -57,6 +60,7 @@ export function setupRoutes (
   app.delete('/mailings/:mailingId/receivers/:receiverId', deleteReceiver(
     repository, logger
   ));
+  app.get('/sorter/status', getSorterStatus(sorterStatusRepository, config));
 
   setupApiDocs(app);
 }

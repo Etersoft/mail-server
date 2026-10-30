@@ -11,7 +11,8 @@ function createApp () {
   const app = express();
   const stub: any = {};
   setupRoutes(
-    { server: { subscription: {} } }, app, stub, stub, stub, stub, stub, stub, stub, stub, stub
+    { server: { subscription: {} } }, app,
+    stub, stub, stub, stub, stub, stub, stub, stub, stub, stub
   );
   return app;
 }
@@ -39,7 +40,7 @@ describe('OpenAPI', () => {
       }
     }
     const apiRoutes = getRoutes(createApp())
-      .filter(route => route.split(' ')[1].startsWith('/mailings'));
+      .filter(route => !/^\/(docs|openapi\.json)/.test(route.split(' ')[1]));
     assert.deepEqual(apiRoutes.filter(route => !documented.has(route)), []);
     assert.deepEqual([...documented].filter(route => !apiRoutes.includes(route)), []);
   });

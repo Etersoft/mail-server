@@ -11,6 +11,7 @@ import { hideAddForm } from '../../actions/hideAddForm';
 import { AddForm, MailingCreateData } from '../AddForm';
 import { Animator } from '../Animator';
 import { Notifications } from '../Notifications';
+import { SorterStatusView } from '../SorterStatusView';
 import { NotificationItem } from '../../reducers/notifications';
 import { hideNotification } from '../../actions/notify';
 import { AppDispatch } from '../../types';
@@ -40,6 +41,7 @@ class RootView extends React.Component<RootViewProps> {
         <div className='content' style={rootStyle}>
           <div className='left-column'>
             <MailingListContainer />
+            <SorterStatusView />
           </div>
           {rightColumn}
         </div>

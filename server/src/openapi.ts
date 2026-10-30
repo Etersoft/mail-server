@@ -320,6 +320,18 @@ export const openApiDocument = {
         }
       }
     },
+    '/sorter/status': {
+      get: {
+        tags: ['mail-sorter'],
+        summary: 'Итог последнего запуска mail-sorter',
+        description:
+          'Записывает mail-sorter в Redis (ключ MAIL_SORTER_STATUS) в конце каждого ' +
+          'запуска. `null` — mail-sorter ещё ни разу не запускался с этим Redis.',
+        responses: {
+          200: ok({ oneOf: [ref('SorterStatus'), { type: 'null' }] })
+        }
+      }
+    },
     '/mailings/{mailingId}/receivers/{receiverId}': {
       delete: {
         tags: ['receivers'],
@@ -414,6 +426,49 @@ export const openApiDocument = {
           email: { type: 'string' },
           name: { type: 'string' },
           periodicDate: { type: ['string', 'integer'] }
+        }
+      },
+      SorterStatus: {
+        type: 'object',
+        properties: {
+          startedAt: { type: 'string', format: 'date-time' },
+          finishedAt: { type: 'string', format: 'date-time' },
+          success: { type: 'boolean' },
+          error: { type: 'string', description: 'Почему запуск не удался' },
+          readonly: {
+            type: 'boolean',
+            description: 'Пробный запуск: ничего не менялось'
+          },
+          mailboxes: { type: 'array', items: { type: 'string' } },
+          lastSuccessAt: { type: ['string', 'null'], format: 'date-time' },
+          stale: {
+            type: 'boolean',
+            description: 'Успешного запуска не было дольше server.sorterStatusMaxAge ' +
+              '(по умолчанию 2 часа)'
+          },
+          types: {
+            type: 'object',
+            additionalProperties: { type: 'integer' },
+            description: 'Число писем по типам: HUMAN, MAIL_SERVER, AUTORESPONDER, UNSUBSCRIBE'
+          },
+          actions: {
+            type: 'object',
+            additionalProperties: { type: 'integer' },
+            description: 'Число выполненных действий по названиям'
+          },
+          counters: {
+            type: 'object',
+            properties: {
+              actionsPerformed: { type: 'integer' },
+              failed: { type: 'integer' },
+              successful: { type: 'integer' }
+            }
+          },
+          failedMessages: {
+            type: 'array',
+            items: { type: 'integer' },
+            description: 'Номера писем, обработка которых не удалась (не больше 50)'
+          }
         }
       },
       FailedReceiver: {

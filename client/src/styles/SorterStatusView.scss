@@ -1,0 +1,18 @@
+.sorter-status {
+  border-top: 1px solid black;
+
+  .sorter-status-body {
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 8px 12px;
+  }
+
+  .warning {
+    color: #a65e00;
+    font-weight: bold;
+  }
+
+  .error {
+    color: #c00;
+  }
+}

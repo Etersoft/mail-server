@@ -12,16 +12,10 @@ import { Editor } from './Editor';
 import { ReceiverList } from './ReceiverList';
 import { FailureList } from './FailureList';
 import { Checkbox } from './elements/Checkbox';
+import { formatDate } from '../formatDate';
 
 
 const REFRESH_INTERVAL = 1000;
-
-// DD.MM.YYYY HH:mm:ss
-function formatDate (date: Date) {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ` +
-    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-}
 
 const editableFields = {
   from: 'Отправитель (From)',

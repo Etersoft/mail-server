@@ -17,7 +17,16 @@ body, html, #root, .root-view, .content {
   display: flex;
 
   .left-column {
+    display: flex;
     flex: 1;
+    flex-direction: column;
+    min-width: 0;
+
+    > .list-block {
+      flex: 1;
+      height: auto;
+      min-height: 0;
+    }
   }
 
   .right-column {
