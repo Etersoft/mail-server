@@ -51,4 +51,21 @@ describe('SmtpMailSender', () => {
     assert.match(message, /^Sender: no-reply@etersoft\.ru$/m);
     assert.match(message, /^Reply-To: sales@etersoft\.ru$/m);
   });
+
+  it('should add a plain text part generated from HTML', async () => {
+    const { message } = await send(new Email({
+      html: '<h1>Offer</h1><p>Details <a href="https://example.com/x">here</a>.</p>' +
+        '<img src="data:image/png;base64,AAAA" alt="logo">',
+      receivers: [new Receiver('partner@example.com')],
+      subject: 'Test'
+    }));
+    assert.match(message, /^Content-Type: multipart\/alternative;/m);
+    assert.match(message, /^Content-Type: text\/plain; charset=utf-8$/m);
+    assert.match(message, /^Content-Type: text\/html; charset=utf-8$/m);
+    const text = message.split(/^Content-Type: /m)
+      .find(part => part.startsWith('text/plain'))!;
+    assert.match(text, /^OFFER$/m);
+    assert.match(text, /Details here \[https:\/\/example\.com\/x\]\./);
+    assert.doesNotMatch(text, /data:image|logo/);
+  });
 });

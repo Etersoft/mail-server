@@ -176,6 +176,9 @@ Every mailing gets a unique `List-Id` header `<YYYYMMDD-<id>@<listIdDomain>>`;
 letters also have `Precedence: bulk`. mail-sorter uses `List-Id` to attribute
 bounces to a mailing.
 
+Letters are sent as HTML with a plain text alternative generated from it
+(images are dropped, links become `text [url]`).
+
 A mailing may set its own `From` (e.g. `Sales <sales@example.com>`). The
 envelope sender (Return-Path) and the `Sender` header stay `server.mail.from`,
 so bounces still reach the mailbox read by mail-sorter. The `From` domain needs

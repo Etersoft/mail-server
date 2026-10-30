@@ -1,6 +1,16 @@
 import { MailSender } from './MailSender';
 import { Email } from './Email';
 import { createTransport, Transporter } from 'nodemailer';
+import { convert } from 'html-to-text';
+
+
+// Картинки пропускаем: в тексте от них остались бы только адреса или data: URI
+const htmlToTextOptions = {
+  selectors: [
+    { options: { hideLinkHrefIfSameAsText: true }, selector: 'a' },
+    { format: 'skip', selector: 'img' }
+  ]
+};
 
 
 export interface SmtpMailSenderConfig {
@@ -38,7 +48,7 @@ export class SmtpMailSender implements MailSender {
       replyTo: email.replyTo,
       sender: email.from ? this.config.from : undefined,
       subject: email.subject,
-      text: email.html ? undefined : email.text,
+      text: email.text || (email.html ? convert(email.html, htmlToTextOptions) : undefined),
       to: to.join(', ')
     });
   }
