@@ -24,6 +24,7 @@ function formatDate (date: Date) {
 }
 
 const editableFields = {
+  from: 'Отправитель (From)',
   html: 'Текст рассылки',
   name: 'Название',
   openForSubscription: 'Возможность подписки через API',
@@ -36,6 +37,7 @@ const editableFields = {
 const keys = Object.keys(editableFields) as Array<keyof MailingEditData>;
 
 export interface MailingEditData {
+  from: string;
   html: string;
   name: string;
   openForSubscription: boolean;
@@ -153,6 +155,7 @@ export class MailingDetailView extends React.Component<
         </span><br />
       </React.Fragment>
     ) : null;
+    const from = typeof this.state.fields.from === 'string' ? this.state.fields.from : '';
     const replyTo = typeof this.state.fields.replyTo === 'string' ? this.state.fields.replyTo : '';
     return (
       <div className='mailing-detail-view'>
@@ -201,6 +204,9 @@ export class MailingDetailView extends React.Component<
           </FormGroup>
           <FormGroup inline title='Тема письма:'>
             <TextInput value={this.state.fields.subject} onChange={this.handlers.subject} />
+          </FormGroup>
+          <FormGroup inline title='Отправитель (From):'>
+            <TextInput value={from} onChange={this.handlers.from} />
           </FormGroup>
           <FormGroup inline title='Обратный адрес (Reply-To):'>
             <TextInput value={replyTo} onChange={this.handlers.replyTo} />

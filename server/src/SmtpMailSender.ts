@@ -23,14 +23,23 @@ export class SmtpMailSender implements MailSender {
   }
 
   async sendEmail (email: Email): Promise<void> {
+    const to = email.receivers.map(receiver => receiver.email);
     await this.transport.sendMail({
       attachments: email.attachments,
+      // Возвраты всегда идут на адрес сервиса (его разбирает mail-sorter),
+      // даже если у рассылки свой From
+      envelope: {
+        from: this.config.from,
+        to
+      },
+      from: email.from || this.config.from,
       headers: email.headers,
       html: email.html,
       replyTo: email.replyTo,
+      sender: email.from ? this.config.from : undefined,
       subject: email.subject,
       text: email.html ? undefined : email.text,
-      to: email.receivers.map(receiver => receiver.email).join(', ')
+      to: to.join(', ')
     });
   }
 }

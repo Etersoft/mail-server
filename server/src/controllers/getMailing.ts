@@ -29,6 +29,7 @@ export function getMailing (mailingRepository: MailingRepository) {
       listId: mailing.listId,
       name: mailing.name,
       openForSubscription: mailing.openForSubscription,
+      from: mailing.from,
       replyTo: mailing.replyTo,
       sentCount: mailing.sentCount,
       state: req.query.stringState ? MailingState[mailing.state] : mailing.state,

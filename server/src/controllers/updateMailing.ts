@@ -30,7 +30,7 @@ export function updateMailing (
         logger.verbose(`#${mailingToUpdate.id}: updating HTML content`);
       }
 
-      const fields = ['extraData', 'name', 'openForSubscription', 'replyTo', 'subject'];
+      const fields = ['extraData', 'from', 'name', 'openForSubscription', 'replyTo', 'subject'];
 
       for (const field of fields) {
         if (req.body[field] !== undefined) {
@@ -140,6 +140,9 @@ const requestBodyJsonSchema = {
         },
         required: ['email']
       }
+    },
+    from: {
+      type: 'string'
     },
     replyTo: {
       type: 'string'

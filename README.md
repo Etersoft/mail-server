@@ -131,7 +131,7 @@ comments below are for explanation only):
     "corsWhitelist": ["https://admin.example.com"],  // allowed origins for the API
     "fakeSender": false,               // true: print letters to the console instead of sending
     "mail": {
-      "from": "noreply@example.com",   // sender of all letters
+      "from": "noreply@example.com",   // service address: envelope sender (bounces) and default From
       "listIdDomain": "example.com",   // domain part of the List-Id header
       "listUnsubscribe": "<mailto:noreply+unsubscribe@example.com>"  // optional List-Unsubscribe header
     },
@@ -166,7 +166,7 @@ at `<url>/dl/<id>/<name>`), for example
 
 ## Mailings
 
-A mailing has a name, subject, HTML text, optional Reply-To, a list of receivers
+A mailing has a name, subject, HTML text, optional From and Reply-To, a list of receivers
 and a state: NEW = 1, RUNNING = 2, PAUSED = 3, FINISHED = 4, ERROR = 5. A running
 mailing can be paused and continued; a finished one can be restarted from the
 beginning. If the server stops while a mailing is running, it is marked PAUSED on
@@ -175,6 +175,11 @@ the next start.
 Every mailing gets a unique `List-Id` header `<YYYYMMDD-<id>@<listIdDomain>>`;
 letters also have `Precedence: bulk`. mail-sorter uses `List-Id` to attribute
 bounces to a mailing.
+
+A mailing may set its own `From` (e.g. `Sales <sales@example.com>`). The
+envelope sender (Return-Path) and the `Sender` header stay `server.mail.from`,
+so bounces still reach the mailbox read by mail-sorter. The `From` domain needs
+SPF and DKIM records that allow the mail relay to send for it.
 
 Receivers are added in the web client from a CSV file without a header, one
 receiver per line: `email,name,extraData`, where `extraData` is an optional JSON
@@ -251,7 +256,7 @@ and keep mail-server and its web client in a trusted network.
 |---|---|
 | `GET /mailings` | List of mailings |
 | `GET /mailings/:id` | Mailing with text and statistics (`?stringState=1` — state as a name) |
-| `POST /mailings` | Create: `{name, subject, html, receivers: [{email, name?, extraData?}], replyTo?, openForSubscription?, extraData?}` or clone: `{sourceId}` |
+| `POST /mailings` | Create: `{name, subject, html, receivers: [{email, name?, extraData?}], from?, replyTo?, openForSubscription?, extraData?}` or clone: `{sourceId}` |
 | `PUT /mailings/:id` | Change fields, `receivers`, or `state` (`2`/`"running"` — start, `3`/`"paused"` — pause) |
 | `DELETE /mailings/:id` | Delete (not while running) |
 | `GET /mailings/:id/receivers` | Receivers, `?limit=N`, `?format=csv` |

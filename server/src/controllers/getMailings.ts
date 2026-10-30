@@ -12,6 +12,7 @@ export function getMailings (mailingRepository: MailingRepository) {
       listId: mailing.listId,
       name: mailing.name,
       openForSubscription: mailing.openForSubscription,
+      from: mailing.from,
       replyTo: mailing.replyTo,
       sentCount: mailing.sentCount,
       state: mailing.state,

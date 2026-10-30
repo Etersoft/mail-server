@@ -103,6 +103,7 @@ export class MailingExecutor extends EventEmitter {
     const html = await mailing.getHtmlForReceiver(receiver);
     const subject = await mailing.getSubjectForReceiver(receiver);
     return new Email({
+      from: mailing.from,
       headers,
       html: html,
       receivers: [receiver],

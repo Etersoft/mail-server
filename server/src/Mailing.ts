@@ -12,6 +12,7 @@ export interface MailingProperties {
     textAfterUnsubscribe?: string,  
     [field: string]: any 
   };
+  from?: string;
   html: string;
   listId?: string;
   name: string;
@@ -40,6 +41,7 @@ export class Mailing implements MailingProperties {
     textAfterUnsubscribe?: string,  
     [field: string]: any 
   };
+  public from?: string;
   public listId?: string;
   public name: string;
   public openForSubscription: boolean;
@@ -60,6 +62,7 @@ export class Mailing implements MailingProperties {
   ) {
     this.savedCreationDate = properties.creationDate;
     this.extraData = properties.extraData;
+    this.from = properties.from;
     this.html = properties.html;
     this.listId = properties.listId;
     this.name = properties.name;

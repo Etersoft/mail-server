@@ -131,7 +131,7 @@ nginx для веб-клиента и публичных страниц подп
     "corsWhitelist": ["https://admin.example.com"],  // разрешённые Origin для API
     "fakeSender": false,               // true: печатать письма в консоль вместо отправки
     "mail": {
-      "from": "noreply@example.com",   // отправитель всех писем
+      "from": "noreply@example.com",   // адрес сервиса: отправитель конверта (возвраты) и From по умолчанию
       "listIdDomain": "example.com",   // домен в заголовке List-Id
       "listUnsubscribe": "<mailto:noreply+unsubscribe@example.com>"  // необязательный List-Unsubscribe
     },
@@ -166,7 +166,7 @@ nginx для веб-клиента и публичных страниц подп
 
 ## Рассылки
 
-У рассылки есть название, тема, HTML-текст, необязательный Reply-To, список
+У рассылки есть название, тема, HTML-текст, необязательные From и Reply-To, список
 получателей и состояние: NEW = 1, RUNNING = 2, PAUSED = 3, FINISHED = 4,
 ERROR = 5. Выполняющуюся рассылку можно приостановить и продолжить, завершённую —
 перезапустить с начала. Если сервер остановился во время рассылки, при следующем
@@ -175,6 +175,12 @@ ERROR = 5. Выполняющуюся рассылку можно приоста
 Каждая рассылка получает уникальный заголовок `List-Id` вида
 `<YYYYMMDD-<id>@<listIdDomain>>`, у писем также есть `Precedence: bulk`. По
 `List-Id` mail-sorter относит недоставки к рассылке.
+
+У рассылки может быть свой `From` (например, `Отдел продаж <sales@example.com>`).
+Отправитель конверта (Return-Path) и заголовок `Sender` остаются
+`server.mail.from`, поэтому возвраты по-прежнему приходят в ящик, который
+разбирает mail-sorter. Для домена из `From` нужны записи SPF и DKIM, разрешающие
+почтовому релею отправлять от его имени.
 
 Получатели добавляются в веб-клиенте из CSV-файла без заголовка, по одному на
 строку: `email,имя,extraData`, где `extraData` — необязательный JSON-объект,
@@ -251,7 +257,7 @@ mail-server и его веб-клиент должны находиться в �
 |---|---|
 | `GET /mailings` | Список рассылок |
 | `GET /mailings/:id` | Рассылка с текстом и статистикой (`?stringState=1` — состояние строкой) |
-| `POST /mailings` | Создать: `{name, subject, html, receivers: [{email, name?, extraData?}], replyTo?, openForSubscription?, extraData?}` или скопировать: `{sourceId}` |
+| `POST /mailings` | Создать: `{name, subject, html, receivers: [{email, name?, extraData?}], from?, replyTo?, openForSubscription?, extraData?}` или скопировать: `{sourceId}` |
 | `PUT /mailings/:id` | Изменить поля, `receivers` или `state` (`2`/`"running"` — запуск, `3`/`"paused"` — пауза) |
 | `DELETE /mailings/:id` | Удалить (кроме выполняющейся) |
 | `GET /mailings/:id/receivers` | Получатели, `?limit=N`, `?format=csv` |

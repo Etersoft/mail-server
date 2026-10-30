@@ -7,6 +7,7 @@ import template from '../email-template.html';
 
 
 export interface MailingCreateData {
+  from?: string;
   html: string;
   name: string;
   receivers: Receiver[];
@@ -21,6 +22,7 @@ export interface AddFormProps {
 }
 
 interface AddFormState {
+  from: string;
   html: string;
   name: string;
   receivers: Receiver[];
@@ -34,6 +36,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   constructor (props: AddFormProps) {
     super(props);
     this.state = {
+      from: '',
       html: template,
       name: '',
       receivers: [],
@@ -67,6 +70,11 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
               <input className='input' value={this.state.subject} onChange={this.changeSubject} />
             </div>
             <div className='form-group'>
+              <span className='input-name'>Отправитель (From):</span>
+              <input className='input' value={this.state.from} onChange={this.changeFrom}
+                     placeholder='по умолчанию — адрес сервиса' />
+            </div>
+            <div className='form-group'>
               <span className='input-name'>Обратный адрес (Reply-To):</span>
               <input className='input' value={this.state.replyTo} onChange={this.changeReplyTo} />
             </div>
@@ -91,6 +99,7 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
       return;
     }
     const mailing = {
+      from: this.state.from || undefined,
       html: this.state.html,
       name: this.state.name,
       receivers: this.state.receivers,
@@ -103,6 +112,12 @@ export class AddForm extends React.Component<AddFormProps, AddFormState> {
   private canAdd () {
     return this.state.name.trim().length && this.state.receivers.length;
   }
+
+  private changeFrom = (event: React.FormEvent<HTMLInputElement>) => {
+    this.setState({
+      from: event.currentTarget.value
+    });
+  };
 
   private changeHtml = (value: string) => {
     this.setState({

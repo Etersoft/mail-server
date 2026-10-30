@@ -7,6 +7,7 @@ export interface Headers {
 
 export interface EmailParameters {
   attachments?: Attachment[];
+  from?: string;
   headers?: Headers;
   html?: string;
   receivers: Receiver[];
@@ -23,6 +24,7 @@ export interface Attachment {
 
 export class Email {
   public attachments?: Attachment[];
+  public from?: string;
   public headers: Headers;
   public html?: string;
   public receivers: Receiver[];
@@ -32,6 +34,7 @@ export class Email {
 
   constructor (parameters: EmailParameters) {
     this.attachments = parameters.attachments;
+    this.from = parameters.from;
     this.headers = parameters.headers || defaultHeaders;
     this.html = parameters.html;
     this.receivers = parameters.receivers;

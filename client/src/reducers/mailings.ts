@@ -24,6 +24,7 @@ export interface Mailing {
   receivers?: Receiver[];
   receiversChanged: boolean;
   receiversCount?: number;
+  from?: string;
   replyTo?: string;
   sentCount: number;
   state: MailingState;
@@ -44,6 +45,7 @@ export interface Receiver {
 
 function createMailing (data: MailingCreateData, id: number, listId: string): Mailing {
   return {
+    from: data.from,
     html: data.html,
     id,
     listId,
