@@ -227,8 +227,10 @@ mailing.
 
 "Delivery errors" in the web client lists receivers with a delivery status
 recorded by mail-sorter after the mailing was created
-(`GET /mailings/:id/failed-receivers`, also as CSV). "Retry" creates a new
-mailing with the same text for these addresses only.
+(`GET /mailings/:id/failed-receivers`, also as CSV). Addresses that mail-sorter
+has already removed from the mailing for delivery errors stay in this list
+marked as excluded (`excluded: true`, the fourth CSV column). "Retry" creates a
+new mailing with the same text for these addresses, except the excluded ones.
 
 SMTP errors while sending: a receiver rejected with 5xx at `RCPT TO` gets a
 delivery status in its statistics (it appears among delivery errors and is

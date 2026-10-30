@@ -35,9 +35,10 @@ export function createRetryMailing (
       undeliveredCount: 0
     };
 
-    const receivers = sourceFailedReceivers.map(receiver => ({
-      email: receiver.email
-    }));
+    // Исключённые mail-sorter адреса не возвращаем: их отсеяли намеренно
+    const receivers = sourceFailedReceivers
+      .filter(receiver => !receiver.excluded)
+      .map(receiver => ({ email: receiver.email }));
 
     const mailing = await mailingRepository.create(properties, receivers);
     logger.info(`Created retry mailing ${properties.name} with ID #${mailing.id}`);

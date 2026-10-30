@@ -6,6 +6,10 @@ import { Mailing } from './Mailing';
 export interface FailedReceiver {
   diagnosticCode?: string;
   email: string;
+  /**
+   * Адрес уже исключён из рассылки (mail-sorter, POST /mailings/unsubscribe)
+   */
+  excluded?: boolean;
   spam: boolean;
   status: string;
 }
@@ -17,13 +21,18 @@ export class FailureCounter {
   ) {}
 
   async getFailedReceivers (mailing: Mailing, limit?: number | null): Promise<FailedReceiver[]> {
-    const receivers = await this.mailingRepository.getReceivers(mailing.id);
+    const emails = (await this.mailingRepository.getReceivers(mailing.id))
+      .map(receiver => receiver.email);
+    const inList = new Set(emails);
+    const excluded = (await this.mailingRepository.getExcludedEmails(mailing.id))
+      .filter(email => !inList.has(email));
+    emails.push(...excluded);
 
-    // Получаем статистику для всех адресов из рассылки
-    const statsList = [];
-    const actualLimit = limit ? Math.min(limit, receivers.length) : receivers.length;
+    // Получаем статистику для всех адресов из рассылки, включая исключённые
+    const statsList: FailedReceiver[] = [];
+    const actualLimit = limit ? Math.min(limit, emails.length) : emails.length;
     for (let i = 0; i < actualLimit; i++) {
-      const stats = await this.statsRepository.getByEmail(receivers[i].email);
+      const stats = await this.statsRepository.getByEmail(emails[i]);
       // Если записи нет - то с этим email всё в порядке.
       // Если поле lastStatus не заполнено - то это "битая" запись.
       if (!stats || !stats.lastStatus) {
@@ -37,6 +46,7 @@ export class FailureCounter {
       statsList.push({
         diagnosticCode: stats!.diagnosticCode,
         email: stats!.email,
+        ...(inList.has(emails[i]) ? {} : { excluded: true }),
         spam: stats!.spam,
         status: stats!.lastStatus!
       });

@@ -8,12 +8,14 @@ import { RedisClient, RedisConnectionPool } from './RedisConnectionPool';
 
 export interface RedisMailingRepositoryConfig {
   commonDataKeyPrefix: string;
+  excludedReceiversKeyPrefix: string;
   idCounterKey: string;
   receiversListKeyPrefix: string;
 }
 
 const defaultConfig: RedisMailingRepositoryConfig = {
   commonDataKeyPrefix: 'MAILING_COMMON_DATA_',
+  excludedReceiversKeyPrefix: 'MAILING_EXCLUDED_RECEIVERS_',
   idCounterKey: 'MAILING_ID_COUNTER',
   receiversListKeyPrefix: 'MAILING_RECEIVER_LIST_'
 };
@@ -130,6 +132,12 @@ implements MailingRepository {
     });
   }
 
+  async getExcludedEmails (id: number): Promise<string[]> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      return redisClient.sMembers(this.getExcludedReceiversKey(id));
+    });
+  }
+
   async getReceiverCount (id: number): Promise<number> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const key = this.config.receiversListKeyPrefix + id;
@@ -144,6 +152,7 @@ implements MailingRepository {
       const multi = redisClient.multi();
       multi.del(key);
       multi.del(receiversListKey);
+      multi.del(this.getExcludedReceiversKey(mailing.id));
       await multi.exec();
     });
   }
@@ -209,9 +218,10 @@ implements MailingRepository {
 
   /**
    * Удаляет получателя. Если он стоял до position, position уменьшается, иначе
-   * сдвиг списка пропустил бы следующего получателя.
+   * сдвиг списка пропустил бы следующего получателя. Адрес, исключённый из-за
+   * ошибок доставки (excluded), запоминается для отчёта об ошибках.
    */
-  async removeReceiver (id: number, receiver: Receiver) {
+  async removeReceiver (id: number, receiver: Receiver, excluded = false) {
     const mailingKey = this.getRedisKey(id);
     const listKey = this.getReceiversListKey(id);
     const json = this.serializeReceiver(receiver);
@@ -231,6 +241,9 @@ implements MailingRepository {
       },
       multi => {
         multi.lRem(listKey, 0, json);
+        if (excluded) {
+          multi.sAdd(this.getExcludedReceiversKey(id), receiver.email);
+        }
         if (mailing && removedBeforePosition) {
           mailing.position -= removedBeforePosition;
           multi.set(mailingKey, this.serializeEntity(mailing));
@@ -298,6 +311,10 @@ implements MailingRepository {
     });
   }
 
+
+  private getExcludedReceiversKey (id: number): string {
+    return this.config.excludedReceiversKeyPrefix + id;
+  }
 
   private getReceiversListKey (id: number): string {
     return this.config.receiversListKeyPrefix + id;

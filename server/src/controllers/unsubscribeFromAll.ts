@@ -23,7 +23,9 @@ export function unsubscribeFromAll (mailingRepository: MailingRepository, logger
         continue;
       }
       const receiver = await mailing.getReceiverByEmail(email);
-      if (receiver && await mailing.removeReceiver(receiver)) {
+      // Без listUnsubscribe адрес исключается из-за ошибок доставки: он остаётся
+      // в отчёте об ошибках рассылки
+      if (receiver && await mailing.removeReceiver(receiver, !req.body.listUnsubscribe)) {
         logger.info(`Unsubscribed: mailing #${mailing.id}, email ${email}`);
         removed++;
       }

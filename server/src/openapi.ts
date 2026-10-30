@@ -171,6 +171,7 @@ export const openApiDocument = {
       post: {
         tags: ['mailings'],
         summary: 'Создать повторную рассылку по адресам с ошибками доставки',
+        description: 'Адреса, исключённые mail-sorter (`excluded`), в неё не попадают.',
         requestBody: body(createRetryMailingBody, { sourceId: 1 }),
         responses: {
           200: ok({
@@ -249,8 +250,9 @@ export const openApiDocument = {
         tags: ['receivers'],
         summary: 'Получатели с ошибками доставки',
         description:
-          'Строится по текущему списку получателей. Адреса, которые mail-sorter уже ' +
-          'исключил из рассылки, сюда не попадают.',
+          'Адреса из списка получателей с ошибкой доставки после создания рассылки, ' +
+          'а также адреса, которые mail-sorter уже исключил из рассылки ' +
+          '(`excluded: true`, в CSV — четвёртая колонка `excluded`).',
         parameters: [mailingId(), csvList.limit, csvList.format],
         responses: {
           200: okOrCsv(receiversList(ref('FailedReceiver'))),
@@ -414,7 +416,11 @@ export const openApiDocument = {
           email: { type: 'string' },
           status: { type: 'string', description: 'DSN status последней ошибки' },
           spam: { type: 'boolean' },
-          diagnosticCode: { type: 'string' }
+          diagnosticCode: { type: 'string' },
+          excluded: {
+            type: 'boolean',
+            description: 'Адрес уже исключён из рассылки (mail-sorter)'
+          }
         }
       }
     }

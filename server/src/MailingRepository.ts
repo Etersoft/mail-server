@@ -17,6 +17,10 @@ export interface MailingRepository {
   getById (id: number): Promise<Mailing | null>;
   getByListId (listId: string): Promise<Mailing | null>;
   /**
+   * Адреса, исключённые из рассылки из-за ошибок доставки
+   */
+  getExcludedEmails (id: number): Promise<string[]>;
+  /**
    * Получение списка получателей
    */
   getReceivers (id: number, start?: number, stop?: number): Promise<Receiver[]>;
@@ -24,7 +28,7 @@ export interface MailingRepository {
   getNextReceiver (id: number): Promise<Receiver | null>;
   setReceivers (id: number, receivers: Receiver[]): Promise<void>;
   remove (mailing: Mailing): Promise<void>;
-  removeReceiver (id: number, receiver: Receiver): Promise<boolean>;
+  removeReceiver (id: number, receiver: Receiver, excluded?: boolean): Promise<boolean>;
   update (mailing: Mailing): Promise<void>;
   updateInTransaction (
     mailingId: number, scenario: (mailing: Mailing) => Promise<void> | void

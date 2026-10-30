@@ -74,7 +74,8 @@ export class ReceiverList extends React.Component<ReceiverListProps, ReceiverLis
           {removeButton}
         </li>;
       } else if (receiver.status) {
-        const comment = receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`;
+        const comment = (receiver.spam ? 'отвергнуто как спам' : `статус ${receiver.status}`) +
+          (receiver.excluded ? ', исключён из рассылки' : '');
         return (
           <li key={index} onClick={this.showDetails(receiver.email)}>
             {receiverInfo} ({comment}) {removeButton}

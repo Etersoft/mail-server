@@ -183,8 +183,8 @@ export class Mailing implements MailingProperties {
     this._html = value;
   }
 
-  removeReceiver (receiver: Receiver) {
-    return this.repository.removeReceiver(this.id, receiver);
+  removeReceiver (receiver: Receiver, excluded?: boolean) {
+    return this.repository.removeReceiver(this.id, receiver, excluded);
   }
 
   private renderTemplate (template: AsyncTemplate<MailingTemplateContext>, receiver: Receiver) {

@@ -36,6 +36,7 @@ export interface Mailing {
 export interface Receiver {
   diagnosticCode?: string;
   email: string;
+  excluded?: boolean;
   name?: string;
   periodicDate?: string | number;
   spam?: boolean;
