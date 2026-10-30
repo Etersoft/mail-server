@@ -184,8 +184,10 @@ ERROR = 5. Выполняющуюся рассылку можно приоста
 числе после перезапуска.
 
 Каждая рассылка получает уникальный заголовок `List-Id` вида
-`<YYYYMMDD-<id>@<listIdDomain>>`, у писем также есть `Precedence: bulk`. По
-`List-Id` mail-sorter относит недоставки к рассылке.
+`<YYYYMMDD-<id>.eterpost.<listIdDomain>>` (RFC 2919), у писем также есть
+`Precedence: bulk`. По `List-Id` mail-sorter относит недоставки к рассылке.
+Рассылки, созданные раньше, сохраняют прежний вид `<YYYYMMDD-<id>@<listIdDomain>>`;
+новый вид mail-sorter понимает начиная с «Read List-Id from the raw header».
 
 Заголовок `List-Unsubscribe` (`server.mail.listUnsubscribe`) добавляется только в
 рассылки с `listUnsubscribe: true` (у новых рассылок по умолчанию выключен,

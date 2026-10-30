@@ -8,7 +8,7 @@ describe('getListId', () => {
   const fakeConfig = {
     server: {
       mail: {
-        listIdDomain: 'testPrefix'
+        listIdDomain: 'example.com'
       }
     }
   };
@@ -33,11 +33,11 @@ describe('getListId', () => {
 
   it('should use mailing ID', () => {
     const listId = getListId(fakeConfig, fakeMailing as Mailing).replace(/^<|>$/g, '');
-    assert.equal(listId.split('-')[1].split('@')[0], '1');
+    assert.equal(listId.split('-')[1].split('.')[0], '1');
   });
 
-  it('should use domain from config', () => {
-    const listId = getListId(fakeConfig, fakeMailing as Mailing).replace(/^<|>$/g, '');
-    assert.equal(listId.split('@')[1], fakeConfig.server.mail.listIdDomain);
+  it('should follow RFC 2919 with eterpost namespace in domain from config', () => {
+    const listId = getListId(fakeConfig, fakeMailing as Mailing);
+    assert.match(listId, /^<\d{8}-1\.eterpost\.example\.com>$/);
   });
 });

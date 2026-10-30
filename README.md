@@ -181,9 +181,12 @@ beginning. Mailings that were running when the server stopped continue on the
 next start; a mailing paused automatically (`maxEmailsWithoutPause`) continues
 at the saved time (`autoResumeAt`), even after a restart.
 
-Every mailing gets a unique `List-Id` header `<YYYYMMDD-<id>@<listIdDomain>>`;
-letters also have `Precedence: bulk`. mail-sorter uses `List-Id` to attribute
-bounces to a mailing.
+Every mailing gets a unique `List-Id` header
+`<YYYYMMDD-<id>.eterpost.<listIdDomain>>` (RFC 2919); letters also have
+`Precedence: bulk`. mail-sorter uses `List-Id` to attribute bounces to a
+mailing. Mailings created earlier keep the old form
+`<YYYYMMDD-<id>@<listIdDomain>>`; mail-sorter understands the new form since
+"Read List-Id from the raw header".
 
 The `List-Unsubscribe` header (`server.mail.listUnsubscribe`) is added only to
 mailings with `listUnsubscribe: true` (off by default for new mailings; mailings
