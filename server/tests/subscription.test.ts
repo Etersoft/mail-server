@@ -14,6 +14,7 @@ import {
 } from '../src/controllers/requestSubscription';
 import { subscribe } from '../src/controllers/subscribe';
 import { unsubscribe } from '../src/controllers/unsubscribe';
+import { unsubscribeFromAll } from '../src/controllers/unsubscribeFromAll';
 
 
 const testHtml = '<h1>Test</h1>';
@@ -397,6 +398,44 @@ describe('subscription', { skip: redisSkip }, () => {
           return;
         }
       }
+    });
+  });
+
+  describe('#unsubscribeFromAll', () => {
+    async function createWith (listUnsubscribe: boolean) {
+      const mailing = await mailingRepository.create({
+        html: testHtml,
+        listUnsubscribe,
+        name: testName,
+        subject: testSubject,
+        undeliveredCount: 0
+      }, [{ email: testReceiver2 }]);
+      return mailing.id;
+    }
+
+    async function hasReceiver (id: number) {
+      const mailing = await mailingRepository.getById(id);
+      return Boolean(await mailing!.getReceiverByEmail(testReceiver2));
+    }
+
+    async function unsubscribeAll (body: Record<string, unknown>) {
+      const controller = toController(unsubscribeFromAll(mailingRepository, logger));
+      await controller(createFakeRequest({ body, params: {} }), res);
+    }
+
+    it('should remove the address from every mailing', async () => {
+      const ids = [await createWith(false), await createWith(true)];
+      await unsubscribeAll({ email: testReceiver2 });
+      for (const id of ids) {
+        assert.equal(await hasReceiver(id), false);
+      }
+    });
+
+    it('should remove only from mailings with List-Unsubscribe when asked', async () => {
+      const [without, withHeader] = [await createWith(false), await createWith(true)];
+      await unsubscribeAll({ email: testReceiver2, listUnsubscribe: true });
+      assert.equal(await hasReceiver(without), true);
+      assert.equal(await hasReceiver(withHeader), false);
     });
   });
 });

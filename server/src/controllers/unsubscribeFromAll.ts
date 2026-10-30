@@ -9,7 +9,9 @@ import { Logger } from '../Logger';
 /**
  * Исключает адрес из всех рассылок без проверки кода. Используется
  * mail-sorter (драйвер базы "mail-server") для адресов, на которые письма
- * не доставляются, и для запросов отписки, пришедших письмом.
+ * не доставляются, и для запросов отписки, пришедших письмом. С listUnsubscribe: true
+ * адрес исключается только из рассылок с заголовком List-Unsubscribe: письмо на
+ * адрес из этого заголовка — отписка от них, а не от всех рассылок.
  * Ответ: { removed: <количество рассылок, из которых удалён адрес> }
  */
 export function unsubscribeFromAll (mailingRepository: MailingRepository, logger: Logger) {
@@ -17,6 +19,9 @@ export function unsubscribeFromAll (mailingRepository: MailingRepository, logger
     const email: string = req.body.email;
     let removed = 0;
     for (const mailing of await mailingRepository.getAll()) {
+      if (req.body.listUnsubscribe && !mailing.listUnsubscribe) {
+        continue;
+      }
       const receiver = await mailing.getReceiverByEmail(email);
       if (receiver && await mailing.removeReceiver(receiver)) {
         logger.info(`Unsubscribed: mailing #${mailing.id}, email ${email}`);
@@ -35,6 +40,9 @@ export const requestBodyJsonSchema = {
     email: {
       type: 'string',
       minLength: 1
+    },
+    listUnsubscribe: {
+      type: 'boolean'
     }
   },
   required: [

@@ -15,6 +15,11 @@ export interface MailingProperties {
   from?: string;
   html: string;
   listId?: string;
+  /**
+   * Добавлять ли заголовок List-Unsubscribe из server.mail.listUnsubscribe:
+   * по нему почтовые программы показывают кнопку «Отписаться»
+   */
+  listUnsubscribe?: boolean;
   name: string;
   openForSubscription?: boolean;
   /**
@@ -48,6 +53,7 @@ export class Mailing implements MailingProperties {
   };
   public from?: string;
   public listId?: string;
+  public listUnsubscribe: boolean;
   public name: string;
   public openForSubscription: boolean;
   public position: number;
@@ -71,6 +77,8 @@ export class Mailing implements MailingProperties {
     this.from = properties.from;
     this.html = properties.html;
     this.listId = properties.listId;
+    // До появления настройки заголовок добавлялся во все рассылки
+    this.listUnsubscribe = properties.listUnsubscribe ?? true;
     this.name = properties.name;
     this.openForSubscription = properties.openForSubscription || false;
     this.replyTo = properties.replyTo;

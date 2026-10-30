@@ -152,7 +152,9 @@ export const openApiDocument = {
         summary: 'Исключить адрес из всех рассылок',
         description:
           'Без проверки кода. mail-sorter вызывает его для адресов с постоянными ' +
-          'ошибками доставки и для запросов отписки, пришедших письмом.',
+          'ошибками доставки и для запросов отписки, пришедших письмом. С ' +
+          '`listUnsubscribe: true` адрес исключается только из рассылок с ' +
+          'заголовком List-Unsubscribe (см. поле `listUnsubscribe` рассылки).',
         requestBody: body(unsubscribeFromAllBody, { email: 'bounced@example.com' }),
         responses: {
           200: ok({
@@ -362,6 +364,12 @@ export const openApiDocument = {
           listId: { type: 'string' },
           name: { type: 'string' },
           openForSubscription: { type: 'boolean' },
+          listUnsubscribe: {
+            type: 'boolean',
+            description: 'Добавлять заголовок List-Unsubscribe (server.mail.listUnsubscribe): ' +
+              'по нему почтовые программы показывают кнопку «Отписаться». ' +
+              'Для новых рассылок по умолчанию false'
+          },
           from: { type: 'string', description: 'Пусто — адрес сервиса (server.mail.from)' },
           replyTo: { type: 'string' },
           sentCount: { type: 'integer', description: 'Сколько писем отправлено' },

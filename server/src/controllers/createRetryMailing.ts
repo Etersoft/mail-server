@@ -25,6 +25,7 @@ export function createRetryMailing (
 
     const properties = {
       html: sourceMailing.html,
+      listUnsubscribe: sourceMailing.listUnsubscribe,
       name: sourceMailing.name + ': повтор по ошибкам доставки',
       from: sourceMailing.from,
       replyTo: sourceMailing.replyTo,

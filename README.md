@@ -46,8 +46,8 @@ How they fit together:
     the web client shows them as "delivery errors";
   - `database: { "type": "mail-server", "options": { "backend": "<mail-server URL>" } }` —
     addresses with permanent errors (or more than `maxTemporaryFailures`
-    temporary ones) and senders of unsubscribe letters are removed from all
-    mailings via `POST /mailings/unsubscribe`;
+    temporary ones) are removed from all mailings via `POST /mailings/unsubscribe`,
+    senders of unsubscribe letters only from mailings with `listUnsubscribe`;
   - `forwardTo` — where to forward letters from people.
 - All three projects have a `Dockerfile`; the [test stand](#test-stand) runs
   them together.
@@ -177,6 +177,12 @@ Every mailing gets a unique `List-Id` header `<YYYYMMDD-<id>@<listIdDomain>>`;
 letters also have `Precedence: bulk`. mail-sorter uses `List-Id` to attribute
 bounces to a mailing.
 
+The `List-Unsubscribe` header (`server.mail.listUnsubscribe`) is added only to
+mailings with `listUnsubscribe: true` (off by default for new mailings; mailings
+created before this option keep it on). Mail programs show an "Unsubscribe"
+button by this header. A letter sent to its address unsubscribes the sender only
+from mailings with this option, not from the rest.
+
 Letters are sent as HTML with a plain text alternative generated from it
 (images are dropped, links become `text [url]`).
 
@@ -284,7 +290,7 @@ every route is documented.
 | `POST /mailings/:id/requestSubscription` | Subscription request, see above |
 | `POST /mailings/:id/subscribe` | Confirm subscription `{email, code}` |
 | `POST /mailings/:id/unsubscribe` | Unsubscribe `{email, code}` |
-| `POST /mailings/unsubscribe` | Remove `{email}` from all mailings without a code (for mail-sorter); returns `{removed}` |
+| `POST /mailings/unsubscribe` | Remove `{email}` from all mailings without a code (for mail-sorter), with `listUnsubscribe: true` only from mailings with this option; returns `{removed}` |
 
 ## Development
 

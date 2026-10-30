@@ -10,6 +10,7 @@ export function getMailings (mailingRepository: MailingRepository) {
     const list = mailings.map(mailing => ({
       id: mailing.id,
       listId: mailing.listId,
+      listUnsubscribe: mailing.listUnsubscribe,
       name: mailing.name,
       openForSubscription: mailing.openForSubscription,
       from: mailing.from,

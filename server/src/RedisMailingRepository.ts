@@ -44,9 +44,12 @@ implements MailingRepository {
   }
 
   async create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing> {
+    // Сохраняется всегда: отсутствие поля означает рассылку, созданную до настройки
+    properties = { ...properties, listUnsubscribe: properties.listUnsubscribe || false };
     const data = {
       creationDate: properties.creationDate,
       html: properties.html,
+      listUnsubscribe: properties.listUnsubscribe,
       name: properties.name,
       openForSubscription: properties.openForSubscription,
       from: properties.from,
@@ -282,6 +285,7 @@ implements MailingRepository {
       extraData: properties.extraData,
       html: properties.html,
       listId: properties.listId,
+      listUnsubscribe: properties.listUnsubscribe,
       name: properties.name,
       openForSubscription: properties.openForSubscription,
       from: properties.from,

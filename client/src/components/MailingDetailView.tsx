@@ -26,6 +26,7 @@ function formatDate (date: Date) {
 const editableFields = {
   from: 'Отправитель (From)',
   html: 'Текст рассылки',
+  listUnsubscribe: 'Кнопка «Отписаться» (List-Unsubscribe)',
   name: 'Название',
   openForSubscription: 'Возможность подписки через API',
   receivers: 'Получатели',
@@ -39,6 +40,7 @@ const keys = Object.keys(editableFields) as Array<keyof MailingEditData>;
 export interface MailingEditData {
   from: string;
   html: string;
+  listUnsubscribe: boolean;
   name: string;
   openForSubscription: boolean;
   receivers: Receiver[];
@@ -181,6 +183,12 @@ export class MailingDetailView extends React.Component<
           <Checkbox
             value={this.state.fields.openForSubscription}
             onChange={this.handlers.openForSubscription}
+          /><br />
+
+          <h5 className='field-name'>Кнопка «Отписаться» (заголовок List-Unsubscribe):</h5>
+          <Checkbox
+            value={this.state.fields.listUnsubscribe}
+            onChange={this.handlers.listUnsubscribe}
           />
         </div>
 

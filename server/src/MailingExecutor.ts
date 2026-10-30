@@ -104,7 +104,7 @@ export class MailingExecutor extends EventEmitter {
     if (mailing.listId) {
       headers['List-Id'] = mailing.listId;
     }
-    if (this.config.server.mail.listUnsubscribe) {
+    if (mailing.listUnsubscribe && this.config.server.mail.listUnsubscribe) {
       headers['List-Unsubscribe'] = this.config.server.mail.listUnsubscribe;
     }
     headers.Precedence = 'bulk';

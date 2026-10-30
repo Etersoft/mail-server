@@ -88,6 +88,40 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
     });
   });
 
+  describe('List-Unsubscribe', () => {
+    const header = '<mailto:noreply+unsubscribe@etersoft.ru>';
+
+    before(() => {
+      fakeConfig.server.mail.listUnsubscribe = header;
+    });
+
+    after(() => {
+      fakeConfig.server.mail.listUnsubscribe = '';
+    });
+
+    afterEach(() => {
+      mailer.sendEmail.mock.resetCalls();
+    });
+
+    async function sentHeaders (testMailing: Mailing) {
+      await executor.sendTestEmail(testMailing, 'address@example.com');
+      const [email] = mailer.sendEmail.mock.calls[0].arguments as unknown as [Email];
+      return email.headers;
+    }
+
+    it('should not add the header by default', async () => {
+      assert.equal(mailing.listUnsubscribe, false);
+      assert.equal((await sentHeaders(mailing))['List-Unsubscribe'], undefined);
+    });
+
+    it('should add the header to mailings with listUnsubscribe', async () => {
+      const updated = await mailingRepository.updateInTransaction(mailing.id, m => {
+        m.listUnsubscribe = true;
+      });
+      assert.equal((await sentHeaders(updated!))['List-Unsubscribe'], header);
+    });
+  });
+
   describe('#startExecution', () => {
     afterEach(() => {
       mailer.sendEmail.mock.resetCalls();

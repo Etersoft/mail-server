@@ -134,6 +134,17 @@ describe('RedisMailingRepository', { skip: redisSkip }, () => {
       return (await repositoryOne.getById(id))!.position;
     }
 
+    it('should keep List-Unsubscribe for mailings saved without the option', async () => {
+      assert.equal((await repositoryOne.getById(mailingId))!.listUnsubscribe, false);
+      await redisConnectionPoolOne.runWithConnection(async client => {
+        const key = 'MAILING_COMMON_DATA_' + mailingId;
+        const data = JSON.parse((await client.get(key))!);
+        delete data.listUnsubscribe;
+        await client.set(key, JSON.stringify(data));
+      });
+      assert.equal((await repositoryOne.getById(mailingId))!.listUnsubscribe, true);
+    });
+
     it('should continue from sentCount for mailings saved without position', async () => {
       // Так выглядят рассылки, сохранённые старой версией
       await redisConnectionPoolOne.runWithConnection(async client => {

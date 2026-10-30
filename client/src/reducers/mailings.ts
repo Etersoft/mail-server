@@ -20,6 +20,7 @@ export interface Mailing {
   loadingFailedReceivers: boolean;
   locked: boolean;
   name: string;
+  listUnsubscribe: boolean;
   openForSubscription: boolean;
   receivers?: Receiver[];
   receiversChanged: boolean;
@@ -51,6 +52,7 @@ function createMailing (data: MailingCreateData, id: number, listId: string): Ma
     listId,
     loadingFailedReceivers: false,
     locked: false,
+    listUnsubscribe: false,
     name: data.name,
     openForSubscription: false,
     receivers: data.receivers,

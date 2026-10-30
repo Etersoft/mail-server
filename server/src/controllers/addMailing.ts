@@ -34,6 +34,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       creationDate: new Date(),
       extraData: source.extraData,
       html: source.html,
+      listUnsubscribe: source.listUnsubscribe,
       name: source.name + (isClone ? ' (копия)' : ''),
       openForSubscription: source.openForSubscription,
       from: source.from,
@@ -74,6 +75,9 @@ export const requestBodyJsonSchema = {
         html: {
           type: 'string',
           minLength: 1
+        },
+        listUnsubscribe: {
+          type: 'boolean'
         },
         name: {
           type: 'string',

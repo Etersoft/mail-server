@@ -27,6 +27,7 @@ export function getMailing (mailingRepository: MailingRepository) {
       html: mailing.html,
       id: mailing.id,
       listId: mailing.listId,
+      listUnsubscribe: mailing.listUnsubscribe,
       name: mailing.name,
       openForSubscription: mailing.openForSubscription,
       from: mailing.from,
