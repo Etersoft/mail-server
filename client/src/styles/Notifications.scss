@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .notifications {
   bottom: 10px;
   left: 50%;
@@ -7,10 +9,10 @@
   z-index: 9998;
 
   .notification {
-    background-color: #f4f4f4;
+    background-color: $surface;
     border-radius: 2px;
     border-top: 2px solid;
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 0 3px $shadow;
     cursor: pointer;
     font-size: 13px;
     margin-top: 10px;
@@ -18,19 +20,19 @@
   }
 
   .notification-error {
-    background-color: #f4e9e9;
-    border-color: #ec3d3d;
-    color: #412f2f;
+    background-color: $error-bg;
+    border-color: $error-border;
+    color: $error-text;
 
     .notification-title {
-      color: #ec3d3d;
+      color: $danger;
     }
   }
 
   .notification-success {
-    background-color: #f0f5ea;
-    border-color: #5ea400;
-    color: #4b583a;
+    background-color: $success-bg;
+    border-color: $success-border;
+    color: $success-text;
   }
 
   .notification-title {

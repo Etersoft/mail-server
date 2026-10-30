@@ -1,6 +1,15 @@
 @use 'sass:meta';
 @use 'tokens' as *;
 
+// Тема по настройке браузера: светлая или тёмная
+:root {
+  @include theme-colors;
+}
+
+body {
+  background-color: $bg;
+}
+
 body, html, #root, .root-view, .content {
   height: 100%;
   margin: 0;
@@ -19,7 +28,7 @@ body, html, #root, .root-view, .content {
   display: flex;
 
   .left-column {
-    border-right: 1px solid black;
+    border-right: 1px solid $separator;
     display: flex;
     flex: 0 0 340px;
     flex-direction: column;

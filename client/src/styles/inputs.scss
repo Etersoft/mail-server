@@ -1,7 +1,9 @@
 @use 'tokens' as *;
 
 input.input {
-  border: 1px solid #ccc;
+  background-color: $surface;
+  border: 1px solid $border;
+  color: $text;
   border-radius: 4px;
   box-sizing: border-box;
   font-size: 16px;
@@ -15,6 +17,6 @@ input.input {
   }
 
   &::placeholder {
-    color: #767676;
+    color: $placeholder;
   }
 }

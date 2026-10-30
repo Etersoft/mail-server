@@ -1,14 +1,88 @@
-// Общие цвета интерфейса. Контраст текста с белым фоном не ниже 4.5:1
-$text: #1a1a1a;
-$muted: #595959;
-$border: #ccc;
-$accent: #0a66c2;
-$accent-active: #08559f;
-$danger: #b3261e;
-$danger-active: #8f1e18;
-$warning: #8a5300;
-$selected: #e7f0fa;
-$hover: #f2f2f2;
+// Общие цвета интерфейса. Значения — CSS-переменные из theme-colors: тема
+// выбирается по настройке браузера. Контраст текста с фоном не ниже 4.5:1
+$bg: var(--bg);
+$surface: var(--surface);
+$text: var(--text);
+$muted: var(--muted);
+$placeholder: var(--placeholder);
+$border: var(--border);
+$separator: var(--separator);
+$accent: var(--accent);
+$accent-active: var(--accent-active);
+$on-accent: var(--on-accent);
+$danger: var(--danger);
+$danger-active: var(--danger-active);
+$warning: var(--warning);
+$selected: var(--selected);
+$hover: var(--hover);
+$pressed: var(--pressed);
+$disabled-bg: var(--disabled-bg);
+$disabled-text: var(--disabled-text);
+$shadow: var(--shadow);
+$error-bg: var(--error-bg);
+$error-border: var(--error-border);
+$error-text: var(--error-text);
+$success-bg: var(--success-bg);
+$success-border: var(--success-border);
+$success-text: var(--success-text);
+
+@mixin theme-colors {
+  color-scheme: light dark;
+
+  --bg: #fff;
+  --surface: #fff;
+  --text: #1a1a1a;
+  --muted: #595959;
+  --placeholder: #767676;
+  --border: #ccc;
+  --separator: #000;
+  --accent: #0a66c2;
+  --accent-active: #08559f;
+  --on-accent: #fff;
+  --danger: #b3261e;
+  --danger-active: #8f1e18;
+  --warning: #8a5300;
+  --selected: #e7f0fa;
+  --hover: #f2f2f2;
+  --pressed: #e0e0e0;
+  --disabled-bg: #f4f4f4;
+  --disabled-text: #767676;
+  --shadow: rgba(127, 127, 127, 0.7);
+  --error-bg: #f4e9e9;
+  --error-border: #ec3d3d;
+  --error-text: #412f2f;
+  --success-bg: #f0f5ea;
+  --success-border: #5ea400;
+  --success-text: #4b583a;
+
+  @media (prefers-color-scheme: dark) {
+    --bg: #1b1b1d;
+    --surface: #26272a;
+    --text: #e6e6e6;
+    --muted: #a6a6a6;
+    --placeholder: #969696;
+    --border: #45474b;
+    --separator: #5c5f64;
+    --accent: #6cb2ff;
+    --accent-active: #96c8ff;
+    --on-accent: #0b1a2b;
+    --danger: #ff8a80;
+    --danger-active: #ffb0a8;
+    --warning: #f0b45a;
+    --selected: #1f3550;
+    --hover: #2f3034;
+    --pressed: #3a3b40;
+    --disabled-bg: #2a2b2e;
+    --disabled-text: #8c8c8c;
+    --shadow: rgba(0, 0, 0, 0.6);
+    --error-bg: #3a2020;
+    --error-border: #ff6b6b;
+    --error-text: #f2d6d6;
+    --success-bg: #1f3320;
+    --success-border: #7cc63a;
+    --success-text: #d4ecc0;
+  }
+}
 
 @mixin focus-ring {
   outline: 2px solid $accent;

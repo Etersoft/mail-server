@@ -1,3 +1,5 @@
+@use 'tokens' as *;
+
 .form-group.stretch {
   .react-tabs {
     display: flex;
@@ -46,4 +48,53 @@
       flex: 1;
     }
   }
+}
+
+// Цвета react-tabs и pell под тему интерфейса. :root — чтобы перекрыть
+// их собственные стили независимо от порядка подключения
+:root .react-tabs__tab-list {
+  border-bottom-color: $border;
+}
+
+:root .react-tabs__tab--selected {
+  background: $bg;
+  border-color: $border;
+  color: $text;
+}
+
+:root .react-tabs__tab:focus::after {
+  background: $bg;
+}
+
+:root .react-tabs__tab:focus-visible {
+  @include focus-ring;
+}
+
+:root .pell {
+  border-color: $border;
+}
+
+:root .pell-actionbar {
+  background-color: $surface;
+  border-bottom-color: $border;
+}
+
+:root .pell-button {
+  color: $text;
+}
+
+:root .pell-button-selected {
+  background-color: $pressed;
+}
+
+// Текст письма — как его увидит получатель: на белом фоне в любой теме
+:root .pell-content {
+  background-color: #fff;
+  color: #1a1a1a;
+}
+
+:root .editor-wrapper textarea {
+  background-color: $surface;
+  border: 1px solid $border;
+  color: $text;
 }

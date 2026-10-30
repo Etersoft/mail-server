@@ -1,7 +1,7 @@
 @use 'tokens' as *;
 
 .sorter-status {
-  border-top: 1px solid black;
+  border-top: 1px solid $separator;
 
   .sorter-status-body {
     font-size: 14px;

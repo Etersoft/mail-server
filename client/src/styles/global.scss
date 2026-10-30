@@ -2,7 +2,7 @@
 
 .block-header {
   align-items: center;
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid $separator;
   display: flex;
   height: 40px;
   margin: 0;
@@ -15,8 +15,9 @@
 
     .action {
       align-items: center;
-      background-color: white;
+      background-color: $bg;
       border: none;
+      color: $text;
       cursor: pointer;
       display: inline-flex;
       font-size: 16px;
@@ -24,7 +25,7 @@
       padding: 0 25px;
 
       &:hover:not([disabled]) {
-        background-color: #ddd;
+        background-color: $hover;
       }
     }
 
@@ -77,7 +78,7 @@ h3.block-header {
 }
 
 .loading {
-  color: grey;
+  color: $muted;
   font-size: 0.9em;
   font-style: italic;
 }
