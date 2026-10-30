@@ -255,6 +255,12 @@ All responses are JSON `{"success": true, "data": ...}` or
 The API has no authentication: expose only subscription-facade to the internet
 and keep mail-server and its web client in a trusted network.
 
+The service describes itself: the OpenAPI 3.1 document is served at
+`GET /openapi.json` and interactive Swagger UI at `/docs/` (behind the nginx
+from the examples: `/api/openapi.json` and `/api/docs/`). Request body schemas
+there are the same ones the server validates requests with; a test checks that
+every route is documented.
+
 | Method and path | Description |
 |---|---|
 | `GET /mailings` | List of mailings |

@@ -109,7 +109,7 @@ export function requestSubscription (
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
-const requestBodyJsonSchema = {
+export const requestBodyJsonSchema = {
   type: 'object',
   additionalProperties: false,
   properties: {

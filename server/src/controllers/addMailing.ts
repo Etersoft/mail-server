@@ -62,7 +62,7 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 }
 
-const requestBodyJsonSchema = {
+export const requestBodyJsonSchema = {
   oneOf: [
     {
       type: 'object',

@@ -103,7 +103,7 @@ export function updateMailing (
   }
 }
 
-const requestBodyJsonSchema = {
+export const requestBodyJsonSchema = {
   type: 'object',
   additionalProperties: false,
   properties: {
