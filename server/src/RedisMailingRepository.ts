@@ -50,6 +50,7 @@ implements MailingRepository {
       name: properties.name,
       openForSubscription: properties.openForSubscription,
       from: properties.from,
+      position: 0,
       replyTo: properties.replyTo,
       sentCount: 0,
       state: MailingState.NEW,
@@ -122,12 +123,7 @@ implements MailingRepository {
       // В JS stop не включительный
       const data = await redisClient.lRange(key, start, stop > 0 ? stop - 1 : stop);
 
-      return data.map(jsonString => {
-        const object = JSON.parse(jsonString);
-        return new Receiver(
-          object.email, object.name, object.code, object.periodicDate, object.extraData
-        );
-      });
+      return data.map(jsonString => this.parseReceiver(jsonString));
     });
   }
 
@@ -149,12 +145,97 @@ implements MailingRepository {
     });
   }
 
+  /**
+   * Получатель, на которого указывает position рассылки, или null, если
+   * список пройден до конца
+   */
+  async getNextReceiver (id: number): Promise<Receiver | null> {
+    const mailingKey = this.getRedisKey(id);
+    const listKey = this.getReceiversListKey(id);
+    let receiver: Receiver | null = null;
+    await this.genericTransaction(
+      [mailingKey, listKey],
+      async redisClient => {
+        const mailing = await this.getByKey(id, redisClient);
+        if (!mailing) {
+          return false;
+        }
+        const [json] = await redisClient.lRange(listKey, mailing.position, mailing.position);
+        receiver = json ? this.parseReceiver(json) : null;
+        return true;
+      },
+      // Команда нужна, чтобы EXEC проверил WATCH: position и список прочитаны согласованно
+      multi => {
+        multi.exists(mailingKey);
+      }
+    );
+    return receiver;
+  }
+
+  /**
+   * Отмечает получателя обработанным: сдвигает position за него и, если письмо
+   * отправлено, увеличивает sentCount. Если получателя за это время удалили из
+   * списка, на его месте уже следующий, и position не меняется.
+   */
+  async advancePosition (id: number, receiver: Receiver, sent: boolean) {
+    const mailingKey = this.getRedisKey(id);
+    const listKey = this.getReceiversListKey(id);
+    let mailing: Mailing | null;
+    return this.genericTransaction(
+      [mailingKey, listKey],
+      async redisClient => {
+        mailing = await this.getByKey(id, redisClient);
+        if (!mailing) {
+          return false;
+        }
+        const [json] = await redisClient.lRange(listKey, mailing.position, mailing.position);
+        if (json && this.parseReceiver(json).email === receiver.email) {
+          mailing.position++;
+        }
+        if (sent) {
+          mailing.sentCount++;
+        }
+        return true;
+      },
+      multi => {
+        multi.set(mailingKey, this.serializeEntity(mailing!));
+        return mailing;
+      }
+    );
+  }
+
+  /**
+   * Удаляет получателя. Если он стоял до position, position уменьшается, иначе
+   * сдвиг списка пропустил бы следующего получателя.
+   */
   async removeReceiver (id: number, receiver: Receiver) {
-    return this.redisConnectionPool.runWithConnection(async redisClient => {
-      const key = this.getReceiversListKey(id);
-      const json = this.serializeReceiver(receiver);
-      return Boolean(await redisClient.lRem(key, 0, json));
-    });
+    const mailingKey = this.getRedisKey(id);
+    const listKey = this.getReceiversListKey(id);
+    const json = this.serializeReceiver(receiver);
+    let mailing: Mailing | null;
+    let removedBeforePosition = 0;
+    const removed = await this.genericTransaction(
+      [mailingKey, listKey],
+      async redisClient => {
+        const list = await redisClient.lRange(listKey, 0, -1);
+        if (!list.includes(json)) {
+          return false;
+        }
+        mailing = await this.getByKey(id, redisClient);
+        removedBeforePosition = mailing ?
+          list.slice(0, mailing.position).filter(item => item === json).length : 0;
+        return true;
+      },
+      multi => {
+        multi.lRem(listKey, 0, json);
+        if (mailing && removedBeforePosition) {
+          mailing.position -= removedBeforePosition;
+          multi.set(mailingKey, this.serializeEntity(mailing));
+        }
+        return true;
+      }
+    );
+    return Boolean(removed);
   }
 
   async setReceivers (id: number, receivers: Receiver[]): Promise<void> {
@@ -204,6 +285,7 @@ implements MailingRepository {
       name: properties.name,
       openForSubscription: properties.openForSubscription,
       from: properties.from,
+      position: properties.position,
       replyTo: properties.replyTo,
       sentCount: properties.sentCount,
       state: properties.state,
@@ -219,6 +301,13 @@ implements MailingRepository {
 
   private async getNextId (client: RedisClient): Promise<number> {
     return client.incr(this.config.idCounterKey);
+  }
+
+  private parseReceiver (jsonString: string): Receiver {
+    const object = JSON.parse(jsonString);
+    return new Receiver(
+      object.email, object.name, object.code, object.periodicDate, object.extraData
+    );
   }
 
   private serializeReceiver (receiver: ReceiverProperties): string {

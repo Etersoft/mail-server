@@ -87,19 +87,18 @@ export function updateMailing (
   };
   return [jsonSchemaMiddleware(requestBodyJsonSchema), catchPromise(handler)];
 
+  // Коды присваиваются на месте: перестановка получателей сбила бы позицию,
+  // с которой продолжится отправка
   async function assignCodes (mailing: Mailing) {
-    const receiversToAdd = [];
-    for await (const receiver of mailing.getReceiversStream()) {
-      if (!receiver.code) {
-        receiversToAdd.push(receiver);
-      }
+    const receivers = [...await mailingRepository.getReceivers(mailing.id)];
+    const withoutCode = receivers.filter(receiver => !receiver.code);
+    if (!withoutCode.length) {
+      return;
     }
-    // do this in two steps to avoid problems with receiver stream
-    for (const receiver of receiversToAdd) {
-      await mailingRepository.removeReceiver(mailing.id, receiver);
+    for (const receiver of withoutCode) {
       receiver.code = generateUniqueCode();
-      await mailingRepository.addReceiver(mailing.id, receiver);
     }
+    await mailingRepository.setReceivers(mailing.id, receivers);
   }
 }
 

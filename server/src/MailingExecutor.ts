@@ -51,8 +51,9 @@ export class MailingExecutor extends EventEmitter {
     if (mailing.state === MailingState.RUNNING) { return; }
 
     if (mailing.state === MailingState.FINISHED) {
-      this.logger.verbose(`#${mailing.id}: reset sentCount`);
+      this.logger.verbose(`#${mailing.id}: reset sentCount and position`);
       mailing = await this.mailingRepository.updateInTransaction(mailing.id, mailingToUpdate => {
+        mailingToUpdate.position = 0;
         mailingToUpdate.sentCount = 0;
       }) || mailing;
     }
@@ -68,7 +69,7 @@ export class MailingExecutor extends EventEmitter {
     this.executionStates.set(mailing.id, { stopping: false });
     this.emit(MailingExecutorEvents.MAILING_STARTED, mailing.id);
     // Это не ошибка - не ждём через await намеренно, пусть выполняется в фоне
-    this.runMailing(mailing, this.getActualReceiverStream(mailing)).catch(error => {
+    this.runMailing(mailing).catch(error => {
       this.emit(MailingExecutorEvents.MAILING_ERROR, mailing.id, error);
     });
   }
@@ -117,29 +118,39 @@ export class MailingExecutor extends EventEmitter {
     return Boolean(state && state.stopping);
   }
 
-  private async runMailing (
-    generalInfoMailing: Mailing, actualReceiverStream: AsyncIterable<Receiver>
-  ): Promise<void> {
-    // generalInfoMailing - объект с общей информацией об ошибке.
-    // Он может быть устаревшим, поэтому его не обновляем напрямую,
-    // а используем updateInTransaction
+  private async runMailing (generalInfoMailing: Mailing): Promise<void> {
+    // generalInfoMailing - объект с общей информацией о рассылке.
+    // Он может быть устаревшим, поэтому его не обновляем напрямую.
+    // Позиция в списке получателей хранится в репозитории и читается перед
+    // каждым письмом: список может измениться во время отправки (mail-sorter
+    // удаляет адреса с ошибками доставки), и репозиторий поправляет позицию
 
     const mailingId = generalInfoMailing.id;
-    for await (const receiver of actualReceiverStream) {
-      const email = await this.createEmail(generalInfoMailing, receiver);
+    const startedAt = new Date();
+    while (true) {
       if (this.isStopping(mailingId)) {
         this.logger.debug(`#${mailingId}: execution was stopped, exiting`);
         this.executionStates.delete(mailingId);
         this.emit(MailingExecutorEvents.MAILING_PAUSED, mailingId);
         return;
       }
+
+      const receiver = await this.mailingRepository.getNextReceiver(mailingId);
+      if (!receiver) {
+        break;
+      }
+
+      if (!this.checkReceiver(generalInfoMailing, receiver, startedAt)) {
+        await this.mailingRepository.advancePosition(mailingId, receiver, false);
+        continue;
+      }
+
+      const email = await this.createEmail(generalInfoMailing, receiver);
       this.logger.debug(`#${mailingId}: sending email to ${email.receivers.join(',')}`);
       this.logger.debug(`${receiver.email}: periodicDate = ${receiver.periodicDate}`);
       await this.mailer.sendEmail(email);
       this.logger.verbose(`#${mailingId}: sent to ${email.receivers.join(',')}`);
-      await this.mailingRepository.updateInTransaction(mailingId, mailing => {
-        mailing.sentCount++;
-      });
+      await this.mailingRepository.advancePosition(mailingId, receiver, true);
 
       this.emit(MailingExecutorEvents.EMAIL_SENT, generalInfoMailing, email);
 

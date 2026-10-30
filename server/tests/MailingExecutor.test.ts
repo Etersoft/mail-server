@@ -9,6 +9,9 @@ import { RedisAddressStatsRepository } from '../src/RedisAddressStatsRepository'
 import { MailingExecutor } from '../src/MailingExecutor';
 import { MailingState } from '../src/MailingState';
 import { Mailing } from '../src/Mailing';
+import { Email } from '../src/Email';
+import { Receiver } from '../src/Receiver';
+import { once } from 'node:events';
 
 
 const testHtml = '<h1>Test</h1>';
@@ -132,6 +135,97 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
         fakeHtml.mock.restore();
         executor.off('error', errorListener);
       }
+    });
+  });
+
+  describe('receiver list changes', () => {
+    const sentTo: string[] = [];
+
+    async function createMailing (receivers: { email: string, periodicDate?: string }[]) {
+      return mailingRepository.create({
+        html: testHtml,
+        name: testName,
+        subject: testSubject,
+        undeliveredCount: 0
+      }, receivers);
+    }
+
+    function onSend (handler: (email: string) => Promise<void> | void) {
+      mailer.sendEmail.mock.mockImplementation((async (email: Email) => {
+        sentTo.push(email.receivers[0].email);
+        await handler(email.receivers[0].email);
+      }) as any);
+    }
+
+    afterEach(() => {
+      sentTo.length = 0;
+      mailer.sendEmail.mock.mockImplementation(async () => {});
+      mailer.sendEmail.mock.resetCalls();
+    });
+
+    it('should not skip anyone when a sent receiver is removed during the mailing', async () => {
+      const emails = ['a@example.com', 'b@example.com', 'c@example.com', 'd@example.com'];
+      const testMailing = await createMailing(emails.map(email => ({ email })));
+      // Так mail-sorter исключает адрес с ошибкой доставки во время рассылки
+      onSend(async email => {
+        if (email === 'b@example.com') {
+          await mailingRepository.removeReceiver(testMailing.id, new Receiver('a@example.com'));
+        }
+      });
+      const finished = once(executor, 'finished');
+      await executor.startExecution(testMailing);
+      await finished;
+
+      assert.deepEqual(sentTo, emails);
+      const updated = await mailingRepository.getById(testMailing.id);
+      assert.equal(updated!.sentCount, 4);
+      assert.equal(updated!.position, 3);
+    });
+
+    it('should not skip the next receiver when the current one is removed', async () => {
+      const emails = ['a@example.com', 'b@example.com', 'c@example.com'];
+      const testMailing = await createMailing(emails.map(email => ({ email })));
+      onSend(async email => {
+        if (email === 'b@example.com') {
+          await mailingRepository.removeReceiver(testMailing.id, new Receiver('b@example.com'));
+        }
+      });
+      const finished = once(executor, 'finished');
+      await executor.startExecution(testMailing);
+      await finished;
+
+      assert.deepEqual(sentTo, emails);
+    });
+
+    it('should resume after a pause without resending to anyone', async () => {
+      // День месяца, отличный от сегодняшнего: этот получатель будет пропущен
+      const otherDay = String(new Date().getDate() % 28 + 1);
+      const testMailing = await createMailing([
+        { email: 'skipped@example.com', periodicDate: otherDay },
+        { email: 'y@example.com' },
+        { email: 'z@example.com' }
+      ]);
+      onSend(email => {
+        if (email === 'y@example.com') {
+          (executor as any).executionStates.get(testMailing.id).stopping = true;
+        }
+      });
+      const paused = once(executor, 'paused');
+      await executor.startExecution(testMailing);
+      await paused;
+
+      let updated = await mailingRepository.getById(testMailing.id);
+      assert.equal(updated!.position, 2);
+      assert.equal(updated!.sentCount, 1);
+
+      onSend(() => {});
+      const finished = once(executor, 'finished');
+      await executor.startExecution(updated!);
+      await finished;
+
+      assert.deepEqual(sentTo, ['y@example.com', 'z@example.com']);
+      updated = await mailingRepository.getById(testMailing.id);
+      assert.equal(updated!.sentCount, 2);
     });
   });
 });

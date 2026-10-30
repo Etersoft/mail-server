@@ -17,6 +17,11 @@ export interface MailingProperties {
   listId?: string;
   name: string;
   openForSubscription?: boolean;
+  /**
+   * Индекс в списке получателей, с которого продолжится отправка.
+   * В отличие от sentCount учитывает и пропущенных получателей
+   */
+  position?: number;
   replyTo?: string;
   state?: MailingState;
   sentCount?: number;
@@ -45,6 +50,7 @@ export class Mailing implements MailingProperties {
   public listId?: string;
   public name: string;
   public openForSubscription: boolean;
+  public position: number;
   public replyTo?: string;
   public state: MailingState;
   public sentCount: number;
@@ -70,6 +76,8 @@ export class Mailing implements MailingProperties {
     this.replyTo = properties.replyTo;
     this.state = properties.state || MailingState.NEW;
     this.sentCount = properties.sentCount || 0;
+    // Рассылки, сохранённые до появления position, продолжаются с sentCount
+    this.position = properties.position ?? this.sentCount;
     this.subject = properties.subject;
     this.undeliveredCount = properties.undeliveredCount || 0;
   }
@@ -137,12 +145,12 @@ export class Mailing implements MailingProperties {
 
   async getUnsentReceivers () {
     const receivers = await this.getReceivers();
-    const unsentReceivers = receivers.slice(this.sentCount);
+    const unsentReceivers = receivers.slice(this.position);
     return unsentReceivers;
   }
 
   getUnsentReceiversStream (batchSize: number = DEFAULT_STREAM_BATCH_SIZE) {
-    return this.getReceiversStream(this.sentCount, batchSize);
+    return this.getReceiversStream(this.position, batchSize);
   }
 
   async hasReceiver (email: string) {

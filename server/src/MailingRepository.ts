@@ -8,6 +8,7 @@ import { Receiver, ReceiverProperties } from './Receiver';
  */
 export interface MailingRepository {
   addReceiver (mailingId: number, receiver: Receiver): Promise<void>;
+  advancePosition (mailingId: number, receiver: Receiver, sent: boolean): Promise<Mailing | null>;
   create (properties: MailingProperties, receivers: ReceiverProperties[]): Promise<Mailing>;
   /**
    * Получение рассылок из хранилища
@@ -20,6 +21,7 @@ export interface MailingRepository {
    */
   getReceivers (id: number, start?: number, stop?: number): Promise<Receiver[]>;
   getReceiverCount (id: number): Promise<number>;
+  getNextReceiver (id: number): Promise<Receiver | null>;
   setReceivers (id: number, receivers: Receiver[]): Promise<void>;
   remove (mailing: Mailing): Promise<void>;
   removeReceiver (id: number, receiver: Receiver): Promise<boolean>;
