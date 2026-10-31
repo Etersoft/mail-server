@@ -13,7 +13,7 @@
     }
   }
 
-  .react-tabs__tab-list {
+  .editor-tabs-bar {
     margin: 0 0 -1px;
   }
 
@@ -47,6 +47,53 @@
     .pell-content {
       flex: 1;
     }
+  }
+}
+
+// Вкладки и переключатель фона письма в одной строке
+.editor-tabs-bar {
+  align-items: flex-end;
+  border-bottom: 1px solid $border;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+
+  .react-tabs__tab-list {
+    border-bottom: none;
+    flex: 1;
+    margin: 0;
+  }
+}
+
+.editor-theme-toggle {
+  background: none;
+  border: 1px solid $border;
+  border-radius: 4px;
+  color: $text;
+  cursor: pointer;
+  display: none;
+  font: inherit;
+  font-size: 14px;
+  margin-bottom: 4px;
+  min-height: 32px;
+  padding: 0 10px;
+
+  &:hover {
+    background-color: $hover;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  &[aria-pressed='true'] {
+    background-color: $selected;
+    border-color: $accent;
+  }
+
+  // В светлой теме письмо и так на белом — кнопка не нужна
+  @media (prefers-color-scheme: dark) {
+    display: block;
   }
 }
 
@@ -87,10 +134,17 @@
   background-color: $pressed;
 }
 
-// Текст письма — как его увидит получатель: на белом фоне в любой теме
+// Текст письма — в цветах темы; «Светлый фон» показывает его так, как
+// увидит получатель со светлой темой
 :root .pell-content {
+  background-color: $bg;
+  color: $text;
+}
+
+:root .light-preview .pell-content {
   background-color: #fff;
   color: #1a1a1a;
+  color-scheme: light;
 }
 
 :root .editor-wrapper textarea {
