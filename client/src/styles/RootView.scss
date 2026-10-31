@@ -41,6 +41,18 @@ body, html, #root, .root-view, .content {
     }
   }
 
+  .app-brand {
+    align-items: center;
+    border-bottom: 1px solid $separator;
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 18px;
+    font-weight: bold;
+    gap: 8px;
+    height: 45px;
+    padding: 0 12px;
+  }
+
   .right-column {
     flex: 1;
     min-width: 0;

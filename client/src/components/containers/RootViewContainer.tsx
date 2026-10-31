@@ -51,6 +51,10 @@ class RootView extends React.Component<RootViewProps> {
       <div className='root-view'>
         <div className={'content' + (selected ? ' has-selection' : '')} style={rootStyle}>
           <div className='left-column'>
+            <header className='app-brand'>
+              <img src='favicon.svg' alt='' width={24} height={24} />
+              Eterpost
+            </header>
             <MailingListContainer />
             <SorterStatusView />
           </div>

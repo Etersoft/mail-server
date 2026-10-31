@@ -90,6 +90,7 @@ module.exports = (env, argv) => {
       ...(isProduction ? [new MiniCssExtractPlugin({ filename: 'css/style.css' })] : []),
       new HtmlPlugin({
         BASE_URL: config.client.staticUrl,
+        favicon: 'favicon.svg',
         filename: 'index.html',
         inject: false,
         template: 'index.ejs'
