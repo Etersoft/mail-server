@@ -41,9 +41,8 @@ async function main () {
   const receiverListFilter = new ReceiverListFilter(addressStatsRepository);
   const logger = new Logger(config.server.logLevel);
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
-    from: config.server.mail.from,
-    host: config.server.smtp.host,
-    port: config.server.smtp.port
+    ...config.server.smtp,
+    from: config.server.mail.from
   });
   const executor = new MailingExecutor(
     sender,

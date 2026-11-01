@@ -68,4 +68,21 @@ describe('SmtpMailSender', () => {
     assert.match(text, /Details here \[https:\/\/example\.com\/x\]\./);
     assert.doesNotMatch(text, /data:image|logo/);
   });
+
+  it('should pass TLS, authentication and EHLO name to the transport', () => {
+    const sender = new SmtpMailSender({
+      auth: { pass: 'secret', user: 'noreply' },
+      from: serviceAddress,
+      host: 'mail.example.com',
+      name: 'mailing.example.com',
+      port: '465',
+      secure: true
+    });
+    const options = (sender as any).transport.options;
+    assert.deepEqual(options.auth, { pass: 'secret', user: 'noreply' });
+    assert.equal(options.name, 'mailing.example.com');
+    assert.equal(options.port, 465);
+    assert.equal(options.secure, true);
+    (sender as any).transport.close();
+  });
 });

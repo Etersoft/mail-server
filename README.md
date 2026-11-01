@@ -153,9 +153,12 @@ comments below are for explanation only):
       "pool": { "min": 1, "max": 5 },  // connection pool size
       "prefixes": {}                   // optional key prefixes, see RedisMailingRepository
     },
-    "smtp": {                          // SMTP relay without authentication
-      "host": "localhost",
-      "port": 25
+    "smtp": {                          // the organisation's mail server
+      "host": "mail.example.com",
+      "port": 587,
+      "secure": false,                 // optional: true for TLS right away (port 465); otherwise STARTTLS
+      "auth": { "user": "noreply@example.com", "pass": "%{SMTP_PASSWORD}" },  // optional
+      "name": "mailing.example.com"    // optional: EHLO name, see below
     },
     "subscription": {
       "requestTTL": 1209600,           // lifetime of a subscription request, seconds
@@ -165,6 +168,12 @@ comments below are for explanation only):
   }
 }
 ```
+
+`%{NAME}` in any string is replaced with the environment variable `NAME`
+(startup fails if it is not set), so the SMTP password can be kept out of
+`config.json`. The EHLO name defaults to the system host name if it is a full
+domain name, otherwise nodemailer sends `[127.0.0.1]`, which some relays and
+spam filters penalise: set `smtp.name` then.
 
 `client.*` values are built into the client, so rebuild it after changing them.
 `client.imageServiceUrl` is a service for images inserted in the editor

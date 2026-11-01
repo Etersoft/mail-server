@@ -9,10 +9,33 @@ export function readConfig (): any {
   const userConfigPath = join(ROOT, 'config.json');
 
   if (existsSync(userConfigPath)) {
-    return deepMerge(baseConfig, readJson(userConfigPath));
+    return substituteEnv(deepMerge(baseConfig, readJson(userConfigPath)), process.env);
   }
 
-  return baseConfig;
+  return substituteEnv(baseConfig, process.env);
+}
+
+// %{NAME} в строках заменяется переменной окружения NAME: так пароли
+// хранятся не в config.json, а в файле окружения службы
+export function substituteEnv (value: unknown, env: Record<string, string | undefined>): any {
+  if (typeof value === 'string') {
+    return value.replace(/%\{([A-Za-z_][A-Za-z0-9_]*)\}/g, (match, name: string) => {
+      const resolved = env[name];
+      if (resolved === undefined) {
+        throw new Error(`Environment variable ${name} is not set (used in config as ${match})`);
+      }
+      return resolved;
+    });
+  }
+  if (Array.isArray(value)) {
+    return value.map(item => substituteEnv(item, env));
+  }
+  if (isObject(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, substituteEnv(item, env)])
+    );
+  }
+  return value;
 }
 
 function readJson (path: string) {

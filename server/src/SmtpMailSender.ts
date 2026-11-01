@@ -14,9 +14,22 @@ const htmlToTextOptions = {
 
 
 export interface SmtpMailSenderConfig {
+  auth?: {
+    pass: string;
+    user: string;
+  };
   from: string;
   host: string;
-  port: string;
+  /**
+   * Имя в EHLO; по умолчанию — имя системы, если в нём есть точка, иначе
+   * nodemailer подставляет [127.0.0.1]
+   */
+  name?: string;
+  port: number | string;
+  /**
+   * true — TLS сразу (порт 465); false — STARTTLS, если сервер его предлагает
+   */
+  secure?: boolean;
 }
 
 export class SmtpMailSender implements MailSender {
@@ -24,10 +37,13 @@ export class SmtpMailSender implements MailSender {
 
   constructor (private config: SmtpMailSenderConfig) {
     this.transport = createTransport({
+      auth: config.auth,
       host: config.host,
+      name: config.name,
       pool: true,
-      port: config.port
-    } as any, {
+      port: Number(config.port),
+      secure: config.secure
+    }, {
       from: this.config.from
     });
   }
