@@ -266,9 +266,9 @@ again, it continues with the same receiver.
 
 ## Subscribe and unsubscribe
 
-Personal codes are assigned to all receivers when "open for subscription"
-(`openForSubscription`) is switched on for a mailing (`PUT /mailings/:id`), to
-receivers added later while it is on, and to everyone who subscribed through the
+Personal codes are assigned to all receivers when a mailing is created with
+"open for subscription" (`openForSubscription`) or it is switched on later
+(`PUT /mailings/:id`), to receivers added later while it is on, and to everyone who subscribed through the
 API. The subscription flow with subscription-facade:
 
 1. A site calls `POST /mailings/:id/requestSubscription` with
