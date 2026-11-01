@@ -162,6 +162,7 @@ comments below are for explanation only):
     },
     "subscription": {
       "requestTTL": 1209600,           // lifetime of a subscription request, seconds
+      "url": "https://subscribe.example.com",  // subscription-facade pages, for the confirmation link
       "subject": "Подписка на рассылку",  // subject of the confirmation letter
       "replyTo": "support@example.com" // optional
     }
@@ -273,10 +274,12 @@ API. The subscription flow with subscription-facade:
 1. A site calls `POST /mailings/:id/requestSubscription` with
    `{"email", "name", "periodicDate" | "schedule", "extraData"}`.
 2. mail-server sends a confirmation letter from
-   `templates/confirm-subscription.hbs` (context: `mailing`,
-   `subscriptionRequest.email`, `subscriptionRequest.code`, `name`,
-   `alreadySubscribed`). The link in it points to subscription-facade:
-   `https://subscribe.example.com/subscribe?mailingId={{mailing.id}}&email={{subscriptionRequest.email}}&code={{subscriptionRequest.code}}`.
+   `templates/confirm-subscription.hbs` (context: `confirmUrl`, `subscribeUrl`,
+   `mailing`, `subscriptionRequest.email`, `subscriptionRequest.code`, `name`,
+   `alreadySubscribed`). The link in it, `{{confirmUrl}}`, points to
+   subscription-facade: `<server.subscription.url>/subscribe?code=...&email=...&mailingId=...`
+   with the address URL-encoded. Without `server.subscription.url` the server
+   logs an error at startup and `confirmUrl` is empty.
 3. subscription-facade calls `POST /mailings/:id/subscribe` and shows the result.
 
 An unsubscribe link in the mailing text:

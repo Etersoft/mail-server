@@ -10,8 +10,11 @@ import { MailingState } from '../src/MailingState';
 import { Email } from '../src/Email';
 import { SubscriptionRequest } from '../src/SubscriptionRequest';
 import {
-  requestSubscription, SubscribeTemplateContext
+  getConfirmUrl, requestSubscription, SubscribeTemplateContext
 } from '../src/controllers/requestSubscription';
+import { HandlebarsTemplate } from '../src/templates/HandlebarsTemplate';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { subscribe } from '../src/controllers/subscribe';
 import { unsubscribe } from '../src/controllers/unsubscribe';
 import { unsubscribeFromAll } from '../src/controllers/unsubscribeFromAll';
@@ -72,7 +75,9 @@ describe('subscription', { skip: redisSkip }, () => {
   let template: {
     render: ReturnType<typeof mock.fn<(context: SubscribeTemplateContext) => string>>
   };
-  const subscribeConfig = { replyTo: 'test@etersoft.ru', subject: '123' };
+  const subscribeConfig = {
+    replyTo: 'test@etersoft.ru', subject: '123', url: 'https://subscribe.example.com/'
+  };
   after(async () => {
     await redisConnectionPool.close();
   });
@@ -192,6 +197,26 @@ describe('subscription', { skip: redisSkip }, () => {
         sender.sendEmail.mock.calls[0].arguments[0].html,
         `${testName}:${defaultBody.name}:${request?.code}`
       );
+    });
+
+    it('should link to the subscription pages from the config', async () => {
+      // tests/ в dist/tests -> корень проекта
+      const source = readFileSync(
+        join(__dirname, '..', '..', '..', 'templates', 'confirm-subscription.hbs.example'), 'utf8'
+      );
+      requestSubscriptionController = toController(requestSubscription(
+        subscriptionRepository, mailingRepository, logger,
+        sender, new HandlebarsTemplate<SubscribeTemplateContext>(source), subscribeConfig
+      ));
+      await requestSubscriptionController(
+        createFakeRequest({ body: defaultBody, params: { mailingId } }), res
+      );
+      const request = await subscriptionRepository.get({ email: testReceiver2, mailingId });
+      const html = sender.sendEmail.mock.calls[0].arguments[0].html as string;
+      const href = /href="([^"]*)"/.exec(html)![1]
+        .replace(/&amp;/g, '&').replace(/&#x3D;/g, '=');
+      assert.equal(href, getConfirmUrl(subscribeConfig.url, request!));
+      assert.ok(href.startsWith('https://subscribe.example.com/subscribe?'));
     });
 
     it('should not send an email on missing mailing', async () => {
@@ -484,6 +509,18 @@ describe('subscription', { skip: redisSkip }, () => {
       res = createFakeResponse();
       const cloneId = await add({ sourceId });
       assert.deepEqual(await getCodes(cloneId), await getCodes(sourceId));
+    });
+  });
+
+  describe('getConfirmUrl', () => {
+    it('should encode the address', () => {
+      const url = new URL(getConfirmUrl('https://subscribe.example.com', {
+        code: 'abc', email: 'user+news@example.com', mailingId: 7
+      } as SubscriptionRequest));
+      assert.equal(url.pathname, '/subscribe');
+      assert.equal(url.searchParams.get('email'), 'user+news@example.com');
+      assert.equal(url.searchParams.get('code'), 'abc');
+      assert.equal(url.searchParams.get('mailingId'), '7');
     });
   });
 });

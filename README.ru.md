@@ -163,6 +163,7 @@ nginx для веб-клиента и публичных страниц подп
     },
     "subscription": {
       "requestTTL": 1209600,           // время жизни запроса на подписку, секунды
+      "url": "https://subscribe.example.com",  // страницы subscription-facade, для ссылки подтверждения
       "subject": "Подписка на рассылку",  // тема письма с подтверждением
       "replyTo": "support@example.com" // необязательно
     }
@@ -275,10 +276,12 @@ mail-sorter записал после создания рассылки (`GET /m
 1. Сайт вызывает `POST /mailings/:id/requestSubscription` с
    `{"email", "name", "periodicDate" | "schedule", "extraData"}`.
 2. mail-server отправляет письмо с подтверждением по шаблону
-   `templates/confirm-subscription.hbs` (контекст: `mailing`,
-   `subscriptionRequest.email`, `subscriptionRequest.code`, `name`,
-   `alreadySubscribed`). Ссылка в нём ведёт на subscription-facade:
-   `https://subscribe.example.com/subscribe?mailingId={{mailing.id}}&email={{subscriptionRequest.email}}&code={{subscriptionRequest.code}}`.
+   `templates/confirm-subscription.hbs` (контекст: `confirmUrl`, `subscribeUrl`,
+   `mailing`, `subscriptionRequest.email`, `subscriptionRequest.code`, `name`,
+   `alreadySubscribed`). Ссылка в нём, `{{confirmUrl}}`, ведёт на
+   subscription-facade: `<server.subscription.url>/subscribe?code=...&email=...&mailingId=...`,
+   адрес в ней закодирован для URL. Если `server.subscription.url` не задан,
+   сервер при запуске пишет ошибку в журнал, а `confirmUrl` пуст.
 3. subscription-facade вызывает `POST /mailings/:id/subscribe` и показывает результат.
 
 Ссылка для отписки в тексте рассылки:

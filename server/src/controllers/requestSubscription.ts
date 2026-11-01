@@ -16,14 +16,32 @@ import { generateUniqueCode } from '../utils/codes';
 
 export interface SubscribeTemplateContext {
   alreadySubscribed: boolean;
+  /**
+   * Ссылка подтверждения на страницу подписки (subscription-facade)
+   */
+  confirmUrl?: string;
   mailing: Mailing;
   name?: string;
   subscriptionRequest: SubscriptionRequest;
+  /**
+   * Адрес страниц подписки, server.subscription.url
+   */
+  subscribeUrl?: string;
 }
 
 export interface SubscriptionConfig {
   replyTo?: string;
   subject: string;
+  url?: string;
+}
+
+export function getConfirmUrl (baseUrl: string, request: SubscriptionRequest): string {
+  const query = new URLSearchParams({
+    code: request.code,
+    email: request.email,
+    mailingId: String(request.mailingId)
+  });
+  return `${baseUrl.replace(/\/+$/, '')}/subscribe?${query}`;
 }
 
 export function requestSubscription (
@@ -86,9 +104,11 @@ export function requestSubscription (
 
     const mailText = subscribeTemplate.render({
       alreadySubscribed,
+      confirmUrl: config.url ? getConfirmUrl(config.url, subscriptionRequest) : undefined,
       mailing,
       name: req.body.name,
-      subscriptionRequest
+      subscriptionRequest,
+      subscribeUrl: config.url
     });
     const email = new Email({
       html: mailText,

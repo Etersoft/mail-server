@@ -40,6 +40,12 @@ async function main () {
   const failureCounter = new FailureCounter(mailingRepository, addressStatsRepository);
   const receiverListFilter = new ReceiverListFilter(addressStatsRepository);
   const logger = new Logger(config.server.logLevel);
+  if (!config.server.subscription.url) {
+    logger.error(
+      'server.subscription.url is not set: letters confirming a subscription ' +
+      'will have no link to the subscription pages'
+    );
+  }
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
     ...config.server.smtp,
     from: config.server.mail.from

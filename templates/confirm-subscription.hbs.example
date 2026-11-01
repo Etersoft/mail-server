@@ -1,3 +1,4 @@
+{{!-- confirmUrl: ссылка подтверждения, server.subscription.url в config.json --}}
 <h3>Здравствуйте!</h3>
 
 {{#if alreadySubscribed}}
@@ -6,13 +7,7 @@
   Чтобы подтвердить изменения, перейдите по ссылке:
 </p>
 <h4>
-  <a href="https://azbyka.ru/subscribe?email={{
-    subscriptionRequest.email
-  }}&code={{
-    subscriptionRequest.code
-  }}&mailingId={{
-    mailing.id
-  }}">
+  <a href="{{ confirmUrl }}">
     Подписаться
   </a>
 </h4>
@@ -28,13 +23,7 @@
   Чтобы подтвердить ваш email-адрес, перейдите по ссылке:
 </p>
 <h4>
-  <a href="https://azbyka.ru/subscribe?email={{
-    subscriptionRequest.email
-  }}&code={{
-    subscriptionRequest.code
-  }}&mailingId={{
-    mailing.id
-  }}">
+  <a href="{{ confirmUrl }}">
     Подписаться
   </a>
 </h4>
