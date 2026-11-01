@@ -308,12 +308,32 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
         assert.match(stats!.diagnosticCode!, /User unknown/);
       });
 
+      it('should record a temporary rejection of a receiver and go on', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        onSend(email => {
+          if (email === 'b@example.com') {
+            throw smtpError(450, 'RCPT TO', '450 4.1.1 <b@example.com>: Try again later');
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        // Без повторов: отказ касается только этого адреса
+        assert.deepEqual(sentTo, emails);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.sentCount, 2);
+        assert.equal(updated!.position, 3);
+        assert.equal(updated!.undeliveredCount, 1);
+        const stats = await addressStatsRepository.getByEmail('b@example.com');
+        assert.equal(stats!.lastStatus, '4.1.1');
+        assert.equal(stats!.temporaryFailureCount, 1);
+      });
+
       it('should retry a temporary error', async () => {
         const testMailing = await createMailing(emails.map(email => ({ email })));
         let failures = 2;
         onSend(email => {
           if (email === 'a@example.com' && failures-- > 0) {
-            throw smtpError(451, 'RCPT TO', '451 4.7.1 Greylisted');
+            throw smtpError(421, 'MAIL FROM', '421 4.3.2 Service not available');
           }
         });
         assert.equal(await run(testMailing), null);

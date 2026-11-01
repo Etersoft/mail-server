@@ -180,12 +180,15 @@ export class MailingExecutor extends EventEmitter {
   }
 
   /**
-   * Отправляет письмо. Временные ошибки (4xx, сбои соединения) повторяются с
-   * паузами. Постоянный отказ сервера принять получателя (5xx на RCPT TO)
-   * записывается в статистику адреса, и рассылка идёт дальше. Остальные
-   * ошибки (5xx на MAIL FROM или DATA касаются всего письма, а не адреса)
-   * выбрасываются и останавливают рассылку: позиция не сдвигается, и после
-   * повторного запуска отправка продолжится с этого получателя.
+   * Отправляет письмо. Отказ сервера принять получателя (RCPT TO) касается
+   * только этого адреса: он записывается в статистику адреса, и рассылка идёт
+   * дальше — 5xx как постоянная ошибка доставки, 4xx как временная. Многие
+   * релеи проверяют адрес сразу и отказывают на RCPT TO, тогда уведомления о
+   * недоставке (DSN) для mail-sorter не будет. Остальные временные ошибки
+   * (4xx на MAIL FROM или DATA, сбои соединения) повторяются с паузами.
+   * Прочие ошибки касаются всего письма, а не адреса: они выбрасываются и
+   * останавливают рассылку — позиция не сдвигается, и после повторного
+   * запуска отправка продолжится с этого получателя.
    */
   private async sendWithRetry (mailingId: number, email: Email): Promise<SendResult> {
     const delays: number[] = this.config.server.sendRetryDelays || DEFAULT_SEND_RETRY_DELAYS;
@@ -195,8 +198,8 @@ export class MailingExecutor extends EventEmitter {
         return SendResult.SENT;
       } catch (error: any) {
         const code = error && error.responseCode;
-        if (code >= 500 && error.command === 'RCPT TO') {
-          await this.recordRejection(mailingId, email, error);
+        if (code >= 400 && error.command === 'RCPT TO') {
+          await this.recordRejection(mailingId, email, error, code < 500);
           return SendResult.REJECTED;
         }
         if (code >= 500 || attempt >= delays.length) {
@@ -213,17 +216,26 @@ export class MailingExecutor extends EventEmitter {
     }
   }
 
-  private async recordRejection (mailingId: number, email: Email, error: any) {
+  private async recordRejection (
+    mailingId: number, email: Email, error: any, temporary: boolean
+  ) {
     const response = String(error.response || error.message);
     // Расширенный код из ответа (550 5.1.1 ...), иначе — класс кода ответа
     const match = /\b([245]\.\d{1,3}\.\d{1,3})\b/.exec(response);
     const status = match ? match[1] : `${Math.floor(error.responseCode / 100)}.0.0`;
-    this.logger.warn(`#${mailingId}: ${email.receivers.join(',')} rejected: ${response}`);
+    this.logger.warn(
+      `#${mailingId}: ${email.receivers.join(',')} rejected` +
+      `${temporary ? ' temporarily' : ''}: ${response}`
+    );
     for (const { email: address } of email.receivers) {
+      // Временные отказы считаются, как у mail-sorter (maxTemporaryFailures)
       const update = (stats: AddressStatsProperties) => {
         stats.diagnosticCode = response;
         stats.lastStatus = status;
         stats.lastStatusDate = new Date();
+        if (temporary) {
+          stats.temporaryFailureCount = (stats.temporaryFailureCount || 0) + 1;
+        }
       };
       const existingStats = await this.addressStatsRepository.updateInTransaction(
         address, async stats => update(stats)

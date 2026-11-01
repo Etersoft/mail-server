@@ -252,12 +252,16 @@ has already removed from the mailing for delivery errors stay in this list
 marked as excluded (`excluded: true`, the fourth CSV column). "Retry" creates a
 new mailing with the same text for these addresses, except the excluded ones.
 
-SMTP errors while sending: a receiver rejected with 5xx at `RCPT TO` gets a
-delivery status in its statistics (it appears among delivery errors and is
-filtered out of new mailings) and the mailing goes on. Temporary errors (4xx,
-connection failures) are retried after the `sendRetryDelays` pauses. Any other
-error (e.g. the letter rejected at `DATA`) or retries exhausted put the mailing
-into ERROR; started again, it continues with the same receiver.
+SMTP errors while sending: a receiver rejected at `RCPT TO` gets a delivery
+status in its statistics and the mailing goes on with the next receiver. Many
+relays check the address right away and reject it there, so no bounce (DSN)
+reaches mail-sorter. A 5xx rejection is a permanent error (the address appears
+among delivery errors and is filtered out of new mailings), a 4xx one is a
+temporary failure (`temporaryFailureCount`, as mail-sorter counts it). Other
+temporary errors (4xx at `MAIL FROM` or `DATA`, connection failures) are
+retried after the `sendRetryDelays` pauses. Any other error (e.g. the letter
+rejected at `DATA`) or retries exhausted put the mailing into ERROR; started
+again, it continues with the same receiver.
 
 ## Subscribe and unsubscribe
 
