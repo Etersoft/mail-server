@@ -114,7 +114,8 @@ default) to mail-server.
 [`deploy/lxc/`](deploy/lxc/README.md) installs all three projects into an LXC
 container or a VM with ALT Linux: systemd services, an hourly timer for
 mail-sorter, nginx for the web client and the public subscription pages, local
-Redis and postfix (`deploy/lxc/install.sh`; the guide is in Russian).
+Redis; mail goes out through the organisation's mail server
+(`deploy/lxc/install.sh`; the guide is in Russian).
 
 ## Configuration
 

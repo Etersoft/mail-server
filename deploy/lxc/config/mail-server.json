@@ -10,7 +10,8 @@
     "logLevel": "info",
     "mail": {
       "from": "noreply@example.com",
-      "listIdDomain": "example.com"
+      "listIdDomain": "example.com",
+      "listUnsubscribe": "<mailto:noreply@example.com?subject=unsubscribe>"
     },
     "redis": {
       "host": "127.0.0.1",
@@ -18,11 +19,17 @@
       "db": 0
     },
     "smtp": {
-      "host": "127.0.0.1",
-      "port": 25
+      "host": "mail.example.com",
+      "port": 587,
+      "auth": {
+        "user": "noreply@example.com",
+        "pass": "%{SMTP_PASSWORD}"
+      },
+      "name": "mailing.example.com"
     },
     "subscription": {
-      "subject": "Подписка на рассылку"
+      "subject": "Подписка на рассылку",
+      "url": "https://subscribe.example.com"
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  // См. README mail-sorter. Пароль IMAP — в /etc/eterfund-mail/mail-sorter.env
+  // См. README mail-sorter. Пароли IMAP и SMTP — в /etc/eterfund-mail/mail-sorter.env
   "database": {
     "type": "mail-server",
     "options": { "backend": "http://127.0.0.1:8000" }
@@ -13,7 +13,14 @@
     "password": "%{IMAP_PASSWORD}"
   },
   "logging": { "maxLogLevel": "info" },
-  "mailer": { "from": "noreply@example.com", "host": "127.0.0.1", "port": 25 },
+  // Тот же почтовый сервер, что у mail-server; пароль — SMTP_PASSWORD
+  "mailer": {
+    "from": "noreply@example.com",
+    "host": "mail.example.com",
+    "port": 587,
+    "auth": { "user": "noreply@example.com", "pass": "%{SMTP_PASSWORD}" },
+    "name": "mailing.example.com"
+  },
   // Начать с true (ничего не меняется), проверить журнал, затем false
   "readonly": true,
   "redis": { "host": "127.0.0.1", "port": 6379, "db": 0 }

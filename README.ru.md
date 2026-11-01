@@ -114,8 +114,9 @@ $ npm run client:build            # результат в client/public
 
 [`deploy/lxc/`](deploy/lxc/README.md) — установка всех трёх проектов в
 LXC-контейнер или ВМ с ALT Linux: службы systemd, ежечасный таймер mail-sorter,
-nginx для веб-клиента и публичных страниц подписки, локальные Redis и postfix
-(`deploy/lxc/install.sh`, пошаговое задание — в README).
+nginx для веб-клиента и публичных страниц подписки, локальный Redis; почта
+уходит через почтовый сервер организации (`deploy/lxc/install.sh`, пошаговое
+задание — в README).
 
 ## Конфигурация
 

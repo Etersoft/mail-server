@@ -9,14 +9,17 @@ LXC-контейнер (или ВМ) с ALT Linux. Docker не нужен: пр�
                  nginx :80
    внутренняя сеть ──> mailing.<домен>   ── /api ──> mail-server 127.0.0.1:8000 ──> Redis 127.0.0.1:6379
    интернет ─────────> subscribe.<домен> ── /subscribe, /unsubscribe ──> subscription-facade 127.0.0.1:8001
-                                                     mail-server ── SMTP ──> postfix 127.0.0.1:25 ──> получатели
-   systemd-таймер (раз в час) ──> mail-sorter ── IMAP ──> ящик noreply@ (внешний почтовый сервер)
+                                   mail-server, mail-sorter ── SMTP 587 ──> почтовый сервер организации ──> получатели
+   systemd-таймер (раз в час) ──> mail-sorter ── IMAP ──> ящик noreply@ (тот же почтовый сервер)
 ```
 
 ## 1. Контейнер
 
 - ALT Linux p11 (или Sisyphus): нужны пакеты `node` ≥ 22.23, `npm`, `redis`,
-  `nginx`, `postfix`, `git` — в p11 все есть.
+  `nginx`, `git` — в p11 все есть.
+- Почта уходит через почтовый сервер организации, локальный MTA не нужен: так
+  письма не копятся незаметно в очереди внутри контейнера, а объём исходящей
+  почты виден в одном месте.
 - 2 vCPU, 2 ГБ памяти (сборка клиента webpack'ом; в работе хватает 512 МБ),
   10 ГБ диска.
 - Обычный непривилегированный контейнер, вложенная виртуализация не нужна.
@@ -30,10 +33,12 @@ LXC-контейнер (или ВМ) с ALT Linux. Docker не нужен: пр�
 |---|---|---|
 | Имя для веб-интерфейса (внутреннее) | `mailing.office.example` | `server_name` первого блока в nginx-конфиге |
 | Подсети, из которых доступен интерфейс | `10.0.0.0/8` | `allow` в nginx-конфиге |
-| Публичное имя страниц подписки | `subscribe.example.com` | `server_name` второго блока; ссылки в письмах |
+| Публичное имя страниц подписки | `subscribe.example.com` | `server_name` второго блока; `server.subscription.url` в `mail-server.json` (ссылка в письме подтверждения); ссылки отписки в тексте рассылок |
 | Адрес отправителя рассылок | `noreply@example.com` | `server.mail.from` в `mail-server.json`, `mailer.from` в `mail-sorter.json` |
 | Домен для `List-Id` | `example.com` | `server.mail.listIdDomain` |
-| Как postfix отправляет почту наружу | relayhost `mail.example.com` или напрямую с SPF/DKIM | `postconf -e relayhost=...` |
+| Почтовый сервер для отправки | `mail.example.com:587` (STARTTLS), логин и пароль, если нужны | `server.smtp` в `mail-server.json` и `mailer` в `mail-sorter.json`, пароль — `SMTP_PASSWORD` в `mail-server.env` и `mail-sorter.env` |
+| Имя контейнера для EHLO (полное) | `mailing.example.com` | `server.smtp.name`, `mailer.name` |
+| Адрес для кнопки «Отписаться» в почтовых программах | `<mailto:noreply@example.com?subject=unsubscribe>` | `server.mail.listUnsubscribe` (mail-sorter разбирает такие письма) |
 | IMAP-ящик для ответов (тот же `noreply@`) | `imap.example.com:993`, логин, пароль | `imapConnection` в `mail-sorter.json`, пароль — `IMAP_PASSWORD` в `mail-sorter.env` |
 | Куда пересылать письма от людей | `support@example.com` | `forwardTo` в `mail-sorter.json` |
 | Сервис картинок для редактора (если есть) | `https://images.example.com` | `client.imageServiceUrl` в `mail-server.json` |
@@ -53,20 +58,25 @@ cd /root/mail-server/deploy/lxc
 и `mailing-build` (владелец кода, от него идёт сборка), кладёт примеры
 конфигурации в `/etc/eterfund-mail/`, собирает три проекта через `update.sh`
 (см. [раздел 5](#5-обновление-и-откат)), устанавливает юниты systemd и сайт
-nginx, включает журнал AOF в Redis и ограничивает postfix приёмом писем с
-localhost.
+nginx, включает журнал AOF в Redis.
 
 Затем:
 
-1. Заполнить `/etc/eterfund-mail/mail-server.json`, `mail-sorter.json`,
-   `mail-sorter.env` (значения из таблицы выше; описание параметров — в README
-   проектов).
+1. Заполнить `/etc/eterfund-mail/mail-server.json`, `mail-server.env`,
+   `mail-sorter.json`, `mail-sorter.env` (значения из таблицы выше; описание
+   параметров — в README проектов). Если почтовый сервер принимает письма без
+   авторизации, убрать `auth` из обоих конфигов.
 2. Поправить `server_name` и `allow` в
    `/etc/nginx/sites-available.d/eterfund-mail.conf`.
-3. Настроить отправку почты postfix (relayhost или SPF/DKIM для своего домена).
+3. На почтовом сервере: разрешить контейнеру отправку (доверенная сеть или
+   авторизация SMTP) с адреса `noreply@`; SPF и DKIM для домена отправителя
+   настраиваются там же. Сервер, который проверяет получателей сразу
+   (`reject_unverified_recipient`), отказывает несуществующим адресам на
+   `RCPT TO`: mail-server записывает такой отказ в ошибки доставки адреса и
+   продолжает рассылку.
 4. При необходимости поправить шаблоны: письмо подтверждения подписки
-   `/etc/eterfund-mail/templates/confirm-subscription.hbs` (ссылка должна вести на
-   `https://subscribe.<домен>/subscribe?...`) и страницы
+   `/etc/eterfund-mail/templates/confirm-subscription.hbs` (ссылку
+   `{{confirmUrl}}` сервер строит из `server.subscription.url`) и страницы
    `/etc/eterfund-mail/templates/subscription-facade/*.hbs`.
 5. Пересобрать mail-server: значения `client.*` встраиваются в клиент при
    сборке. Затем запустить службы:
@@ -78,7 +88,7 @@ localhost.
 
 Другая ветка или тег: `REF=v1.0 ./install.sh`; установка из GitLab eterfund:
 `REPO_BASE=git@gitlab.eterfund.ru:eterfund ./install.sh` (нужен SSH-ключ).
-`install.sh` настраивает систему (пакеты, Redis, postfix, nginx), поэтому для
+`install.sh` настраивает систему (пакеты, Redis, nginx), поэтому для
 обновлений его не запускают — для них есть `update.sh`.
 
 ## 4. Проверка
@@ -139,7 +149,7 @@ deploy/lxc/update.sh --rollback mail-server   # на предыдущий рел
   это ссылка на текущий релиз.
 - Хранятся 3 последних релиза (`KEEP=5 update.sh ...` — больше), текущий не
   удаляется.
-- `update.sh` не трогает пакеты, postfix, Redis, nginx и `/etc/eterfund-mail`.
+- `update.sh` не трогает пакеты, Redis, nginx и `/etc/eterfund-mail`.
   Новые шаблоны из примеров создаёт `install.sh`; юниты systemd тоже обновляет
   он (`update.sh` их не меняет). Если в новой версии появился шаблон, которого
   нет в `/etc/eterfund-mail/templates/`, `update.sh` его не подключает и пишет
@@ -173,7 +183,7 @@ deploy/lxc/update.sh --list
 каждый клон в `releases/<проект>/00000000-000000-<коммит>` (владелец
 `mailing-build`), оставляя на старом месте ссылку. Службы при этом не
 перезапускаются и работают дальше; на перенесённый релиз можно откатиться
-(`update.sh --rollback <проект>`). Конфигурация, nginx и postfix не меняются.
+(`update.sh --rollback <проект>`). Конфигурация и nginx не меняются.
 Повторный запуск ничего не делает. В конце скрипт проверяет, что `mailing` не
 может писать в код, и предупреждает, если может.
 
@@ -186,6 +196,28 @@ systemctl status mail-server subscription-facade mail-sorter.timer
 curl -s http://127.0.0.1:8000/mailings | head -c 100
 systemctl start mail-sorter && journalctl -u mail-sorter -n 20
 ```
+
+### Переход с локального postfix
+
+Установки, где mail-server и mail-sorter отправляли почту через postfix в
+контейнере (`127.0.0.1:25`):
+
+1. Создать `/etc/eterfund-mail/mail-server.env` (пример —
+   `deploy/lxc/config/mail-server.env`, права `640`, группа `mailing`) и
+   дописать `SMTP_PASSWORD` в `mail-sorter.env`, если серверу нужна авторизация.
+2. В `mail-server.json` указать в `server.smtp` почтовый сервер организации,
+   `name`, при необходимости `auth`; добавить `server.subscription.url` и
+   `server.mail.listUnsubscribe`. В `mail-sorter.json` — то же в `mailer`.
+3. Заменить шаблон письма подтверждения новым примером (ссылка теперь
+   `{{confirmUrl}}`) и обновить юнит, чтобы он читал `mail-server.env`:
+
+   ```
+   install -m 644 deploy/lxc/systemd/mail-server.service /etc/systemd/system/
+   systemctl daemon-reload && systemctl restart mail-server
+   ```
+
+4. Когда очередь postfix опустеет (`mailq`), его можно остановить:
+   `systemctl disable --now postfix`.
 
 ## 6. Эксплуатация
 

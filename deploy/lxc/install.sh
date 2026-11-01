@@ -7,7 +7,7 @@
 #   REPO_BASE=git@gitlab.eterfund.ru:eterfund ./install.sh   другой git-сервер
 #   ./install.sh --no-start      только собрать и разложить файлы
 #
-# Ставит пакеты, настраивает Redis, postfix и nginx. Регулярные обновления —
+# Ставит пакеты, настраивает Redis и nginx. Регулярные обновления —
 # update.sh (он не трогает систему); конфигурация в /etc/eterfund-mail не
 # перезаписывается.
 set -eu
@@ -37,7 +37,7 @@ log () {
 
 log "Packages"
 apt-get update -q
-apt-get install -y -q node npm git redis nginx postfix
+apt-get install -y -q node npm git redis nginx
 
 if ! id "$APP_USER" >/dev/null 2>&1; then
     log "User $APP_USER"
@@ -46,7 +46,8 @@ fi
 
 log "Configuration in $ETC"
 install -d -m 750 -g "$APP_USER" "$ETC" "$ETC/templates" "$ETC/templates/subscription-facade"
-for name in mail-server.json subscription-facade.json mail-sorter.json mail-sorter.env; do
+for name in mail-server.json mail-server.env subscription-facade.json mail-sorter.json \
+        mail-sorter.env; do
     if [ ! -e "$ETC/$name" ]; then
         install -m 640 -g "$APP_USER" "$HERE/config/$name" "$ETC/$name"
         echo "created $ETC/$name — edit it"
@@ -81,22 +82,19 @@ if [ ! -e /etc/nginx/sites-available.d/eterfund-mail.conf ]; then
 fi
 ln -sfn ../sites-available.d/eterfund-mail.conf /etc/nginx/sites-enabled.d/eterfund-mail.conf
 
-log "Redis persistence, local SMTP relay"
+log "Redis persistence"
 # Рассылки хранятся только в Redis: журнал AOF, чтобы не терять данные
 REDIS_CHANGED=
 if grep -q '^appendonly no' /etc/redis/redis.conf; then
     sed -i 's/^appendonly no/appendonly yes/' /etc/redis/redis.conf
     REDIS_CHANGED=1
 fi
-# postfix принимает письма только с localhost; отправку наружу (SPF, DKIM,
-# relayhost) настраивает администратор
-postconf -e 'inet_interfaces = loopback-only' 'mynetworks = 127.0.0.0/8 [::1]/128'
 
 [ -n "$START" ] || { log "Done (services not started)"; exit 0; }
 
 log "Start"
 systemctl daemon-reload
-systemctl enable --now redis postfix nginx
+systemctl enable --now redis nginx
 [ -z "$REDIS_CHANGED" ] || systemctl restart redis
 systemctl enable mail-server subscription-facade mail-sorter.timer
 systemctl restart mail-server subscription-facade

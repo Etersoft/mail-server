@@ -11,8 +11,8 @@
 # /opt/eterfund-mail/releases/<проект>/<дата>-<коммит>, затем ссылка
 # /opt/eterfund-mail/<проект> атомарно переключается на него и перезапускается
 # только служба этого проекта. Если сборка не удалась, ничего не меняется.
-# Службы работают от mailing, который код только читает. apt, postfix, Redis,
-# nginx и /etc/eterfund-mail скрипт не трогает.
+# Службы работают от mailing, который код только читает. apt, Redis, nginx и
+# /etc/eterfund-mail скрипт не трогает.
 set -eu
 
 PREFIX=/opt/eterfund-mail
