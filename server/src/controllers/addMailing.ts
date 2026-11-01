@@ -8,6 +8,7 @@ import { getListId } from '../getListId';
 import { Logger } from '../Logger';
 import { Receiver } from '../Receiver';
 import { ReceiverListFilter } from '../ReceiverListFilter';
+import { generateUniqueCode } from '../utils/codes';
 
 
 export function addMailing (config: any, mailingRepository: MailingRepository, logger: Logger, 
@@ -45,6 +46,12 @@ export function addMailing (config: any, mailingRepository: MailingRepository, l
       undeliveredCount: 0
     };
     const validReceivers = await receiverListFilter.getValidReceivers(receivers);
+    // Коды нужны для ссылок отписки; у копии коды получателей сохраняются
+    if (properties.openForSubscription) {
+      for (const receiver of validReceivers) {
+        receiver.code = receiver.code || generateUniqueCode();
+      }
+    }
     const mailing = await mailingRepository.create(properties, validReceivers);
     logger.info(`Created mailing ${properties.name} with ID #${mailing.id}`);
 

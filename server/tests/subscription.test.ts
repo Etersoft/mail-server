@@ -15,6 +15,8 @@ import {
 import { subscribe } from '../src/controllers/subscribe';
 import { unsubscribe } from '../src/controllers/unsubscribe';
 import { unsubscribeFromAll } from '../src/controllers/unsubscribeFromAll';
+import { addMailing } from '../src/controllers/addMailing';
+import { ReceiverListFilter } from '../src/ReceiverListFilter';
 
 
 const testHtml = '<h1>Test</h1>';
@@ -436,6 +438,52 @@ describe('subscription', { skip: redisSkip }, () => {
       await unsubscribeAll({ email: testReceiver2, listUnsubscribe: true });
       assert.equal(await hasReceiver(without), true);
       assert.equal(await hasReceiver(withHeader), false);
+    });
+  });
+
+  describe('#addMailing', () => {
+    const config = { server: { mail: { listIdDomain: 'example.com' } } };
+    const receiverListFilter = {
+      getValidReceivers: async (receivers: unknown[]) => receivers
+    } as unknown as ReceiverListFilter;
+
+    async function add (body: Record<string, unknown>) {
+      const controller = toController(
+        addMailing(config, mailingRepository, logger, receiverListFilter)
+      );
+      await controller(createFakeRequest({ body, params: {} }), res);
+      return res.json.mock.calls[0].arguments[0].data.id as number;
+    }
+
+    async function getCodes (id: number) {
+      return (await mailingRepository.getReceivers(id)).map(receiver => receiver.code);
+    }
+
+    // Каждый раз новые объекты: контроллер записывает коды в получателей
+    const createBody = () => ({
+      html: testHtml,
+      name: testName,
+      receivers: [{ email: testReceiver }, { email: testReceiver2 }],
+      subject: testSubject
+    });
+
+    it('should assign codes when open for subscription', async () => {
+      const codes = await getCodes(await add({ ...createBody(), openForSubscription: true }));
+      assert.equal(codes.length, 2);
+      assert.ok(codes.every(Boolean));
+      assert.notEqual(codes[0], codes[1]);
+    });
+
+    it('should not assign codes when closed for subscription', async () => {
+      const codes = await getCodes(await add(createBody()));
+      assert.ok(codes.every(code => !code));
+    });
+
+    it('should keep codes of a cloned open mailing', async () => {
+      const sourceId = await add({ ...createBody(), openForSubscription: true });
+      res = createFakeResponse();
+      const cloneId = await add({ sourceId });
+      assert.deepEqual(await getCodes(cloneId), await getCodes(sourceId));
     });
   });
 });
