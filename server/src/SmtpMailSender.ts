@@ -50,6 +50,10 @@ export class SmtpMailSender implements MailSender {
 
   async sendEmail (email: Email): Promise<void> {
     const to = email.receivers.map(receiver => receiver.email);
+    // В заголовке «Кому» — с именем, nodemailer сам закодирует кириллицу
+    const toHeader = email.receivers.map(receiver =>
+      receiver.name ? { address: receiver.email, name: receiver.name } : receiver.email
+    );
     await this.transport.sendMail({
       attachments: email.attachments,
       // Возвраты всегда идут на адрес сервиса (его разбирает mail-sorter),
@@ -65,7 +69,7 @@ export class SmtpMailSender implements MailSender {
       sender: email.from ? this.config.from : undefined,
       subject: email.subject,
       text: email.text || (email.html ? convert(email.html, htmlToTextOptions) : undefined),
-      to: to.join(', ')
+      to: toHeader
     });
   }
 }

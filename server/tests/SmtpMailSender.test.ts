@@ -8,6 +8,18 @@ import { Receiver } from '../src/Receiver';
 
 const serviceAddress = 'no-reply@etersoft.ru';
 
+// Раскодирует слова RFC 2047 (=?UTF-8?B?...?= и =?UTF-8?Q?...?=) из заголовка
+// Слово может кончаться посреди символа, поэтому байты склеиваются до перевода в строку
+function decodeWords (value: string): string {
+  const chunks = [...value.matchAll(/=\?UTF-8\?([BQ])\?([^?]*)\?=/gi)].map(([, encoding, text]) =>
+    encoding.toUpperCase() === 'B'
+      ? Buffer.from(text, 'base64')
+      : Buffer.from(text.replace(/_/g, ' ').replace(/=([0-9A-F]{2})/gi,
+        (hex, code: string) => String.fromCharCode(parseInt(code, 16))), 'latin1')
+  );
+  return Buffer.concat(chunks).toString('utf8');
+}
+
 async function send (email: Email) {
   const sender = new SmtpMailSender({ from: serviceAddress, host: 'localhost', port: '25' });
   const transport = createTransport({ buffer: true, newline: 'unix', streamTransport: true }, {
@@ -50,6 +62,22 @@ describe('SmtpMailSender', () => {
     assert.match(message, /^From: Sales <sales@etersoft\.ru>$/m);
     assert.match(message, /^Sender: no-reply@etersoft\.ru$/m);
     assert.match(message, /^Reply-To: sales@etersoft\.ru$/m);
+  });
+
+  it('should put the receiver name into To but only the address into the envelope', async () => {
+    const { envelope, message } = await send(new Email({
+      html: '<p>Hello</p>',
+      receivers: [
+        new Receiver('ivan@example.com', 'Иван Петров'),
+        new Receiver('anon@example.com', '')
+      ],
+      subject: 'Test'
+    }));
+    assert.deepEqual(envelope.to, ['ivan@example.com', 'anon@example.com']);
+    // Длинный заголовок nodemailer переносит на следующую строку
+    assert.match(message, /^To: =\?UTF-8\?[BQ]\?.+\?= <ivan@example\.com>,\s+anon@example\.com$/m);
+    const encodedName = /^To: (=\?UTF-8\?[BQ]\?.+\?=) </m.exec(message)![1];
+    assert.equal(decodeWords(encodedName), 'Иван Петров');
   });
 
   it('should add a plain text part generated from HTML', async () => {
