@@ -9,6 +9,9 @@
     }
   },
   "server": {
+    "auth": {
+      "required": false
+    },
     "corsWhitelist": [],
     "logLevel": "verbose",
     "mail": {

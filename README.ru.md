@@ -135,6 +135,7 @@ nginx для веб-клиента и публичных страниц подп
   "server": {
     "port": 8000,
     "host": "127.0.0.1",               // необязательно: адрес для приёма соединений (по умолчанию все)
+    "auth": { "required": true },      // ключи API: false (по умолчанию) — без ключа пропускать и писать в журнал
     "logLevel": "verbose",             // error, warn, info, verbose, debug
     "corsWhitelist": ["https://admin.example.com"],  // разрешённые Origin для API
     "fakeSender": false,               // true: печатать письма в консоль вместо отправки
@@ -299,8 +300,6 @@ mail-sorter записал после создания рассылки (`GET /m
 
 Все ответы — JSON `{"success": true, "data": ...}` или
 `{"success": false, "error": "...", "code": "..."}`. Тела запросов — JSON.
-Аутентификации в API нет: в интернет выставляется только subscription-facade, а
-mail-server и его веб-клиент должны находиться в доверенной сети.
 
 Сервис самодокументируемый: описание OpenAPI 3.1 отдаётся по `GET /openapi.json`,
 интерактивный Swagger UI — на `/docs/` (за nginx из примеров: `/api/openapi.json`
@@ -323,6 +322,37 @@ mail-server и его веб-клиент должны находиться в �
 | `POST /mailings/:id/subscribe` | Подтвердить подписку `{email, code}` |
 | `POST /mailings/:id/unsubscribe` | Отписаться `{email, code}` |
 | `POST /mailings/unsubscribe` | Исключить `{email}` из всех рассылок без кода (для mail-sorter), с `listUnsubscribe: true` — только из рассылок с этой настройкой; возвращает `{removed}` |
+
+### Ключи API
+
+Запрос к API передаёт ключ в заголовке `Authorization: Bearer <ключ>` (или
+`X-API-Key: <ключ>`). У каждого ключа есть имя — кто им пользуется (`front`,
+`subscription-facade`, `site-example`…); сервер хранит в Redis только его
+sha256, сам ключ выводится один раз при создании. Неизвестный ключ — всегда
+`401`. Запрос без ключа при `server.auth.required: false` (по умолчанию)
+пропускается, и раз в 10 минут на адрес и метод сервер пишет в журнал
+`Request without API key: …` — так перед включением `true` можно найти всех,
+кому ещё нужен ключ; при `true` такой запрос получает `401`. Без ключа всегда
+открыты только `/openapi.json` и `/docs/`.
+
+Ключи создаются на сервере командой (нужен доступ к Redis из конфига; если в
+конфиге есть `%{ИМЯ}`, передайте те же переменные окружения):
+
+```
+node server/dist/src/apiKeysCli.js add site-example      # вывести новый ключ
+node server/dist/src/apiKeysCli.js add front --proxy     # ключ обратного прокси
+node server/dist/src/apiKeysCli.js list                  # имя, тип, создан, последнее использование
+node server/dist/src/apiKeysCli.js revoke site-example
+```
+
+Ключ с `--proxy` — для фронта, через который в веб-клиент входят люди: фронт
+проверяет пользователя, добавляет к запросу свой ключ и заголовок
+`X-Remote-User` с его именем. Этому заголовку сервер верит только вместе с
+ключом прокси. Изменяющие запросы (всё, кроме `GET`) записываются в журнал с
+именем ключа и пользователя и списком полей тела (без текста письма и адресов):
+`PUT /mailings/5 by ivan via front from 10.0.0.7: state=running`. Свои ключи
+нужны и subscription-facade (`apiKey` в его конфиге), и mail-sorter
+(`apiKey` в параметрах драйвера `mail-server`).
 
 ## Разработка
 

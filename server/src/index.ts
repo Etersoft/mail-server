@@ -15,6 +15,7 @@ import { ReceiverListFilter } from './ReceiverListFilter';
 import { RedisSubscriptionRequestRepository } from './RedisSubscriptionRequestRepository';
 import { RedisSorterStatusRepository } from './RedisSorterStatusRepository';
 import { readHandlebarsTemplate } from './templates/readTemplate';
+import { ApiKeyRepository } from './ApiKeyRepository';
 
 
 async function main () {
@@ -37,6 +38,9 @@ async function main () {
   const sorterStatusRepository = new RedisSorterStatusRepository(
     redisConnectionPool, config.server.redis.prefixes
   );
+  const apiKeyRepository = new ApiKeyRepository(
+    redisConnectionPool, config.server.redis.prefixes
+  );
   const failureCounter = new FailureCounter(mailingRepository, addressStatsRepository);
   const receiverListFilter = new ReceiverListFilter(addressStatsRepository);
   const logger = new Logger(config.server.logLevel);
@@ -44,6 +48,11 @@ async function main () {
     logger.error(
       'server.subscription.url is not set: letters confirming a subscription ' +
       'will have no link to the subscription pages'
+    );
+  }
+  if (!config.server.auth?.required) {
+    logger.warn(
+      'server.auth.required is not true: requests without an API key are allowed and logged'
     );
   }
   const sender = config.server.fakeSender ? new ConsoleMailSender() : new SmtpMailSender({
@@ -68,7 +77,7 @@ async function main () {
   setupRoutes(
     config, app, mailingRepository, stateManager, logger, executor, failureCounter,
     subscriptionRepository, sender, readHandlebarsTemplate('confirm-subscription.hbs'),
-    receiverListFilter, sorterStatusRepository
+    receiverListFilter, sorterStatusRepository, apiKeyRepository
   );
   const { host, port } = config.server;
   await new Promise<void>((resolve, reject) => {

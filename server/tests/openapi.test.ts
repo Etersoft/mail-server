@@ -12,7 +12,7 @@ function createApp () {
   const stub: any = {};
   setupRoutes(
     { server: { subscription: {} } }, app,
-    stub, stub, stub, stub, stub, stub, stub, stub, stub, stub
+    stub, stub, stub, stub, stub, stub, stub, stub, stub, stub, stub
   );
   return app;
 }

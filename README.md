@@ -135,6 +135,7 @@ comments below are for explanation only):
     "port": 8000,
     "host": "127.0.0.1",               // optional: listen address (all interfaces by default)
     "logLevel": "verbose",             // error, warn, info, verbose, debug
+    "auth": { "required": true },      // API keys: false (default) lets requests without a key through and logs them
     "corsWhitelist": ["https://admin.example.com"],  // allowed origins for the API
     "fakeSender": false,               // true: print letters to the console instead of sending
     "mail": {
@@ -296,8 +297,6 @@ the default texts on the subscription-facade pages.
 
 All responses are JSON `{"success": true, "data": ...}` or
 `{"success": false, "error": "...", "code": "..."}`. Request bodies are JSON.
-The API has no authentication: expose only subscription-facade to the internet
-and keep mail-server and its web client in a trusted network.
 
 The service describes itself: the OpenAPI 3.1 document is served at
 `GET /openapi.json` and interactive Swagger UI at `/docs/` (behind the nginx
@@ -321,6 +320,37 @@ every route is documented.
 | `POST /mailings/:id/subscribe` | Confirm subscription `{email, code}` |
 | `POST /mailings/:id/unsubscribe` | Unsubscribe `{email, code}` |
 | `POST /mailings/unsubscribe` | Remove `{email}` from all mailings without a code (for mail-sorter), with `listUnsubscribe: true` only from mailings with this option; returns `{removed}` |
+
+### API keys
+
+A request passes its key in `Authorization: Bearer <key>` (or
+`X-API-Key: <key>`). Every key has a name that tells who uses it (`front`,
+`subscription-facade`, `site-example`…); the server keeps only its sha256 in
+Redis, and the key itself is printed once, when it is created. An unknown key
+always gets `401`. With `server.auth.required: false` (the default) a request
+without a key is let through, and the server logs `Request without API key: …`
+once per 10 minutes per address and route — this way you find everyone who
+still needs a key before switching to `true`; with `true` such a request gets
+`401`. Only `/openapi.json` and `/docs/` are always open.
+
+Keys are managed on the server (it needs the Redis from the config; if the
+config has `%{NAME}`, pass the same environment variables):
+
+```
+node server/dist/src/apiKeysCli.js add site-example      # print a new key
+node server/dist/src/apiKeysCli.js add front --proxy     # a reverse proxy key
+node server/dist/src/apiKeysCli.js list                  # name, type, created, last used
+node server/dist/src/apiKeysCli.js revoke site-example
+```
+
+A `--proxy` key is for the front through which people use the web client: the
+front authenticates the user and adds its key and an `X-Remote-User` header
+with the user name. The server trusts this header only together with a proxy
+key. Changing requests (everything but `GET`) are logged with the key and user
+names and the list of body fields (without the letter text and addresses):
+`PUT /mailings/5 by ivan via front from 10.0.0.7: state=running`.
+subscription-facade (`apiKey` in its config) and mail-sorter (`apiKey` in the
+`mail-server` driver options) need keys of their own.
 
 ## Development
 

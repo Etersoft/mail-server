@@ -26,6 +26,8 @@ import { unsubscribeFromAll } from './controllers/unsubscribeFromAll';
 import { getSorterStatus } from './controllers/getSorterStatus';
 import { RedisSorterStatusRepository } from './RedisSorterStatusRepository';
 import { openApiDocument, swaggerUiHtml, swaggerUiInit } from './openapi';
+import { ApiKeyRepository } from './ApiKeyRepository';
+import { apiKeyAuth } from './middleware/apiKeyAuth';
 
 
 export function setupRoutes (
@@ -33,8 +35,9 @@ export function setupRoutes (
   logger: Logger, executor: MailingExecutor, failureCounter: FailureCounter,
   subscriptionRepository: SubscriptionRequestRepository, sender: MailSender,
   subscribeTemplate: Template<SubscribeTemplateContext>, receiverListFilter: ReceiverListFilter,
-  sorterStatusRepository: RedisSorterStatusRepository
+  sorterStatusRepository: RedisSorterStatusRepository, apiKeyRepository: ApiKeyRepository
 ) {
+  app.use(apiKeyAuth(apiKeyRepository, logger, config.server.auth || {}, isApiDocsRequest));
   app.get('/mailings', getMailings(repository));
   app.get('/mailings/:id', getMailing(repository));
   app.post('/mailings', addMailing(config, repository, logger, receiverListFilter));
@@ -63,6 +66,11 @@ export function setupRoutes (
   app.get('/sorter/status', getSorterStatus(sorterStatusRepository, config));
 
   setupApiDocs(app);
+}
+
+// Описание API открыто без ключа: ключ вводится в Swagger UI кнопкой Authorize
+function isApiDocsRequest (req: Request): boolean {
+  return req.path === '/openapi.json' || req.path === '/docs' || req.path.startsWith('/docs/');
 }
 
 /**

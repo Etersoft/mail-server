@@ -5,6 +5,8 @@ import { bodyParser } from './middleware/bodyParser';
 
 export function createExpressServer (config: any): Express {
   const app = express();
+  // За nginx на той же машине req.ip берётся из X-Forwarded-For
+  app.set('trust proxy', 'loopback');
   const parserMiddleware = bodyParser();
   const whitelist = config.corsWhitelist;
   const corsOptions = {

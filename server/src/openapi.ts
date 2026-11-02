@@ -96,9 +96,13 @@ export const openApiDocument = {
     description:
       'Сервис массовых рассылок. Ответ всегда JSON вида `{success, data}` при успехе ' +
       'или `{success: false, error, code?}` при ошибке.\n\n' +
-      'Авторизации нет: сервис рассчитан на работу во внутренней сети, наружу ' +
-      'публикуются только маршруты подписки (через subscription-facade).'
+      'Запросы — с ключом API: заголовок `Authorization: Bearer <ключ>` или ' +
+      '`X-API-Key: <ключ>` (в этом окне — кнопка Authorize). Без ключа или с ' +
+      'неизвестным ключом — 401; пока на сервере `server.auth.required` не включён, ' +
+      'запросы без ключа пропускаются. Описание API (`/openapi.json`, `/docs/`) ' +
+      'открыто без ключа.'
   },
+  security: [{ bearerAuth: [] }, { apiKeyHeader: [] }],
   // Относительный адрес: запросы идут туда же, откуда загружен этот документ
   // (например, /api/ за nginx)
   servers: [{ url: '.' }],
@@ -356,6 +360,10 @@ export const openApiDocument = {
     }
   },
   components: {
+    securitySchemes: {
+      bearerAuth: { type: 'http', scheme: 'bearer', description: 'Ключ API' },
+      apiKeyHeader: { type: 'apiKey', in: 'header', name: 'X-API-Key' }
+    },
     schemas: {
       Error: {
         type: 'object',
