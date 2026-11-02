@@ -134,8 +134,22 @@ describe('RedisMailingRepository', { skip: redisSkip }, () => {
       return (await repositoryOne.getById(id))!.position;
     }
 
+    it('should turn List-Unsubscribe on by default and keep it off when asked', async () => {
+      assert.equal((await repositoryOne.getById(mailingId))!.listUnsubscribe, true);
+      const mailing = await repositoryOne.create({
+        html: testHtml,
+        listUnsubscribe: false,
+        name: testName,
+        subject: testSubject,
+        undeliveredCount: 0
+      }, []);
+      assert.equal((await repositoryOne.getById(mailing.id))!.listUnsubscribe, false);
+    });
+
     it('should keep List-Unsubscribe for mailings saved without the option', async () => {
-      assert.equal((await repositoryOne.getById(mailingId))!.listUnsubscribe, false);
+      await repositoryOne.updateInTransaction(mailingId, m => {
+        m.listUnsubscribe = false;
+      });
       await redisConnectionPoolOne.runWithConnection(async client => {
         const key = 'MAILING_COMMON_DATA_' + mailingId;
         const data = JSON.parse((await client.get(key))!);

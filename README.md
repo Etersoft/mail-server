@@ -201,8 +201,8 @@ mailing. Mailings created earlier keep the old form
 "Read List-Id from the raw header".
 
 The `List-Unsubscribe` header (`server.mail.listUnsubscribe`) is added only to
-mailings with `listUnsubscribe: true` (off by default for new mailings; mailings
-created before this option keep it on). Mail programs show an "Unsubscribe"
+mailings with `listUnsubscribe: true` (on by default; it can be turned off for a
+mailing). Mail programs show an "Unsubscribe"
 button by this header. A letter sent to its address unsubscribes the sender only
 from mailings with this option, not from the rest.
 

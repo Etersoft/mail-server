@@ -396,7 +396,7 @@ export const openApiDocument = {
             type: 'boolean',
             description: 'Добавлять заголовок List-Unsubscribe (server.mail.listUnsubscribe): ' +
               'по нему почтовые программы показывают кнопку «Отписаться». ' +
-              'Для новых рассылок по умолчанию false'
+              'По умолчанию true'
           },
           from: { type: 'string', description: 'Пусто — адрес сервиса (server.mail.from)' },
           replyTo: { type: 'string' },

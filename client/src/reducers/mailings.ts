@@ -56,7 +56,7 @@ function createMailing (data: MailingCreateData, id: number, listId: string): Ma
     listId,
     loadingFailedReceivers: false,
     locked: false,
-    listUnsubscribe: false,
+    listUnsubscribe: true,
     name: data.name,
     openForSubscription: false,
     receivers: data.receivers,

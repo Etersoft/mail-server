@@ -109,16 +109,16 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
       return email.headers;
     }
 
-    it('should not add the header by default', async () => {
-      assert.equal(mailing.listUnsubscribe, false);
-      assert.equal((await sentHeaders(mailing))['List-Unsubscribe'], undefined);
+    it('should add the header by default', async () => {
+      assert.equal(mailing.listUnsubscribe, true);
+      assert.equal((await sentHeaders(mailing))['List-Unsubscribe'], header);
     });
 
-    it('should add the header to mailings with listUnsubscribe', async () => {
+    it('should not add the header to mailings without listUnsubscribe', async () => {
       const updated = await mailingRepository.updateInTransaction(mailing.id, m => {
-        m.listUnsubscribe = true;
+        m.listUnsubscribe = false;
       });
-      assert.equal((await sentHeaders(updated!))['List-Unsubscribe'], header);
+      assert.equal((await sentHeaders(updated!))['List-Unsubscribe'], undefined);
     });
   });
 
