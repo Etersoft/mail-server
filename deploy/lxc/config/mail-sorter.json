@@ -1,8 +1,9 @@
 {
-  // См. README mail-sorter. Пароли IMAP и SMTP — в /etc/eterfund-mail/mail-sorter.env
+  // См. README mail-sorter. Пароли IMAP и SMTP и ключ API mail-server —
+  // в /etc/eterfund-mail/mail-sorter.env
   "database": {
     "type": "mail-server",
-    "options": { "backend": "http://127.0.0.1:8000" }
+    "options": { "backend": "http://127.0.0.1:8000", "apiKey": "%{MAIL_SERVER_API_KEY}" }
   },
   "forwardTo": "support@example.com",
   "imapConnection": {

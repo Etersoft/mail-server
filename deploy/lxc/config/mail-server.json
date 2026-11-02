@@ -8,6 +8,9 @@
     "host": "127.0.0.1",
     "port": 8000,
     "logLevel": "info",
+    "auth": {
+      "required": false
+    },
     "mail": {
       "from": "noreply@example.com",
       "listIdDomain": "example.com",

@@ -32,7 +32,7 @@ LXC-контейнер (или ВМ) с ALT Linux. Docker не нужен: пр�
 | Что | Пример | Куда |
 |---|---|---|
 | Имя для веб-интерфейса (внутреннее) | `mailing.office.example` | `server_name` первого блока в nginx-конфиге |
-| Подсети, из которых доступен интерфейс | `10.0.0.0/8` | `allow` в nginx-конфиге |
+| Подсети, из которых доступен интерфейс | `10.0.0.0/8` | `allow` в nginx-конфиге (второй рубеж: доступ к API — по ключам, см. [«Ключи API»](#ключи-api)) |
 | Публичное имя страниц подписки | `subscribe.example.com` | `server_name` второго блока; `server.subscription.url` в `mail-server.json` (ссылка в письме подтверждения); ссылки отписки в тексте рассылок |
 | Адрес отправителя рассылок | `noreply@example.com` | `server.mail.from` в `mail-server.json`, `mailer.from` в `mail-sorter.json` |
 | Домен для `List-Id` | `example.com` | `server.mail.listIdDomain` |
@@ -219,6 +219,55 @@ systemctl start mail-sorter && journalctl -u mail-sorter -n 20
 4. Когда очередь postfix опустеет (`mailq`), его можно остановить:
    `systemctl disable --now postfix`.
 
+### Ключи API
+
+Каждый, кто обращается к API mail-server, передаёт свой ключ
+(`Authorization: Bearer <ключ>`), описание — в README mail-server, раздел
+«API keys». Ключи хранятся в Redis (только sha256), управляются на сервере от
+root:
+
+```
+cd /opt/eterfund-mail/mail-server
+node server/dist/src/apiKeysCli.js add subscription-facade   # ключ выводится один раз
+node server/dist/src/apiKeysCli.js list                      # имя, тип, создан, последнее использование
+node server/dist/src/apiKeysCli.js revoke site-example
+```
+
+Включение (и переход для установок, где API был открыт по адресу):
+
+1. При `"auth": {"required": false}` в `mail-server.json` (так в примере)
+   запросы без ключа проходят, а сервер пишет в журнал
+   `Request without API key: <адрес> <метод> <путь>`.
+2. Выдать ключи:
+   - subscription-facade — `add subscription-facade`, ключ в `apiKey` в
+     `subscription-facade.json`, `systemctl restart subscription-facade`;
+   - mail-sorter — `add mail-sorter`, ключ в `MAIL_SERVER_API_KEY` в
+     `mail-sorter.env` (в `mail-sorter.json` уже стоит
+     `"apiKey": "%{MAIL_SERVER_API_KEY}"`; в старом конфиге — дописать в
+     `database.options`), применится при следующем запуске по таймеру;
+   - фронту, через который в веб-интерфейс входят люди, — ключ прокси
+     `add front-<имя> --proxy`. Фронт добавляет его к каждому запросу и
+     передаёт имя вошедшего пользователя, заменяя одноимённые заголовки клиента:
+
+     ```
+     proxy_set_header Authorization "Bearer <ключ>";
+     proxy_set_header X-Remote-User $remote_user;
+     ```
+
+     Без такого фронта то же можно сделать в nginx контейнера (пример — в
+     комментарии в `eterfund-mail.conf`), если вход проверяется там;
+   - сайтам и скриптам — по ключу на каждого (`add site-<имя>`).
+3. Убедиться по журналу (`journalctl -u mail-server | grep 'without API key'`),
+   что запросов без ключа больше нет, и в `list` у всех ключей есть последнее
+   использование.
+4. Поставить `"auth": {"required": true}` и `systemctl restart mail-server`.
+   Теперь без ключа API отвечает `401`; открыты только `/openapi.json` и
+   `/docs/` (в Swagger UI ключ вводится кнопкой Authorize). Ограничение `allow`
+   в nginx можно оставить вторым рубежом.
+
+Изменяющие запросы mail-server пишет в журнал с именем ключа и пользователя:
+`PUT /mailings/5 by ivan via front-intfront from 10.0.0.7: state=running`.
+
 ## 6. Эксплуатация
 
 - Журналы: `journalctl -u mail-server`, `-u subscription-facade`, `-u mail-sorter`.
@@ -228,10 +277,13 @@ systemctl start mail-sorter && journalctl -u mail-sorter -n 20
 
 ## 7. Безопасность
 
-- У API mail-server нет аутентификации. Наружу открыты только `/subscribe` и
-  `/unsubscribe` на публичном имени; веб-интерфейс ограничен `allow` в nginx,
-  mail-server, subscription-facade и Redis слушают только 127.0.0.1.
-- При необходимости добавьте на веб-интерфейс базовую аутентификацию nginx
-  (`auth_basic`) или доступ только через VPN.
+- Доступ к API mail-server — по ключам ([«Ключи API»](#ключи-api)), пока не
+  включён `server.auth.required` — без проверки. Наружу открыты только
+  `/subscribe` и `/unsubscribe` на публичном имени; веб-интерфейс ограничен
+  `allow` в nginx, mail-server, subscription-facade и Redis слушают только
+  127.0.0.1.
+- Заголовку `X-Remote-User` (кто вошёл на фронте) mail-server верит только
+  вместе с ключом прокси (`--proxy`). Ключ прокси даёт полный доступ — он должен
+  быть только в конфиге фронта, который сам проверяет пользователей.
 - Службы работают от пользователя `mailing` с `ProtectSystem=strict` и не могут
   менять свой код: он принадлежит `mailing-build` (см. раздел 5).
