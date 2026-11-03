@@ -85,4 +85,23 @@ describe('FailureCounter', { skip: redisSkip }, () => {
     await mailingRepository.remove(mailing);
     assert.deepEqual(await mailingRepository.getExcludedEmails(mailing.id), []);
   });
+
+  it('should report the date and the mailing of an error', async () => {
+    const mailing = await mailingRepository.create({
+      creationDate: new Date(Date.now() - 1000),
+      html: '<p>Test</p>',
+      name: 'test',
+      subject: 'test',
+      undeliveredCount: 0
+    }, [{ email: failed }]);
+    const date = new Date();
+    await statsRepository.create({
+      email: failed, lastMailingId: 7, lastStatus: '4.1.1', lastStatusDate: date
+    });
+
+    const [report] = await failureCounter.getFailedReceivers(mailing);
+    assert.equal(report.date, date.toISOString());
+    assert.equal(report.mailingId, 7);
+    await mailingRepository.remove(mailing);
+  });
 });

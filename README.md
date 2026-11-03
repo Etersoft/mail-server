@@ -252,8 +252,11 @@ mailing.
 recorded by mail-sorter after the mailing was created
 (`GET /mailings/:id/failed-receivers`, also as CSV). Addresses that mail-sorter
 has already removed from the mailing for delivery errors stay in this list
-marked as excluded (`excluded: true`, the fourth CSV column). "Retry" creates a
-new mailing with the same text for these addresses, except the excluded ones.
+marked as excluded (`excluded: true`, the fourth CSV column). Each error has
+its time (`date`, the fifth CSV column) and the mailing it came from
+(`mailingId`, the sixth column; unknown for errors recorded before this field
+appeared). "Retry" creates a new mailing with the same text for these
+addresses, except the excluded ones.
 
 SMTP errors while sending: a receiver rejected at `RCPT TO` gets a delivery
 status in its statistics and the mailing goes on with the next receiver. Many

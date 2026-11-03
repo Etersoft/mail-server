@@ -231,6 +231,7 @@ export class MailingExecutor extends EventEmitter {
       // Временные отказы считаются, как у mail-sorter (maxTemporaryFailures)
       const update = (stats: AddressStatsProperties) => {
         stats.diagnosticCode = response;
+        stats.lastMailingId = mailingId;
         stats.lastStatus = status;
         stats.lastStatusDate = new Date();
         if (temporary) {

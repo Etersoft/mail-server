@@ -3,6 +3,7 @@ import * as parser from 'papaparse';
 import { Receiver } from '../reducers/mailings';
 import '../styles/ReceiverList';
 import { ConfirmationButton } from './elements/ConfirmationButton';
+import { formatDate } from '../formatDate';
 
 
 export const MAX_RECEIVERS = 100;
@@ -21,6 +22,8 @@ export type ReceiverListButton = ReceiverListClickableButton | ReceiverListLinkB
 
 export interface ReceiverListProps {
   buttons?: ReceiverListButton[];
+  // Рассылка, к которой относится список: номер другой рассылки у ошибки показывается
+  mailingId?: number;
   loading?: boolean;
   onChange?: (receivers: Receiver[]) => void;
   onRemove?: (receiver: Receiver) => void;
@@ -76,6 +79,12 @@ export class ReceiverList extends React.Component<ReceiverListProps> {
       }
       if (receiver.status || receiver.spam) {
         details.push(describeFailure(receiver));
+      }
+      if (receiver.date) {
+        details.push(formatDate(new Date(receiver.date)));
+      }
+      if (receiver.mailingId && receiver.mailingId !== this.props.mailingId) {
+        details.push(`в рассылке #${receiver.mailingId}`);
       }
       if (receiver.excluded) {
         details.push('исключён из рассылки');

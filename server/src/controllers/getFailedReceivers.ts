@@ -36,7 +36,8 @@ export function getFailedReceivers (
       await serveCsv(res, list.map(receiver => [
         receiver.email, receiver.spam ? 'spam' : receiver.status,
         receiver.diagnosticCode || '<no Diagnostic-Code header>',
-        receiver.excluded ? 'excluded' : ''
+        receiver.excluded ? 'excluded' : '', receiver.date || '',
+        receiver.mailingId ? String(receiver.mailingId) : ''
       ]), 'failed-receivers.csv');
       return;
     }

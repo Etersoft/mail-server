@@ -4,12 +4,21 @@ import { Mailing } from './Mailing';
 
 
 export interface FailedReceiver {
+  /**
+   * Когда записана ошибка (ISO)
+   */
+  date?: string;
   diagnosticCode?: string;
   email: string;
   /**
    * Адрес уже исключён из рассылки (mail-sorter, POST /mailings/unsubscribe)
    */
   excluded?: boolean;
+  /**
+   * Рассылка, в которой возникла ошибка, если известна: у повторной рассылки
+   * это может быть исходная
+   */
+  mailingId?: number;
   spam: boolean;
   status: string;
 }
@@ -44,9 +53,11 @@ export class FailureCounter {
         continue;
       }
       statsList.push({
+        date: stats.lastStatusDate && stats.lastStatusDate.toISOString(),
         diagnosticCode: stats!.diagnosticCode,
         email: stats!.email,
         ...(inList.has(emails[i]) ? {} : { excluded: true }),
+        mailingId: stats.lastMailingId,
         spam: stats!.spam,
         status: stats!.lastStatus!
       });

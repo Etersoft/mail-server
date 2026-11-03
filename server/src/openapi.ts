@@ -256,7 +256,9 @@ export const openApiDocument = {
         description:
           'Адреса из списка получателей с ошибкой доставки после создания рассылки, ' +
           'а также адреса, которые mail-sorter уже исключил из рассылки ' +
-          '(`excluded: true`, в CSV — четвёртая колонка `excluded`).',
+          '(`excluded: true`, в CSV — четвёртая колонка `excluded`). ' +
+          'Пятая и шестая колонки CSV — время ошибки (`date`) и номер рассылки, ' +
+          'в которой она возникла (`mailingId`).',
         parameters: [mailingId(), csvList.limit, csvList.format],
         responses: {
           200: okOrCsv(receiversList(ref('FailedReceiver'))),
@@ -486,6 +488,12 @@ export const openApiDocument = {
           status: { type: 'string', description: 'DSN status последней ошибки' },
           spam: { type: 'boolean' },
           diagnosticCode: { type: 'string' },
+          date: { type: 'string', format: 'date-time', description: 'Когда записана ошибка' },
+          mailingId: {
+            type: 'integer',
+            description: 'Рассылка, в которой возникла ошибка (нет у ошибок, ' +
+              'записанных до 03.11.2026, и у писем без List-Id)'
+          },
           excluded: {
             type: 'boolean',
             description: 'Адрес уже исключён из рассылки (mail-sorter)'

@@ -1,6 +1,10 @@
 export interface AddressStatsProperties {
   diagnosticCode?: string;
   readonly email: string;
+  /**
+   * Рассылка, в которой возникла последняя ошибка (если известна)
+   */
+  lastMailingId?: number;
   lastSendDate?: Date;
   sentCount?: number;
   lastStatus?: string;
@@ -13,6 +17,7 @@ export interface AddressStatsProperties {
 export class AddressStats implements AddressStatsProperties {
   public diagnosticCode?: string;
   public readonly email: string;
+  public lastMailingId?: number;
   public lastSendDate?: Date;
   public sentCount?: number;
   public lastStatus?: string;
@@ -23,6 +28,7 @@ export class AddressStats implements AddressStatsProperties {
   constructor (properties: AddressStatsProperties) {
     this.diagnosticCode = properties.diagnosticCode;
     this.email = properties.email;
+    this.lastMailingId = properties.lastMailingId;
     this.lastSendDate = properties.lastSendDate;
     this.sentCount = properties.sentCount;
     this.lastStatus = properties.lastStatus;

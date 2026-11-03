@@ -37,9 +37,12 @@ export interface Mailing {
 }
 
 export interface Receiver {
+  // Для ошибок доставки: когда записана ошибка и в какой рассылке она возникла
+  date?: string;
   diagnosticCode?: string;
   email: string;
   excluded?: boolean;
+  mailingId?: number;
   name?: string;
   periodicDate?: string | number;
   spam?: boolean;

@@ -305,6 +305,7 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
         assert.equal(updated!.undeliveredCount, 1);
         const stats = await addressStatsRepository.getByEmail('b@example.com');
         assert.equal(stats!.lastStatus, '5.1.1');
+        assert.equal(stats!.lastMailingId, testMailing.id);
         assert.match(stats!.diagnosticCode!, /User unknown/);
       });
 

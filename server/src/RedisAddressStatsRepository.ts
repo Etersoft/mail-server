@@ -56,6 +56,7 @@ implements AddressStatsRepository {
     return JSON.stringify({
       diagnosticCode: properties.diagnosticCode,
       email: properties.email,
+      lastMailingId: properties.lastMailingId,
       lastSendDate: properties.lastSendDate && properties.lastSendDate.toISOString(),
       lastStatus: properties.lastStatus,
       lastStatusDate: properties.lastStatusDate && properties.lastStatusDate.toISOString(),
@@ -71,6 +72,7 @@ implements AddressStatsRepository {
     return new AddressStats({
       diagnosticCode: object.diagnosticCode,
       email: object.email,
+      lastMailingId: object.lastMailingId,
       lastSendDate: object.lastSendDate && new Date(object.lastSendDate),
       lastStatus: object.lastStatus,
       lastStatusDate: object.lastStatusDate && new Date(object.lastStatusDate),
