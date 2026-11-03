@@ -24,6 +24,9 @@ export interface Mailing {
   locked: boolean;
   name: string;
   listUnsubscribe: boolean;
+  // Получатели, ждущие повтора после временного отказа сервера, и ближайший повтор
+  nextRetryAt?: string;
+  pendingRetries?: number;
   openForSubscription: boolean;
   receivers?: Receiver[];
   receiversChanged: boolean;

@@ -2,6 +2,7 @@ import { MailingRepository } from '../MailingRepository';
 import { Request, Response } from 'express';
 import { success, error } from '../utils/response';
 import { catchPromise } from '../utils/catchPromise';
+import { describeRetries } from './describeRetries';
 import { MailingState } from '../MailingState';
 
 
@@ -35,6 +36,7 @@ export function getMailing (mailingRepository: MailingRepository) {
       from: mailing.from,
       replyTo: mailing.replyTo,
       sentCount: mailing.sentCount,
+      ...await describeRetries(mailingRepository, mailing.id),
       state: req.query.stringState ? MailingState[mailing.state] : mailing.state,
       subject: mailing.subject,
       undeliveredCount: mailing.undeliveredCount

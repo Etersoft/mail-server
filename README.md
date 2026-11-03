@@ -146,6 +146,7 @@ comments below are for explanation only):
     "maxEmailsWithoutPause": 1000,     // optional: pause the mailing after this many letters...
     "pauseDuration": 600,              // ...for this many seconds (both must be set)
     "sendRetryDelays": [10, 60, 300],  // optional: pauses (s) before retrying a temporary SMTP error
+    "rcptRetryDelays": [60, 300, 900, 3600],  // optional: pauses (s) before retrying a receiver rejected with 4xx at RCPT TO; [] — no retries
     "sorterStatusMaxAge": 7200,        // optional: warn if mail-sorter had no successful run for this long (s)
     "redis": {
       "host": "localhost",             // or "url": "redis://user:password@host:6379/0"
@@ -262,8 +263,14 @@ SMTP errors while sending: a receiver rejected at `RCPT TO` gets a delivery
 status in its statistics and the mailing goes on with the next receiver. Many
 relays check the address right away and reject it there, so no bounce (DSN)
 reaches mail-sorter. A 5xx rejection is a permanent error (the address appears
-among delivery errors and is filtered out of new mailings), a 4xx one is a
-temporary failure (`temporaryFailureCount`, as mail-sorter counts it). Other
+among delivery errors and is filtered out of new mailings). A 4xx one (address
+verification in progress, greylisting) puts the receiver into a retry list:
+after the main pass the letter is sent to it again after the `rcptRetryDelays`
+pauses (by default 1, 5, 15 and 60 minutes). The mailing stays running until
+the list is empty; the list survives a pause and a restart, and the mailing
+shows how many receivers wait (`pendingRetries`, `nextRetryAt`). A 5xx on retry
+is a permanent error; a 4xx after the last retry is a temporary failure
+(`temporaryFailureCount`, as mail-sorter counts it). Other
 temporary errors (4xx at `MAIL FROM` or `DATA`, connection failures) are
 retried after the `sendRetryDelays` pauses. Any other error (e.g. the letter
 rejected at `DATA`) or retries exhausted put the mailing into ERROR; started

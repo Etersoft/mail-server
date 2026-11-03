@@ -394,6 +394,16 @@ export const openApiDocument = {
             description: 'Когда рассылка продолжится после автоматической паузы ' +
               '(maxEmailsWithoutPause, pauseDuration)'
           },
+          pendingRetries: {
+            type: 'integer',
+            description: 'Сколько получателей ждут повтора после временного отказа ' +
+              'на RCPT TO (4xx, server.rcptRetryDelays); пока они есть, рассылка выполняется'
+          },
+          nextRetryAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Когда ближайший такой повтор'
+          },
           listUnsubscribe: {
             type: 'boolean',
             description: 'Добавлять заголовок List-Unsubscribe (server.mail.listUnsubscribe): ' +

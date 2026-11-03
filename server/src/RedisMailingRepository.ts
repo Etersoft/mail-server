@@ -1,7 +1,7 @@
 import { Mailing, MailingProperties } from './Mailing';
 import { MailingState } from './MailingState';
 import { Receiver, ReceiverProperties } from './Receiver';
-import { MailingRepository } from './MailingRepository';
+import { MailingRepository, RcptRetry } from './MailingRepository';
 import { BaseRedisRepository } from './BaseRedisRepository';
 import { RedisClient, RedisConnectionPool } from './RedisConnectionPool';
 
@@ -11,13 +11,15 @@ export interface RedisMailingRepositoryConfig {
   excludedReceiversKeyPrefix: string;
   idCounterKey: string;
   receiversListKeyPrefix: string;
+  rcptRetriesKeyPrefix: string;
 }
 
 const defaultConfig: RedisMailingRepositoryConfig = {
   commonDataKeyPrefix: 'MAILING_COMMON_DATA_',
   excludedReceiversKeyPrefix: 'MAILING_EXCLUDED_RECEIVERS_',
   idCounterKey: 'MAILING_ID_COUNTER',
-  receiversListKeyPrefix: 'MAILING_RECEIVER_LIST_'
+  receiversListKeyPrefix: 'MAILING_RECEIVER_LIST_',
+  rcptRetriesKeyPrefix: 'MAILING_RCPT_RETRIES_'
 };
 
 // Формат ключей и данных используется также в mail-sorter
@@ -153,6 +155,7 @@ implements MailingRepository {
       multi.del(key);
       multi.del(receiversListKey);
       multi.del(this.getExcludedReceiversKey(mailing.id));
+      multi.del(this.getRetriesKey(mailing.id));
       await multi.exec();
     });
   }
@@ -254,6 +257,33 @@ implements MailingRepository {
     return Boolean(removed);
   }
 
+  async getRetries (id: number): Promise<RcptRetry[]> {
+    return this.redisConnectionPool.runWithConnection(async redisClient => {
+      const data = await redisClient.hGetAll(this.getRetriesKey(id));
+      return Object.entries(data)
+        .map(([email, json]) => ({ ...JSON.parse(json), email }))
+        .sort((a, b) => a.nextAt - b.nextAt);
+    });
+  }
+
+  async setRetry (id: number, { email, ...retry }: RcptRetry): Promise<void> {
+    await this.redisConnectionPool.runWithConnection(async redisClient => {
+      await redisClient.hSet(this.getRetriesKey(id), email, JSON.stringify(retry));
+    });
+  }
+
+  async removeRetry (id: number, email: string): Promise<void> {
+    await this.redisConnectionPool.runWithConnection(async redisClient => {
+      await redisClient.hDel(this.getRetriesKey(id), email);
+    });
+  }
+
+  async clearRetries (id: number): Promise<void> {
+    await this.redisConnectionPool.runWithConnection(async redisClient => {
+      await redisClient.del(this.getRetriesKey(id));
+    });
+  }
+
   async setReceivers (id: number, receivers: Receiver[]): Promise<void> {
     return this.redisConnectionPool.runWithConnection(async redisClient => {
       const jsonReceiversList = receivers.map(r => this.serializeReceiver(r));
@@ -315,6 +345,10 @@ implements MailingRepository {
 
   private getExcludedReceiversKey (id: number): string {
     return this.config.excludedReceiversKeyPrefix + id;
+  }
+
+  private getRetriesKey (id: number): string {
+    return this.config.rcptRetriesKeyPrefix + id;
   }
 
   private getReceiversListKey (id: number): string {

@@ -3,6 +3,21 @@ import { Receiver, ReceiverProperties } from './Receiver';
 
 
 /**
+ * Получатель, которому сервер временно отказал на RCPT TO (4xx): письмо ему
+ * отправляется ещё раз после основного прохода рассылки
+ */
+export interface RcptRetry {
+  // Сколько повторов уже сделано
+  attempts: number;
+  email: string;
+  // Когда повторить (мс с начала эпохи)
+  nextAt: number;
+  // Последний ответ сервера
+  response: string;
+}
+
+
+/**
  * Интерфейс хранилища, содержащего информацию о рассылках (как выполненных,
  * так и выполняющихся)
  */
@@ -26,6 +41,13 @@ export interface MailingRepository {
   getReceivers (id: number, start?: number, stop?: number): Promise<Receiver[]>;
   getReceiverCount (id: number): Promise<number>;
   getNextReceiver (id: number): Promise<Receiver | null>;
+  /**
+   * Повторы отправки после временного отказа на RCPT TO, по времени повтора
+   */
+  getRetries (id: number): Promise<RcptRetry[]>;
+  setRetry (id: number, retry: RcptRetry): Promise<void>;
+  removeRetry (id: number, email: string): Promise<void>;
+  clearRetries (id: number): Promise<void>;
   setReceivers (id: number, receivers: Receiver[]): Promise<void>;
   remove (mailing: Mailing): Promise<void>;
   removeReceiver (id: number, receiver: Receiver, excluded?: boolean): Promise<boolean>;

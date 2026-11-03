@@ -155,6 +155,11 @@ export class MailingDetailView extends React.Component<
             <MailingStateView state={mailing.state} />
             {mailing.state === MailingState.PAUSED && mailing.autoResumeAt ?
               `, продолжится ${formatDate(new Date(mailing.autoResumeAt))}` : null}
+            {mailing.pendingRetries ?
+              `, повтор для ${mailing.pendingRetries} адр. после временного отказа` +
+              (mailing.nextRetryAt ?
+                `, ближайший ${formatDate(new Date(mailing.nextRetryAt))}` : '')
+              : null}
           </dd>
 
           <dt>Отправлено писем</dt>

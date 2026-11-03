@@ -30,6 +30,7 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
       mail: {
         listUnsubscribe: ''
       },
+      rcptRetryDelays: [0.01, 0.01] as number[],
       sendRetryDelays: [0.01, 0.01]
     }
   };
@@ -266,6 +267,12 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
     describe('SMTP errors', () => {
       const emails = ['a@example.com', 'b@example.com', 'c@example.com'];
 
+      beforeEach(async () => {
+        await redisConnectionPool.runWithConnection(client => client.del(
+          emails.map(email => 'ADDRESS_STATS_' + email)
+        ));
+      });
+
       function smtpError (responseCode: number | undefined, command: string, response = '') {
         return Object.assign(new Error(response || 'Connection closed'), {
           command, response, responseCode
@@ -316,9 +323,14 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
             throw smtpError(450, 'RCPT TO', '450 4.1.1 <b@example.com>: Try again later');
           }
         });
-        assert.equal(await run(testMailing), null);
+        fakeConfig.server.rcptRetryDelays = [];
+        try {
+          assert.equal(await run(testMailing), null);
+        } finally {
+          fakeConfig.server.rcptRetryDelays = [0.01, 0.01];
+        }
 
-        // Без повторов: отказ касается только этого адреса
+        // Повторы выключены: отказ касается только этого адреса
         assert.deepEqual(sentTo, emails);
         const updated = await mailingRepository.getById(testMailing.id);
         assert.equal(updated!.sentCount, 2);
@@ -327,6 +339,121 @@ describe('MailingExecutor', { skip: redisSkip }, () => {
         const stats = await addressStatsRepository.getByEmail('b@example.com');
         assert.equal(stats!.lastStatus, '4.1.1');
         assert.equal(stats!.temporaryFailureCount, 1);
+      });
+
+      const rcptTemporary = '450 4.1.1 <b@example.com>: unverified address: ' +
+        'Address verification in progress';
+
+      it('should retry a receiver rejected temporarily after the main pass', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        let rejections = 1;
+        onSend(email => {
+          if (email === 'b@example.com' && rejections-- > 0) {
+            throw smtpError(450, 'RCPT TO', rcptTemporary);
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        assert.deepEqual(sentTo, [...emails, 'b@example.com']);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.sentCount, 3);
+        assert.equal(updated!.undeliveredCount, 0);
+        assert.deepEqual(await mailingRepository.getRetries(testMailing.id), []);
+        const stats = await addressStatsRepository.getByEmail('b@example.com');
+        assert.equal(stats!.lastStatus, undefined);
+        assert.equal(stats!.sentCount, 1);
+      });
+
+      it('should record a temporary failure when the retries are exhausted', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        onSend(email => {
+          if (email === 'b@example.com') {
+            throw smtpError(450, 'RCPT TO', rcptTemporary);
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        // Первая попытка и два повтора (rcptRetryDelays)
+        assert.equal(sentTo.filter(email => email === 'b@example.com').length, 3);
+        const updated = await mailingRepository.getById(testMailing.id);
+        assert.equal(updated!.sentCount, 2);
+        assert.equal(updated!.undeliveredCount, 1);
+        assert.deepEqual(await mailingRepository.getRetries(testMailing.id), []);
+        const stats = await addressStatsRepository.getByEmail('b@example.com');
+        assert.equal(stats!.lastStatus, '4.1.1');
+        assert.equal(stats!.temporaryFailureCount, 1);
+      });
+
+      it('should record a permanent error got on a retry', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        let rejections = 0;
+        onSend(email => {
+          if (email === 'b@example.com') {
+            throw rejections++ ?
+              smtpError(550, 'RCPT TO', '550 5.1.1 <b@example.com>: User unknown') :
+              smtpError(450, 'RCPT TO', rcptTemporary);
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        assert.equal(rejections, 2);
+        const stats = await addressStatsRepository.getByEmail('b@example.com');
+        assert.equal(stats!.lastStatus, '5.1.1');
+        assert.equal(stats!.temporaryFailureCount, 0);
+        assert.equal((await mailingRepository.getById(testMailing.id))!.undeliveredCount, 1);
+      });
+
+      it('should keep the retries over a pause', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        fakeConfig.server.rcptRetryDelays = [60];
+        let rejections = 1;
+        onSend(email => {
+          if (email === 'b@example.com' && rejections-- > 0) {
+            throw smtpError(450, 'RCPT TO', rcptTemporary);
+          }
+        });
+        try {
+          await executor.startExecution(testMailing);
+          // Основной проход закончился, рассылка ждёт повтора
+          while (!(await mailingRepository.getRetries(testMailing.id)).length ||
+                 sentTo.length < emails.length) {
+            await sleep(10);
+          }
+          const paused = once(executor, 'paused');
+          (executor as any).executionStates.get(testMailing.id).stopping = true;
+          await paused;
+        } finally {
+          fakeConfig.server.rcptRetryDelays = [0.01, 0.01];
+        }
+
+        const [retry] = await mailingRepository.getRetries(testMailing.id);
+        assert.equal(retry.email, 'b@example.com');
+        assert.equal(retry.attempts, 0);
+        assert.match(retry.response, /verification in progress/);
+
+        // Повтор уже пора делать: после запуска он идёт сразу
+        await mailingRepository.setRetry(testMailing.id, { ...retry, nextAt: Date.now() });
+        const finished = once(executor, 'finished');
+        await executor.startExecution((await mailingRepository.getById(testMailing.id))!);
+        await finished;
+        assert.deepEqual(sentTo, [...emails, 'b@example.com']);
+        assert.equal((await mailingRepository.getById(testMailing.id))!.sentCount, 3);
+      });
+
+      it('should drop a retry for a receiver removed from the mailing', async () => {
+        const testMailing = await createMailing(emails.map(email => ({ email })));
+        onSend(email => {
+          if (email === 'b@example.com') {
+            throw smtpError(450, 'RCPT TO', rcptTemporary);
+          }
+          if (email === 'c@example.com') {
+            void mailingRepository.removeReceiver(testMailing.id, new Receiver('b@example.com'));
+          }
+        });
+        assert.equal(await run(testMailing), null);
+
+        assert.deepEqual(sentTo, emails);
+        assert.equal((await mailingRepository.getById(testMailing.id))!.undeliveredCount, 0);
       });
 
       it('should retry a temporary error', async () => {
