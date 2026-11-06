@@ -1,4 +1,9 @@
-# mail-server
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/pochtar-logo-dark.svg">
+  <img alt="Почтарь" src="docs/brand/pochtar-logo.svg" height="64">
+</picture>
+
+# eterpost-server
 
 [Read in English](./README.md)
 

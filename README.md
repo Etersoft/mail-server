@@ -1,4 +1,9 @@
-# mail-server
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/eterpost-logo-dark.svg">
+  <img alt="Eterpost" src="docs/brand/eterpost-logo.svg" height="64">
+</picture>
+
+# eterpost-server
 
 [Читать на русском](./README.ru.md)
 
