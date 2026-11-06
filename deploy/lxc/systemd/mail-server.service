@@ -1,6 +1,6 @@
 [Unit]
 Description=mail-server: bulk mailing API
-Documentation=https://github.com/Etersoft/mail-server
+Documentation=https://github.com/Eterpost/eterpost-server
 After=network-online.target redis.service
 Wants=network-online.target
 Requires=redis.service

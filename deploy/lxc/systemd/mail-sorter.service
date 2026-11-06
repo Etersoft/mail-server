@@ -1,6 +1,6 @@
 [Unit]
 Description=mail-sorter: process bounces and replies in the noreply mailbox
-Documentation=https://github.com/Etersoft/mail-sorter
+Documentation=https://github.com/Eterpost/eterpost-sorter
 After=network-online.target redis.service mail-server.service
 Wants=network-online.target
 

@@ -55,7 +55,7 @@ services:
 
   # Страницы подписки: http://127.0.0.1:${STAND_FACADE_PORT:-18101}/subscribe?...
   facade:
-    build: ${SUBSCRIPTION_FACADE_SRC:-https://github.com/Etersoft/subscription-facade.git#master}
+    build: ${SUBSCRIPTION_FACADE_SRC:-https://github.com/Eterpost/eterpost-subscription-facade.git#master}
     volumes:
       - ./config/facade.json:/app/config.json:ro
     ports:
@@ -65,7 +65,7 @@ services:
 
   # Разовый запуск: docker compose run --rm mail-sorter
   mail-sorter:
-    build: ${MAIL_SORTER_SRC:-https://github.com/Etersoft/mail-sorter.git#master}
+    build: ${MAIL_SORTER_SRC:-https://github.com/Eterpost/eterpost-sorter.git#master}
     volumes:
       - ./config/mail-sorter.json:/app/config.json:ro
     depends_on:

@@ -1,6 +1,6 @@
 [Unit]
 Description=subscription-facade: subscribe/unsubscribe pages for mail-server
-Documentation=https://github.com/Etersoft/subscription-facade
+Documentation=https://github.com/Eterpost/eterpost-subscription-facade
 After=network-online.target mail-server.service
 Wants=network-online.target
 

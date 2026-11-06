@@ -15,7 +15,7 @@ SUBSCRIPTION_FACADE_SRC=../../subscription-facade MAIL_SORTER_SRC=../../mail-sor
 ```
 
 Можно указать и другой git-адрес или ветку, например
-`MAIL_SORTER_SRC=https://github.com/Etersoft/mail-sorter.git#my-branch`.
+`MAIL_SORTER_SRC=https://github.com/Eterpost/eterpost-sorter.git#my-branch`.
 
 ## Запуск
 

@@ -1,5 +1,5 @@
 {
-  "name": "mail-server",
+  "name": "eterpost-server",
   "version": "0.1.0",
   "description": "Bulk mailing service",
   "main": "server/dist/src/index.js",

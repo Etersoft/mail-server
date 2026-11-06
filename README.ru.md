@@ -13,8 +13,8 @@ mail-server — основа небольшой системы, поверх н�
 | Проект | Назначение |
 |---|---|
 | **mail-server** (этот) | Рассылки и получатели, отправка, статистика, API подписки, веб-клиент |
-| [subscription-facade](https://github.com/Etersoft/subscription-facade) | Публичные HTML-страницы для ссылок «подписаться» / «отписаться» из писем; обращается к API mail-server |
-| [mail-sorter](https://github.com/Etersoft/mail-sorter) | Читает ящик `noreply@` по IMAP: уведомления о недоставке (DSN), запросы отписки, автоответы, письма от людей |
+| [subscription-facade](https://github.com/Eterpost/eterpost-subscription-facade) | Публичные HTML-страницы для ссылок «подписаться» / «отписаться» из писем; обращается к API mail-server |
+| [mail-sorter](https://github.com/Eterpost/eterpost-sorter) | Читает ящик `noreply@` по IMAP: уведомления о недоставке (DSN), запросы отписки, автоответы, письма от людей |
 
 ```
    оператор                       люди (ссылки из писем)

@@ -7,6 +7,9 @@
 #   ./update.sh --no-restart ...        только собрать и переключить
 #   REPO_BASE=git@gitlab.eterfund.ru:eterfund ./update.sh all   сменить git-сервер
 #
+# Проекты называются по-старому (каталоги, службы), а репозитории Почтаря
+# на GitHub — eterpost-server, eterpost-subscription-facade и eterpost-sorter.
+#
 # Код собирается от пользователя mailing-build в новый каталог
 # /opt/eterfund-mail/releases/<проект>/<дата>-<коммит>, затем ссылка
 # /opt/eterfund-mail/<проект> атомарно переключается на него и перезапускается
@@ -26,6 +29,7 @@ PROJECTS="mail-server subscription-facade mail-sorter"
 KEEP=${KEEP:-3}
 SYSTEMCTL=${SYSTEMCTL:-systemctl}
 REPO_SUFFIX=${REPO_SUFFIX-.git}
+REPO_BASE_DEFAULT=https://github.com/Eterpost
 
 usage () {
     sed -n '2,14p' "$0"
@@ -252,18 +256,25 @@ restart_service () {
 
 # --- команды ----------------------------------------------------------------
 
+repo_name () {
+    case $1 in
+        mail-server) echo eterpost-server ;;
+        subscription-facade) echo eterpost-subscription-facade ;;
+        mail-sorter) echo eterpost-sorter ;;
+    esac
+}
+
 update_project () {
     name=$1 ref=$2
+    url=${REPO_BASE:-$REPO_BASE_DEFAULT}/$(repo_name "$name")$REPO_SUFFIX
     mirror=$BUILD_HOME/repos/$name.git
     log "$name: fetch $ref"
     if [ -d "$mirror" ]; then
-        if [ -n "${REPO_BASE:-}" ]; then
-            as_build "git --git-dir='$mirror' remote set-url origin '$REPO_BASE/$name$REPO_SUFFIX'"
-        fi
+        as_build "git --git-dir='$mirror' remote set-url origin '$url'"
         as_build "git --git-dir='$mirror' fetch -q --prune --tags origin '+refs/heads/*:refs/heads/*'"
     else
         as_build "mkdir -p '$BUILD_HOME/repos' && git clone -q --bare \
-            '${REPO_BASE:-https://github.com/Etersoft}/$name$REPO_SUFFIX' '$mirror'"
+            '$url' '$mirror'"
     fi
     commit=$(as_build "git --git-dir='$mirror' rev-parse --verify -q '$ref^{commit}'") ||
         die "$name: unknown ref $ref"

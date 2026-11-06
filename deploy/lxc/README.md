@@ -49,7 +49,7 @@ LXC-контейнер (или ВМ) с ALT Linux. Docker не нужен: пр�
 ```
 # в контейнере, от root
 apt-get update && apt-get install -y git
-git clone https://github.com/Etersoft/mail-server.git /root/mail-server
+git clone https://github.com/Eterpost/eterpost-server.git /root/mail-server
 cd /root/mail-server/deploy/lxc
 ./install.sh --no-start
 ```

@@ -13,8 +13,8 @@ mail-server is the core of a small system. Two more projects work on top of it:
 | Project | What it does |
 |---|---|
 | **mail-server** (this one) | Mailings and receivers, sending, statistics, subscription API, web client |
-| [subscription-facade](https://github.com/Etersoft/subscription-facade) | Public HTML pages for "subscribe" / "unsubscribe" links in letters; calls the mail-server API |
-| [mail-sorter](https://github.com/Etersoft/mail-sorter) | Reads the `noreply@` mailbox over IMAP: bounces (DSN), unsubscribe requests, autoreplies, letters from people |
+| [subscription-facade](https://github.com/Eterpost/eterpost-subscription-facade) | Public HTML pages for "subscribe" / "unsubscribe" links in letters; calls the mail-server API |
+| [mail-sorter](https://github.com/Eterpost/eterpost-sorter) | Reads the `noreply@` mailbox over IMAP: bounces (DSN), unsubscribe requests, autoreplies, letters from people |
 
 ```
    operator                      people (links in letters)
